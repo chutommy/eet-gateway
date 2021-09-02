@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -13,24 +15,33 @@ const (
 )
 
 type soapDefinition struct {
-	url  string
-	path string
+	url      string
+	filename string
+}
+
+func (d *soapDefinition) path() string {
+	return filepath.Join(dir, d.filename)
 }
 
 var defs = []soapDefinition{
 	{
-		url:  xsdURL,
-		path: "eet-specs/soap-definition/EETXMLSchema.xsd",
+		url:      xsdURL,
+		filename: "EETXMLSchema.xsd",
 	},
 	{
-		url:  wsdlURL,
-		path: "eet-specs/soap-definition/EETServiceSOAP.wsdl",
+		url:      wsdlURL,
+		filename: "EETServiceSOAP.wsdl",
 	},
 }
 
+var dir string
+
 func main() {
+	flag.StringVar(&dir, "dir", ".", "target directory")
+	flag.Parse()
+
 	for _, def := range defs {
-		if err := webContentToFile(def.url, def.path); err != nil {
+		if err := webContentToFile(def.url, def.path()); err != nil {
 			panic(err)
 		}
 	}
