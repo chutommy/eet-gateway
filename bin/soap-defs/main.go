@@ -26,11 +26,23 @@ func (d *soapDefinition) path() string {
 var defs = []soapDefinition{
 	{
 		url:      xsdURL,
-		filename: "EETXMLSchema.xsd",
+		filename: "soap-definition/EETXMLSchema.xsd",
 	},
 	{
 		url:      wsdlURL,
-		filename: "EETServiceSOAP.wsdl",
+		filename: "soap-definition/EETServiceSOAP.wsdl",
+	},
+	{
+		url:      "https://www.etrzby.cz/assets/cs/prilohy/CZ00000019.v3.valid.v3.1.1.xml",
+		filename: "sample-requests/CZ00000019.v3.valid.v3.1.1.xml",
+	},
+	{
+		url:      "https://www.etrzby.cz/assets/cs/prilohy/CZ1212121218.v3.valid.v3.1.1.xml",
+		filename: "sample-requests/CZ1212121218.v3.valid.v3.1.1.xml",
+	},
+	{
+		url:      "https://www.etrzby.cz/assets/cs/prilohy/CZ683555118.v3.valid.v3.1.1.xml",
+		filename: "sample-requests/CZ683555118.v3.valid.v3.1.1.xml",
 	},
 }
 
