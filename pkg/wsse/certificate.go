@@ -48,7 +48,7 @@ func NewCertificate(der []byte) (Certificate, error) {
 
 func rawToBinary(raw []byte) ([]byte, error) {
 	binary := new(bytes.Buffer)
-	encoder := base64.NewEncoder(base64.RawStdEncoding, binary)
+	encoder := base64.NewEncoder(base64.StdEncoding, binary)
 	if _, err := encoder.Write(raw); err != nil {
 		return nil, fmt.Errorf("encode bytes to binary: %w", err)
 	}
