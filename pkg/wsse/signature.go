@@ -7,7 +7,7 @@ import (
 	"github.com/ma314smith/signedxml"
 )
 
-// Sign fill the XML digest and signature value with the given private key.
+// SignXML fill the XML digest and signature value with the given private key.
 func SignXML(xml []byte, pk *rsa.PrivateKey) ([]byte, error) {
 	signer, err := signedxml.NewSigner(string(xml))
 	if err != nil {
