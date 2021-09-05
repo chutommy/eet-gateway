@@ -29,10 +29,10 @@ func (c *certificate) Binary() []byte {
 }
 
 // NewCertificate returns a Certificate instance.
-func NewCertificate(raw []byte) (Certificate, error) {
-	cert, err := x509.ParseCertificate(raw)
+func NewCertificate(der []byte) (Certificate, error) {
+	cert, err := x509.ParseCertificate(der)
 	if err != nil {
-		return nil, fmt.Errorf("parse raw certificate: %w", err)
+		return nil, fmt.Errorf("parse DER certificate: %w", err)
 	}
 
 	binary, err := rawToBinary(cert.Raw)
