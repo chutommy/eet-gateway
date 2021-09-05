@@ -35,21 +35,26 @@ func NewCertificate(raw []byte) (Certificate, error) {
 		return nil, fmt.Errorf("parse raw certificate: %w", err)
 	}
 
+	binary, err := rawToBinary(cert.Raw)
+	if err != nil {
+		return nil, fmt.Errorf("raw to binary: %w", err)
+	}
+
 	return &certificate{
 		cert:   cert,
-		binary: rawToBinary(cert.Raw),
+		binary: binary,
 	}, nil
 }
 
-func rawToBinary(raw []byte) []byte {
+func rawToBinary(raw []byte) ([]byte, error) {
 	binary := new(bytes.Buffer)
 	encoder := base64.NewEncoder(base64.RawStdEncoding, binary)
 	if _, err := encoder.Write(raw); err != nil {
-		panic(fmt.Errorf("encode bytes to binary: %w", err))
+		return nil, fmt.Errorf("encode bytes to binary: %w", err)
 	}
 	if err := encoder.Close(); err != nil {
-		panic(fmt.Errorf("close binary encoder: %w", err))
+		return nil, fmt.Errorf("close binary encoder: %w", err)
 	}
 
-	return binary.Bytes()
+	return binary.Bytes(), nil
 }
