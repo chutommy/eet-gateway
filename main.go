@@ -3,14 +3,15 @@ package main
 // WARNING: This file consists of dev snippets.
 
 import (
+	"crypto/rsa"
 	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"log"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/wsse"
-	"golang.org/x/crypto/pkcs12"
 )
 
 var t = &eet.TrzbaType{
@@ -59,14 +60,14 @@ var t = &eet.TrzbaType{
 }
 
 func main() {
-	rawPK, rawCert := crypto()
+	pbPK, pbCert := crypto()
 
-	pk, err := x509.ParsePKCS1PrivateKey(rawPK)
+	pk, err := x509.ParsePKCS8PrivateKey(pbPK.Bytes)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cert, err := wsse.NewCertificate(rawCert)
+	cert, err := wsse.NewCertificate(pbCert)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,7 +77,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	env, err := eet.NewSoapEnvelope([]byte(s), cert.Binary(), pk)
+	env, err := eet.NewSoapEnvelope(s, cert.Binary(), pk.(*rsa.PrivateKey))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,16 +86,18 @@ func main() {
 	_ = env
 }
 
-func crypto() ([]byte, []byte) {
-	data, err := ioutil.ReadFile("data/eet-specs/sample-requests/playground-certs/EET_CA1_Playground-CZ00000019.p12")
+func crypto() (*pem.Block, *pem.Block) {
+	rawCrt, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ00000019.crt")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	pems, err := pkcs12.ToPEM(data, "eet")
+	crt, _ := pem.Decode(rawCrt)
+
+	rawKey, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ00000019.key")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	rawPK := pems[2].Bytes
-	rawCert := pems[0].Bytes
-	return rawPK, rawCert
+	pk, _ := pem.Decode(rawKey)
+
+	return pk, crt
 }
