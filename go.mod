@@ -10,7 +10,9 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/jonboulle/clockwork v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/russellhaering/goxmldsig v1.1.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
