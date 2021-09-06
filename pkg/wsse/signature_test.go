@@ -48,10 +48,13 @@ func TestSignXML(t *testing.T) {
 	}
 }
 
-func validateXMLDigSig(t *testing.T, signedXML []byte, crt wsse.Certificate) {
+func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.Certificate) {
+	t.Helper()
+
 	doc := etree.NewDocument()
-	err := doc.ReadFromBytes(signedXML)
+	err := doc.ReadFromBytes(xml)
 	require.NoError(t, err, "parse signed xml")
+
 	doc.CreateElement("X509Certificate")
 	doc.SelectElement("X509Certificate").SetText(string(crt.Binary()))
 	xmlWithCert, err := doc.WriteToString()
@@ -59,6 +62,7 @@ func validateXMLDigSig(t *testing.T, signedXML []byte, crt wsse.Certificate) {
 
 	validator, err := signedxml.NewValidator(xmlWithCert)
 	require.NoError(t, err, "new validator from xml")
+
 	validator.SetReferenceIDAttribute("Id")
 	_, err = validator.ValidateReferences()
 	require.NoError(t, err, "validate digest and signature values")
@@ -66,18 +70,22 @@ func validateXMLDigSig(t *testing.T, signedXML []byte, crt wsse.Certificate) {
 
 func crtFromFile(t *testing.T, path string) wsse.Certificate {
 	t.Helper()
+
 	rawCrt := readFile(t, path)
 	pbCrt, _ := pem.Decode(rawCrt)
 	crt, err := wsse.NewCertificate(pbCrt)
 	require.NoError(t, err, "compose certificate")
+
 	return crt
 }
 
 func pkFromFile(t *testing.T, path string) (*rsa.PrivateKey, error) {
 	t.Helper()
+
 	rawKey := readFile(t, path)
 	pbKey, _ := pem.Decode(rawKey)
 	key, err := x509.ParsePKCS8PrivateKey(pbKey.Bytes)
 	require.NoError(t, err, "parse private key")
+
 	return key.(*rsa.PrivateKey), err
 }
