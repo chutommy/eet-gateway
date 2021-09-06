@@ -2,7 +2,6 @@ package wsse_test
 
 import (
 	"encoding/pem"
-	"io/ioutil"
 	"testing"
 
 	"github.com/chutommy/eetgateway/pkg/wsse"
@@ -32,8 +31,7 @@ var certs = []certificate{
 func TestNewCertificate(t *testing.T) {
 	for _, cert := range certs {
 		t.Run(cert.filepath, func(t *testing.T) {
-			raw, err := readFile(t, cert.filepath)
-			require.NoError(t, err, "read file")
+			raw := readFile(t, cert.filepath)
 
 			p, _ := pem.Decode(raw)
 			c, err := wsse.NewCertificate(p)
@@ -43,15 +41,4 @@ func TestNewCertificate(t *testing.T) {
 			require.Equal(t, cert.binary, string(c.Binary()), "binary encoded certificate")
 		})
 	}
-}
-
-func readFile(t *testing.T, filepath string) ([]byte, error) {
-	t.Helper()
-
-	raw, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		t.Fatalf("read file: %v", err)
-	}
-
-	return raw, err
 }
