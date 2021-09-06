@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 )
 
@@ -29,8 +30,8 @@ func (c *certificate) Binary() []byte {
 }
 
 // NewCertificate returns a Certificate instance.
-func NewCertificate(der []byte) (Certificate, error) {
-	cert, err := x509.ParseCertificate(der)
+func NewCertificate(b *pem.Block) (Certificate, error) {
+	cert, err := x509.ParseCertificate(b.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("parse DER certificate: %w", err)
 	}

@@ -36,7 +36,7 @@ func TestNewCertificate(t *testing.T) {
 			require.NoError(t, err, "read file")
 
 			p, _ := pem.Decode(raw)
-			c, err := wsse.NewCertificate(p.Bytes)
+			c, err := wsse.NewCertificate(p)
 			require.NoError(t, err, "new certificate")
 
 			require.Equal(t, string(p.Bytes), string(c.Cert().Raw), "DER certificate")
