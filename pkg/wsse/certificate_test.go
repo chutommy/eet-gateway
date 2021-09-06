@@ -2,6 +2,7 @@ package wsse_test
 
 import (
 	"encoding/pem"
+	"io/ioutil"
 	"testing"
 
 	"github.com/chutommy/eetgateway/pkg/wsse"
@@ -28,7 +29,7 @@ var certs = []certificate{
 	},
 }
 
-func TestNewCertificate(t *testing.T) {
+func TestCertificate(t *testing.T) {
 	for _, cert := range certs {
 		t.Run(cert.filepath, func(t *testing.T) {
 			raw := readFile(t, cert.filepath)
@@ -40,5 +41,54 @@ func TestNewCertificate(t *testing.T) {
 			require.Equal(t, string(p.Bytes), string(c.Cert().Raw), "DER certificate")
 			require.Equal(t, cert.binary, string(c.Binary()), "binary encoded certificate")
 		})
+	}
+}
+
+func BenchmarkNewCertificate(b *testing.B) {
+	raw, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.crt")
+	if err != nil {
+		b.Fatal("failed to read certificate file: %w", err)
+	}
+
+	pbCert, _ := pem.Decode(raw)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		wsse.NewCertificate(pbCert)
+	}
+}
+
+func BenchmarkCertificate_Cert(b *testing.B) {
+	raw, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.crt")
+	if err != nil {
+		b.Fatal("failed to read certificate file: %w", err)
+	}
+
+	pbCert, _ := pem.Decode(raw)
+	cert, err := wsse.NewCertificate(pbCert)
+	if err != nil {
+		b.Fatal("construct a new certificate: %w", err)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		cert.Cert()
+	}
+}
+
+func BenchmarkCertificate_Binary(b *testing.B) {
+	raw, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.crt")
+	if err != nil {
+		b.Fatal("failed to read certificate file: %w", err)
+	}
+
+	pbCert, _ := pem.Decode(raw)
+	cert, err := wsse.NewCertificate(pbCert)
+	if err != nil {
+		b.Fatal("construct a new certificate: %w", err)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		cert.Binary()
 	}
 }
