@@ -2,7 +2,6 @@ package wsse_test
 
 import (
 	"encoding/pem"
-	"io/ioutil"
 	"testing"
 
 	"github.com/chutommy/eetgateway/pkg/wsse"
@@ -45,10 +44,7 @@ func TestCertificate(t *testing.T) {
 }
 
 func BenchmarkNewCertificate(b *testing.B) {
-	raw, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.crt")
-	if err != nil {
-		b.Fatal("failed to read certificate file: %w", err)
-	}
+	raw := readFileB(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
 
 	pbCert, _ := pem.Decode(raw)
 	b.ResetTimer()
@@ -58,10 +54,7 @@ func BenchmarkNewCertificate(b *testing.B) {
 }
 
 func BenchmarkCertificate_Cert(b *testing.B) {
-	raw, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.crt")
-	if err != nil {
-		b.Fatal("failed to read certificate file: %w", err)
-	}
+	raw := readFileB(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
 
 	pbCert, _ := pem.Decode(raw)
 	cert, err := wsse.NewCertificate(pbCert)
@@ -76,10 +69,7 @@ func BenchmarkCertificate_Cert(b *testing.B) {
 }
 
 func BenchmarkCertificate_Binary(b *testing.B) {
-	raw, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.crt")
-	if err != nil {
-		b.Fatal("failed to read certificate file: %w", err)
-	}
+	raw := readFileB(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
 
 	pbCert, _ := pem.Decode(raw)
 	cert, err := wsse.NewCertificate(pbCert)
