@@ -69,9 +69,7 @@ func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.Certificate) {
 	require.NoError(t, err, "validate digest and signature values")
 }
 
-func crtFromFile(t *testing.T, path string) wsse.Certificate {
-	t.Helper()
-
+func crtFromFile(t require.TestingT, path string) wsse.Certificate {
 	rawCrt := readFile(t, path)
 	pbCrt, _ := pem.Decode(rawCrt)
 	crt, err := wsse.NewCertificate(pbCrt)
@@ -80,9 +78,7 @@ func crtFromFile(t *testing.T, path string) wsse.Certificate {
 	return crt
 }
 
-func pkFromFile(t *testing.T, path string) (*rsa.PrivateKey, error) {
-	t.Helper()
-
+func pkFromFile(t require.TestingT, path string) (*rsa.PrivateKey, error) {
 	rawKey := readFile(t, path)
 	pbKey, _ := pem.Decode(rawKey)
 	key, err := x509.ParsePKCS8PrivateKey(pbKey.Bytes)
