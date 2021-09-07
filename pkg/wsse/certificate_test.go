@@ -34,11 +34,11 @@ func TestCertificate(t *testing.T) {
 			raw := readFile(t, cert.filepath)
 
 			p, _ := pem.Decode(raw)
-			c, err := wsse.NewCertificate(p)
+			cd, err := wsse.NewCertificate(p)
 			require.NoError(t, err, "new certificate")
 
-			require.Equal(t, string(p.Bytes), string(c.Cert().Raw), "DER certificate")
-			require.Equal(t, cert.binary, string(c.Binary()), "binary encoded certificate")
+			require.Equal(t, string(p.Bytes), string(cd.Cert().Raw), "DER certificate")
+			require.Equal(t, cert.binary, string(cd.Binary()), "binary encoded certificate")
 		})
 	}
 }
@@ -56,12 +56,12 @@ func BenchmarkNewCertificate(b *testing.B) {
 func BenchmarkCertificate_Cert(b *testing.B) {
 	raw := readFile(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
 	pbCert, _ := pem.Decode(raw)
-	cert, err := wsse.NewCertificate(pbCert)
+	certData, err := wsse.NewCertificate(pbCert)
 	require.NoError(b, err, "construct a new certificate")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		cert.Cert()
+		certData.Cert()
 	}
 }
 
@@ -69,11 +69,11 @@ func BenchmarkCertificate_Binary(b *testing.B) {
 	raw := readFile(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
 
 	pbCert, _ := pem.Decode(raw)
-	cert, err := wsse.NewCertificate(pbCert)
+	certData, err := wsse.NewCertificate(pbCert)
 	require.NoError(b, err, "construct a new certificate")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		cert.Binary()
+		certData.Binary()
 	}
 }

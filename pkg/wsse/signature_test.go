@@ -38,17 +38,17 @@ func TestSignXML(t *testing.T) {
 	for _, pkd := range pkData {
 		t.Run(pkd.filepath, func(t *testing.T) {
 			key := pkFromFile(t, pkd.filepath)
-			crt := crtFromFile(t, pkd.signingCertPath)
+			certData := crtFromFile(t, pkd.signingCertPath)
 
 			signedXML, err := wsse.SignXML(xml, key)
 			require.NoError(t, err, "sign xml with the private key")
 
-			validateXMLDigSig(t, signedXML, crt)
+			validateXMLDigSig(t, signedXML, certData)
 		})
 	}
 }
 
-func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.Certificate) {
+func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.CertificateData) {
 	t.Helper()
 
 	doc := etree.NewDocument()
@@ -68,13 +68,13 @@ func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.Certificate) {
 	require.NoError(t, err, "validate digest and signature values")
 }
 
-func crtFromFile(t require.TestingT, path string) wsse.Certificate {
+func crtFromFile(t require.TestingT, path string) wsse.CertificateData {
 	rawCrt := readFile(t, path)
 	pbCrt, _ := pem.Decode(rawCrt)
-	crt, err := wsse.NewCertificate(pbCrt)
+	certData, err := wsse.NewCertificate(pbCrt)
 	require.NoError(t, err, "compose certificate")
 
-	return crt
+	return certData
 }
 
 func pkFromFile(t require.TestingT, path string) *rsa.PrivateKey {

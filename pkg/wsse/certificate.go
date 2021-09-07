@@ -8,29 +8,29 @@ import (
 	"fmt"
 )
 
-// Certificate represents an X.509 certificate.
-type Certificate interface {
+// CertificateData represents an X.509 certificate.
+type CertificateData interface {
 	Cert() *x509.Certificate
 	Binary() []byte
 }
 
-type certificate struct {
+type certificateData struct {
 	cert   *x509.Certificate
 	binary []byte
 }
 
 // Cert returns a parsed x509.Certificate.
-func (c *certificate) Cert() *x509.Certificate {
-	return c.cert
+func (cd *certificateData) Cert() *x509.Certificate {
+	return cd.cert
 }
 
 // Binary returns the binary encoded certificate.
-func (c *certificate) Binary() []byte {
-	return c.binary
+func (cd *certificateData) Binary() []byte {
+	return cd.binary
 }
 
-// NewCertificate returns a Certificate instance.
-func NewCertificate(b *pem.Block) (Certificate, error) {
+// NewCertificate returns a CertificateData.
+func NewCertificate(b *pem.Block) (CertificateData, error) {
 	cert, err := x509.ParseCertificate(b.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("parse DER certificate: %w", err)
@@ -41,7 +41,7 @@ func NewCertificate(b *pem.Block) (Certificate, error) {
 		return nil, fmt.Errorf("raw to binary: %w", err)
 	}
 
-	return &certificate{
+	return &certificateData{
 		cert:   cert,
 		binary: binary,
 	}, nil

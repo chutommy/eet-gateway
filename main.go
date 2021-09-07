@@ -67,7 +67,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cert, err := wsse.NewCertificate(pbCert)
+	crtData, err := wsse.NewCertificate(pbCert)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	env, err := eet.NewSoapEnvelope(s, cert.Binary(), pk.(*rsa.PrivateKey))
+	env, err := eet.NewSoapEnvelope(s, crtData.Binary(), pk.(*rsa.PrivateKey))
 	if err != nil {
 		log.Fatal(err)
 	}
