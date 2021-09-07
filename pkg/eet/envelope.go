@@ -50,8 +50,13 @@ var envelopeTmpl = template.Must(template.New("envelope").Parse(`
 `))
 
 // NewSoapEnvelope a returns a populated and signed SOAP request envelope.
-func NewSoapEnvelope(trzbaData, binaryToken []byte, pk *rsa.PrivateKey) ([]byte, error) {
-	env, err := buildEnvelope(binaryToken, trzbaData)
+func NewSoapEnvelope(trzbaData []byte, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+	binCrt, err := wsse.CertificateToB64(crt)
+	if err != nil {
+		return nil, fmt.Errorf("convert certificate to base64: %w", err)
+	}
+
+	env, err := buildEnvelope(binCrt, trzbaData)
 	if err != nil {
 		return nil, fmt.Errorf("build envelope structure: %w", err)
 	}

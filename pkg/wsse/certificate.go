@@ -8,49 +8,21 @@ import (
 	"fmt"
 )
 
-// CertificateData represents an X.509 certificate.
-type CertificateData interface {
-	Cert() *x509.Certificate
-	Binary() []byte
-}
-
-type certificateData struct {
-	cert   *x509.Certificate
-	binary []byte
-}
-
-// Cert returns a parsed x509.Certificate.
-func (cd *certificateData) Cert() *x509.Certificate {
-	return cd.cert
-}
-
-// Binary returns the binary encoded certificate.
-func (cd *certificateData) Binary() []byte {
-	return cd.binary
-}
-
-// NewCertificate returns a CertificateData.
-func NewCertificate(b *pem.Block) (CertificateData, error) {
-	cert, err := x509.ParseCertificate(b.Bytes)
+// ParseCertificate parses a PEM encoded SSL certificate and returns x509.Certificate.
+func ParseCertificate(b *pem.Block) (*x509.Certificate, error) {
+	crt, err := x509.ParseCertificate(b.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("parse DER certificate: %w", err)
 	}
 
-	binary, err := rawToBinary(cert.Raw)
-	if err != nil {
-		return nil, fmt.Errorf("raw to binary: %w", err)
-	}
-
-	return &certificateData{
-		cert:   cert,
-		binary: binary,
-	}, nil
+	return crt, nil
 }
 
-func rawToBinary(raw []byte) ([]byte, error) {
+// CertificateToB64 encodes the certificate to base64 binary format.
+func CertificateToB64(crt *x509.Certificate) ([]byte, error) {
 	binary := new(bytes.Buffer)
 	encoder := base64.NewEncoder(base64.StdEncoding, binary)
-	if _, err := encoder.Write(raw); err != nil {
+	if _, err := encoder.Write(crt.Raw); err != nil {
 		return nil, fmt.Errorf("encode bytes to binary: %w", err)
 	}
 	if err := encoder.Close(); err != nil {

@@ -62,11 +62,11 @@ func main() {
 	pbPK, pbCert := crypto()
 	pk, err := x509.ParsePKCS8PrivateKey(pbPK.Bytes)
 	errCheck(err)
-	crtData, err := wsse.NewCertificate(pbCert)
+	crt, err := wsse.ParseCertificate(pbCert)
 	errCheck(err)
 	s, err := t.ContentXML()
 	errCheck(err)
-	env, err := eet.NewSoapEnvelope(s, crtData.Binary(), pk.(*rsa.PrivateKey))
+	env, err := eet.NewSoapEnvelope(s, crt, pk.(*rsa.PrivateKey))
 	errCheck(err)
 	fmt.Println(string(env))
 }

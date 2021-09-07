@@ -38,17 +38,17 @@ func TestSignXML(t *testing.T) {
 	for _, pkd := range pkData {
 		t.Run(pkd.filepath, func(t *testing.T) {
 			key := pkFromFile(t, pkd.filepath)
-			certData := crtFromFile(t, pkd.signingCertPath)
+			crt := crtFromFile(t, pkd.signingCertPath)
 
 			signedXML, err := wsse.SignXML(xml, key)
 			require.NoError(t, err, "sign xml with the private key")
 
-			validateXMLDigSig(t, signedXML, certData)
+			validateXMLDigSig(t, signedXML, crt)
 		})
 	}
 }
 
-func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.CertificateData) {
+func validateXMLDigSig(t *testing.T, xml []byte, crt *x509.Certificate) {
 	t.Helper()
 
 	doc := etree.NewDocument()
@@ -56,7 +56,9 @@ func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.CertificateData) {
 	require.NoError(t, err, "parse signed xml")
 
 	doc.CreateElement("X509Certificate")
-	doc.SelectElement("X509Certificate").SetText(string(crt.Binary()))
+	binCrt, err := wsse.CertificateToB64(crt)
+	require.NoError(t, err, "encode certificate to base64")
+	doc.SelectElement("X509Certificate").SetText(string(binCrt))
 	xmlWithCert, err := doc.WriteToString()
 	require.NoError(t, err, "decode etree document to string")
 
@@ -68,13 +70,13 @@ func validateXMLDigSig(t *testing.T, xml []byte, crt wsse.CertificateData) {
 	require.NoError(t, err, "validate digest and signature values")
 }
 
-func crtFromFile(t require.TestingT, path string) wsse.CertificateData {
+func crtFromFile(t require.TestingT, path string) *x509.Certificate {
 	rawCrt := readFile(t, path)
 	pbCrt, _ := pem.Decode(rawCrt)
-	certData, err := wsse.NewCertificate(pbCrt)
+	crt, err := wsse.ParseCertificate(pbCrt)
 	require.NoError(t, err, "compose certificate")
 
-	return certData
+	return crt
 }
 
 func pkFromFile(t require.TestingT, path string) *rsa.PrivateKey {
