@@ -37,8 +37,7 @@ func TestSignXML(t *testing.T) {
 
 	for _, pkd := range pkData {
 		t.Run(pkd.filepath, func(t *testing.T) {
-			key, err := pkFromFile(t, pkd.filepath)
-			require.NoError(t, err, "load private from file")
+			key := pkFromFile(t, pkd.filepath)
 			crt := crtFromFile(t, pkd.signingCertPath)
 
 			signedXML, err := wsse.SignXML(xml, key)
@@ -78,11 +77,11 @@ func crtFromFile(t require.TestingT, path string) wsse.Certificate {
 	return crt
 }
 
-func pkFromFile(t require.TestingT, path string) (*rsa.PrivateKey, error) {
+func pkFromFile(t require.TestingT, path string) *rsa.PrivateKey {
 	rawKey := readFile(t, path)
 	pbKey, _ := pem.Decode(rawKey)
 	key, err := x509.ParsePKCS8PrivateKey(pbKey.Bytes)
 	require.NoError(t, err, "parse private key")
 
-	return key.(*rsa.PrivateKey), err
+	return key.(*rsa.PrivateKey)
 }
