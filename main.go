@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	"log"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/wsse"
@@ -61,43 +60,29 @@ var t = &eet.TrzbaType{
 
 func main() {
 	pbPK, pbCert := crypto()
-
 	pk, err := x509.ParsePKCS8PrivateKey(pbPK.Bytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	errCheck(err)
 	crtData, err := wsse.NewCertificate(pbCert)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	errCheck(err)
 	s, err := t.ContentXML()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	errCheck(err)
 	env, err := eet.NewSoapEnvelope(s, crtData.Binary(), pk.(*rsa.PrivateKey))
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	errCheck(err)
 	fmt.Println(string(env))
-	_ = env
 }
 
 func crypto() (*pem.Block, *pem.Block) {
 	rawCrt, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ00000019.crt")
-	if err != nil {
-		log.Fatal(err)
-	}
+	errCheck(err)
 	crt, _ := pem.Decode(rawCrt)
-
 	rawKey, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ00000019.key")
-	if err != nil {
-		log.Fatal(err)
-	}
+	errCheck(err)
 	pk, _ := pem.Decode(rawKey)
-
 	return pk, crt
+}
+
+func errCheck(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
