@@ -45,8 +45,8 @@ func TestCertificate(t *testing.T) {
 
 func BenchmarkNewCertificate(b *testing.B) {
 	raw := readFile(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
-
 	pbCert, _ := pem.Decode(raw)
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		wsse.NewCertificate(pbCert)
@@ -55,7 +55,6 @@ func BenchmarkNewCertificate(b *testing.B) {
 
 func BenchmarkCertificate_Cert(b *testing.B) {
 	raw := readFile(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
-
 	pbCert, _ := pem.Decode(raw)
 	cert, err := wsse.NewCertificate(pbCert)
 	require.NoError(b, err, "construct a new certificate")

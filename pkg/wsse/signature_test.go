@@ -85,3 +85,13 @@ func pkFromFile(t require.TestingT, path string) *rsa.PrivateKey {
 
 	return key.(*rsa.PrivateKey)
 }
+
+func BenchmarkSignXML(b *testing.B) {
+	xml := readFile(b, "testdata/CZ00000019.v3.valid.v3.1.1-unsigned.xml")
+	key := pkFromFile(b, "testdata/EET_CA1_Playground-CZ00000019.key")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		wsse.SignXML(xml, key)
+	}
+}
