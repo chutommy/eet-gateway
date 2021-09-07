@@ -38,6 +38,7 @@ func TestSignXML(t *testing.T) {
 	for _, pkd := range pkData {
 		t.Run(pkd.filepath, func(t *testing.T) {
 			key, err := pkFromFile(t, pkd.filepath)
+			require.NoError(t, err, "load private from file")
 			crt := crtFromFile(t, pkd.signingCertPath)
 
 			signedXML, err := wsse.SignXML(xml, key)
