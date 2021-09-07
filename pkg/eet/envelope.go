@@ -3,6 +3,7 @@ package eet
 import (
 	"bytes"
 	"crypto/rsa"
+	"crypto/x509"
 	"fmt"
 	"text/template"
 
@@ -41,11 +42,9 @@ var envelopeTmpl = template.Must(template.New("envelope").Parse(`
             </Signature>
         </wsse:Security>
     </s:Header>
-    <s:Body u:Id="_1">
-        <Trzba xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://fs.mfcr.cz/eet/schema/v3">
+<s:Body u:Id="_1">
 {{.TrzbaData}}
-        </Trzba>
-    </s:Body>
+</s:Body>
 </s:Envelope>
 `))
 

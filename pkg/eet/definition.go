@@ -3,19 +3,32 @@ package eet
 import (
 	"encoding/xml"
 	"fmt"
-	"strings"
+
+	"github.com/beevik/etree"
 )
 
-// ContentXML returns the XML content of the TrzbaType.
-// The element TrzbaType itself isn't included in the result.
-func (t *TrzbaType) ContentXML() ([]byte, error) {
-	tXML, err := xml.MarshalIndent(t, "        ", "    ")
+// ToXML returns the TrzbaType t to XML encoded text.
+func (t *TrzbaType) ToXML() ([]byte, error) {
+	tContent, err := xml.Marshal(t)
 	if err != nil {
 		return nil, fmt.Errorf("xml marshal trzba type content: %w", err)
 	}
 
-	split := strings.Split(string(tXML), "\n")
-	striped := strings.Join(split[1:len(split)-1], "\n")
+	doc := etree.NewDocument()
+	if err = doc.ReadFromBytes(tContent); err != nil {
+		return nil, fmt.Errorf("load trzba data to etree document: %w", err)
+	}
 
-	return []byte(striped), nil
+	trzba := doc.Root()
+	trzba.Tag = "Trzba"
+	trzba.CreateAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+	trzba.CreateAttr("xmlns:xsd", "http://www.w3.org/2001/XMLSchema")
+	trzba.CreateAttr("xmlns", "http://fs.mfcr.cz/eet/schema/v3")
+
+	tData, err := doc.WriteToBytes()
+	if err != nil {
+		return nil, fmt.Errorf("serialize etree document to bytes: %w", err)
+	}
+
+	return tData, nil
 }
