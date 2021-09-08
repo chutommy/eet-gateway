@@ -8,8 +8,8 @@ import (
 )
 
 // SignXML fill the XML digest and signature value with the given private key.
-func SignXML(xml []byte, pk *rsa.PrivateKey) ([]byte, error) {
-	signer, err := signedxml.NewSigner(string(xml))
+func SignXML(data []byte, pk *rsa.PrivateKey) ([]byte, error) {
+	signer, err := signedxml.NewSigner(string(data))
 	if err != nil {
 		return nil, fmt.Errorf("parse xml: %w", err)
 	}
