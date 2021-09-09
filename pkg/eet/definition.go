@@ -7,8 +7,8 @@ import (
 	"github.com/beevik/etree"
 )
 
-// ToXML returns the TrzbaType t to XML encoded text.
-func (t *TrzbaType) ToXML() ([]byte, error) {
+// Etree returns the TrzbaType t as an etree.Element.
+func (t *TrzbaType) Etree() (*etree.Element, error) {
 	tContent, err := xml.Marshal(t)
 	if err != nil {
 		return nil, fmt.Errorf("xml marshal trzba type content: %w", err)
@@ -25,10 +25,5 @@ func (t *TrzbaType) ToXML() ([]byte, error) {
 	trzba.CreateAttr("xmlns:xsd", "http://www.w3.org/2001/XMLSchema")
 	trzba.CreateAttr("xmlns", "http://fs.mfcr.cz/eet/schema/v3")
 
-	tData, err := doc.WriteToBytes()
-	if err != nil {
-		return nil, fmt.Errorf("serialize etree document to bytes: %w", err)
-	}
-
-	return tData, nil
+	return trzba, nil
 }

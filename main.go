@@ -64,9 +64,7 @@ func main() {
 	errCheck(err)
 	crt, err := wsse.ParseCertificate(pbCert)
 	errCheck(err)
-	s, err := t.ContentXML()
-	errCheck(err)
-	env, err := eet.NewSoapEnvelope(s, crt, pk.(*rsa.PrivateKey))
+	env, err := eet.NewSoapEnvelope(t, crt, pk.(*rsa.PrivateKey))
 	errCheck(err)
 	fmt.Println(string(env))
 }

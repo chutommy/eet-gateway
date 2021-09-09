@@ -1,66 +1,36 @@
 package eet
 
 import (
-	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
-	"text/template"
 
+	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
-// EnvelopeTmplArgument represents an input data for the envelope template.
-type EnvelopeTmplArgument struct {
-	BinarySecurityToken string
-	TrzbaData           string
-}
-
-var envelopeTmpl = template.Must(template.New("envelope").Parse(`
-<s:Envelope xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
-    <s:Header>
-        <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-            <wse:BinarySecurityToken xmlns:wse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3" u:Id="BinaryToken1">{{.BinarySecurityToken}}</wse:BinarySecurityToken>
-            <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
-                <SignedInfo>
-                    <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-                    <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
-                    <Reference URI="#_1">
-                        <Transforms>
-                            <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-                        </Transforms>
-                        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-                        <DigestValue>digest-value-placeholder</DigestValue>
-                    </Reference>
-                </SignedInfo>
-                <SignatureValue>signature-value-placeholder</SignatureValue>
-                <KeyInfo>
-                    <wse:SecurityTokenReference xmlns:wse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-                        <wse:Reference URI="#BinaryToken1" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509"/>
-                    </wse:SecurityTokenReference>
-                </KeyInfo>
-            </Signature>
-        </wsse:Security>
-    </s:Header>
-<s:Body u:Id="_1">
-{{.TrzbaData}}
-</s:Body>
-</s:Envelope>
-`))
-
 // NewSoapEnvelope a returns a populated and signed SOAP request envelope.
-func NewSoapEnvelope(trzbaData []byte, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+func NewSoapEnvelope(trzba *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
 	binCrt, err := wsse.CertificateToB64(crt)
 	if err != nil {
 		return nil, fmt.Errorf("convert certificate to base64: %w", err)
 	}
 
-	env, err := buildEnvelope(binCrt, trzbaData)
+	trzbaElem, err := trzba.Etree()
 	if err != nil {
-		return nil, fmt.Errorf("build envelope structure: %w", err)
+		return nil, fmt.Errorf("marshal trzba to etree.Element: %w", err)
 	}
 
-	signedEnv, err := wsse.SignXML(env, pk)
+	env := getEnvelope()
+	env.FindElement("./Envelope/Header/Security/BinarySecurityToken").SetText(string(binCrt))
+	env.FindElement("./Envelope/Body").AddChild(trzbaElem)
+
+	bEnv, err := env.WriteToBytes()
+	if err != nil {
+		return nil, fmt.Errorf("parse envelope document to bytes: %w", err)
+	}
+
+	signedEnv, err := wsse.SignXML(bEnv, pk)
 	if err != nil {
 		return nil, fmt.Errorf("sign envelope: %w", err)
 	}
@@ -68,16 +38,65 @@ func NewSoapEnvelope(trzbaData []byte, crt *x509.Certificate, pk *rsa.PrivateKey
 	return signedEnv, nil
 }
 
-func buildEnvelope(binaryToken []byte, trzbaData []byte) ([]byte, error) {
-	arg := EnvelopeTmplArgument{
-		BinarySecurityToken: string(binaryToken),
-		TrzbaData:           string(trzbaData),
+var envelopeTmpl *etree.Document
+
+func getEnvelope() *etree.Document {
+	if envelopeTmpl == nil {
+		envelopeTmpl = buildEnvelope()
 	}
 
-	buf := &bytes.Buffer{}
-	if err := envelopeTmpl.Execute(buf, arg); err != nil {
-		return nil, fmt.Errorf("apply envelope template: %w", err)
-	}
+	return envelopeTmpl.Copy()
+}
 
-	return buf.Bytes(), nil
+func buildEnvelope() *etree.Document {
+	doc := etree.NewDocument()
+
+	envelope := doc.CreateElement("Envelope")
+	envelope.Space = "s"
+	envelope.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
+	envelope.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
+
+	header := envelope.CreateElement("Header")
+	header.Space = "s"
+
+	security := header.CreateElement("Security")
+	security.Space = "wsse"
+	security.CreateAttr("xmlns:wsse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
+
+	binarySecurityToken := security.CreateElement("BinarySecurityToken")
+	binarySecurityToken.Space = "wse"
+	binarySecurityToken.CreateAttr("xmlns:wse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
+	binarySecurityToken.CreateAttr("EncodingType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary")
+	binarySecurityToken.CreateAttr("ValueType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3")
+	binarySecurityToken.CreateAttr("u:Id", "BinaryToken1")
+
+	signature := security.CreateElement("Signature")
+	signature.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
+
+	signedInfo := signature.CreateElement("SignedInfo")
+	signedInfo.CreateElement("CanonicalizationMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/10/xml-exc-c14n#")
+	signedInfo.CreateElement("SignatureMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
+
+	reference := signedInfo.CreateElement("Reference")
+	reference.CreateAttr("URI", "#_1")
+	reference.CreateElement("Transforms").CreateElement("Transform").CreateAttr("Algorithm", "http://www.w3.org/2001/10/xml-exc-c14n#")
+	reference.CreateElement("DigestMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/04/xmlenc#sha256")
+	reference.CreateElement("DigestValue")
+
+	signature.CreateElement("SignatureValue")
+
+	keyInfo := signature.CreateElement("KeyInfo")
+	securityTokenReference := keyInfo.CreateElement("SecurityTokenReference")
+	securityTokenReference.Space = "wse"
+	securityTokenReference.CreateAttr("xmlns:wse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
+	tokenReference := securityTokenReference.CreateElement("Reference")
+	tokenReference.Space = "wse"
+	tokenReference.CreateAttr("URI", "#BinaryToken1")
+	tokenReference.CreateAttr("ValueType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509")
+
+	body := envelope.CreateElement("Body")
+	body.Space = "s"
+	body.CreateAttr("u:Id", "_1")
+
+	return doc
 }
