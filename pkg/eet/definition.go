@@ -3,9 +3,21 @@ package eet
 import (
 	"encoding/xml"
 	"fmt"
+	"time"
 
 	"github.com/beevik/etree"
 )
+
+const DateTimeLayout = "2006-01-02T15:04:05-07:00"
+
+func ParseTime(s string) time.Time {
+	t, err := time.Parse(DateTimeLayout, s)
+	if err != nil {
+		panic(err)
+	}
+
+	return t
+}
 
 // Etree returns the TrzbaType t as an etree.Element.
 func (t *TrzbaType) Etree() (*etree.Element, error) {
