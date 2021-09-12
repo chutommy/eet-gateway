@@ -19,7 +19,7 @@ var trzbaSet = []struct {
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-				Datodesl:     eet.DateTime(eet.ParseTime("2019-08-11T15:36:25+02:00")),
+				Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
 				Prvnizaslani: true,
 				Overeni:      false,
 			},
@@ -28,7 +28,7 @@ var trzbaSet = []struct {
 				Idprovoz:  141,
 				Idpokl:    "1patro-vpravo",
 				Poradcis:  "141-18543-05",
-				Dattrzby:  eet.DateTime(eet.ParseTime("2019-08-11T15:36:14+02:00")),
+				Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
 				Celktrzba: 236.00,
 				Zakldan1:  100.00,
 				Dan1:      21.00,
@@ -56,7 +56,7 @@ var trzbaSet = []struct {
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "b9bd618a-7d3d-4a15-a405-bc9d0aba4e9b",
-				Datodesl:     eet.DateTime(eet.ParseTime("2019-08-11T15:37:27+02:00")),
+				Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:37:27+02:00")),
 				Prvnizaslani: true,
 				Overeni:      false,
 			},
@@ -65,7 +65,7 @@ var trzbaSet = []struct {
 				Idprovoz:  141,
 				Idpokl:    "1patro-vpravo",
 				Poradcis:  "141-18543-05",
-				Dattrzby:  eet.DateTime(eet.ParseTime("2019-08-11T15:36:14+02:00")),
+				Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
 				Celktrzba: 236.00,
 				Zakldan1:  100.00,
 				Dan1:      21.00,
@@ -93,7 +93,7 @@ var trzbaSet = []struct {
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
-				Datodesl:     eet.DateTime(eet.ParseTime("2019-08-11T15:37:52+02:00")),
+				Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:37:52+02:00")),
 				Prvnizaslani: true,
 				Overeni:      false,
 			},
@@ -102,7 +102,7 @@ var trzbaSet = []struct {
 				Idprovoz:  141,
 				Idpokl:    "1patro-vpravo",
 				Poradcis:  "141-18543-05",
-				Dattrzby:  eet.DateTime(eet.ParseTime("2019-08-11T15:36:14+02:00")),
+				Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
 				Celktrzba: 236.00,
 				Zakldan1:  100.00,
 				Dan1:      21.00,
