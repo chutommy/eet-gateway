@@ -155,3 +155,33 @@ func TestTrzbaType_Etree(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkTrzbaType_Etree(b *testing.B) {
+	t := trzbaSet[0].trzba
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		t.Etree()
+	}
+}
+
+func TestParseTime(t *testing.T) {
+	t1, err := eet.ParseTime("2019-08-11T15:37:52+02:00")
+	require.NoError(t, err, "valid time format")
+	require.NotZero(t, t1, "not zero time value")
+
+	t2, err := eet.ParseTime("2019-08-11D15:37:52+02:00")
+	require.Error(t, err, "invalid time format")
+	require.Zero(t, t2, "zero time value")
+}
+
+func BenchmarkParseTime(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		eet.ParseTime("2019-08-11T15:37:52+02:00")
+	}
+}
+
+func BenchmarkMustParseTime(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		eet.MustParseTime("2019-08-11T15:37:52+02:00")
+	}
+}
