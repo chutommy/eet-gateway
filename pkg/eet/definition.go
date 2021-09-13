@@ -1,15 +1,9 @@
 package eet
 
 import (
-	"crypto"
-	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/beevik/etree"
@@ -58,8 +52,8 @@ func (t *TrzbaType) Etree() (*etree.Element, error) {
 	return trzba, nil
 }
 
-// SetSecurityHashes sets all required control codes of the TrzbaType elements.
-func (t *TrzbaType) SetSecurityHashes(pk *rsa.PrivateKey) error {
+// SetSecurityCodes sets all required security codes of the TrzbaType elements.
+func (t *TrzbaType) SetSecurityCodes(pk *rsa.PrivateKey) error {
 	err := t.setPkp(pk)
 	if err != nil {
 		return fmt.Errorf("set pkp: %w", err)
@@ -84,16 +78,6 @@ func (t *TrzbaType) setPkp(pk *rsa.PrivateKey) error {
 	return nil
 }
 
-func pkp(plaintext string, pk *rsa.PrivateKey) ([]byte, error) {
-	digest := sha256.Sum256([]byte(plaintext))
-	pkp, err := rsa.SignPKCS1v15(rand.Reader, pk, crypto.SHA256, digest[:])
-	if err != nil {
-		return nil, fmt.Errorf("signing PKP: %w", err)
-	}
-
-	return pkp, err
-}
-
 func (t *TrzbaType) plaintext() string {
 	return fmt.Sprintf(
 		"%s|%d|%s|%s|%s|%.2f",
@@ -110,27 +94,4 @@ func (t *TrzbaType) setBkp(pkp PkpType) {
 	t.KontrolniKody.Bkp.Digest = "SHA1"
 	t.KontrolniKody.Bkp.Encoding = "base16"
 	t.KontrolniKody.Bkp.BkpType = bkp(pkp)
-}
-
-func bkp(pkp PkpType) BkpType {
-	digest := sha1.Sum(pkp)
-	bkpB16 := hex.EncodeToString(digest[:])
-	bkpB16B := []byte(strings.ToUpper(bkpB16))
-	bkp := setDelimiters(bkpB16B)
-
-	return BkpType(bkp)
-}
-
-func setDelimiters(bkpB16B []byte) []byte {
-	bkp := make([]byte, 44)
-	delims := 0
-	for i, c := range bkpB16B {
-		if (i+delims)%9 == 8 {
-			bkp[i+delims] = '-'
-			delims++
-		}
-		bkp[i+delims] = c
-	}
-
-	return bkp
 }
