@@ -15,46 +15,23 @@ import (
 
 var t = &eet.TrzbaType{
 	Hlavicka: eet.TrzbaHlavickaType{
-		Uuidzpravy:   "",
-		Datodesl:     eet.DateTime{},
-		Prvnizaslani: false,
+		Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
+		Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:37:52+02:00")),
+		Prvnizaslani: true,
 		Overeni:      false,
 	},
 	Data: eet.TrzbaDataType{
-		Dicpopl:         "",
-		Dicpoverujiciho: "",
-		Idprovoz:        0,
-		Idpokl:          "",
-		Poradcis:        "",
-		Dattrzby:        eet.DateTime{},
-		Celktrzba:       0,
-		Zaklnepodldph:   0,
-		Zakldan1:        0,
-		Dan1:            0,
-		Zakldan2:        0,
-		Dan2:            0,
-		Zakldan3:        0,
-		Dan3:            0,
-		Cestsluz:        0,
-		Pouzitzboz1:     0,
-		Pouzitzboz2:     0,
-		Pouzitzboz3:     0,
-		Urcenocerpzuct:  0,
-		Cerpzuct:        0,
-		Rezim:           0,
-	},
-	KontrolniKody: eet.TrzbaKontrolniKodyType{
-		Pkp: eet.PkpElementType{
-			PkpType:  nil,
-			Digest:   "",
-			Cipher:   "",
-			Encoding: "",
-		},
-		Bkp: eet.BkpElementType{
-			BkpType:  "",
-			Digest:   "",
-			Encoding: "",
-		},
+		Dicpopl:   "CZ683555118",
+		Idprovoz:  141,
+		Idpokl:    "1patro-vpravo",
+		Poradcis:  "141-18543-05",
+		Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+		Celktrzba: 236.00,
+		Zakldan1:  100.00,
+		Dan1:      21.00,
+		Zakldan2:  100.00,
+		Dan2:      15.00,
+		Rezim:     0,
 	},
 }
 
@@ -64,16 +41,17 @@ func main() {
 	errCheck(err)
 	crt, err := wsse.ParseCertificate(pbCert)
 	errCheck(err)
+	errCheck(t.SetSecurityHashes(pk.(*rsa.PrivateKey)))
 	env, err := eet.NewSoapEnvelope(t, crt, pk.(*rsa.PrivateKey))
 	errCheck(err)
 	fmt.Println(string(env))
 }
 
 func crypto() (*pem.Block, *pem.Block) {
-	rawCrt, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ00000019.crt")
+	rawCrt, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ683555118.crt")
 	errCheck(err)
 	crt, _ := pem.Decode(rawCrt)
-	rawKey, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ00000019.key")
+	rawKey, err := ioutil.ReadFile("pkg/wsse/testdata/EET_CA1_Playground-CZ683555118.key")
 	errCheck(err)
 	pk, _ := pem.Decode(rawKey)
 	return pk, crt
