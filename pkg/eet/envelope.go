@@ -11,6 +11,10 @@ import (
 
 // NewSoapEnvelope a returns a populated and signed SOAP request envelope.
 func NewSoapEnvelope(trzba *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+	if err := trzba.SetSecurityCodes(pk); err != nil {
+		return nil, fmt.Errorf("setting security codes: %w", err)
+	}
+
 	binCrt, err := wsse.CertificateToB64(crt)
 	if err != nil {
 		return nil, fmt.Errorf("convert certificate to base64: %w", err)

@@ -188,55 +188,55 @@ func BenchmarkMustParseTime(b *testing.B) {
 	}
 }
 
-var trzba1 = &eet.TrzbaType{
-	Hlavicka: eet.TrzbaHlavickaType{
-		Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-		Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
-		Prvnizaslani: true,
-		Overeni:      false,
-	},
-	Data: eet.TrzbaDataType{
-		Dicpopl:   "CZ00000019",
-		Idprovoz:  141,
-		Idpokl:    "1patro-vpravo",
-		Poradcis:  "141-18543-05",
-		Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
-		Celktrzba: 236.00,
-		Zakldan1:  100.00,
-		Dan1:      21.00,
-		Zakldan2:  100.00,
-		Dan2:      15.00,
-		Rezim:     0,
-	},
-	KontrolniKody: eet.TrzbaKontrolniKodyType{
-		Pkp: eet.PkpElementType{
-			PkpType:  eet.PkpType("LnIZVjGlkdvO55gRP9Wa4k48X0QZrLU5aWsFDpYlwcCC/S8KHuUI0hxxS9pPP/vhuvKhe+a2YoZJ6wZDMSlPs0QDtt5i6D6XhQx/Oj84Azoo8fgSf5R6QOpnpsmw+X75jsUlwzGm4+YLGrhbScjdUdHIBLw2XCJus5cPXAb3aWcab59X2L/zaZ87oJRIQsmERMgPBtT8GIZNEfnX89OL/EMyyxibUC0C97aEokK1Lvvm55xidC9wWoMJJtKjNjScsGg5HpmOe0Zqekovtyvwt5mYVCx/fXa3OTsas2vVMskZKLyaxd7GYkJ5Y9nWCyuD8/pzKWR/8BxApIL601VHaQ=="),
-			Digest:   "SHA256",
-			Cipher:   "RSA2048",
-			Encoding: "base64",
-		},
-		Bkp: eet.BkpElementType{
-			BkpType:  "ABA7EB19-7AD8D753-60ED57B3-9AC9957E-C192030B",
-			Digest:   "SHA1",
-			Encoding: "base16",
-		},
-	},
-}
-
 func TestTrzbaType_SetSecurityCodes(t *testing.T) {
+	var trzba = &eet.TrzbaType{
+		Hlavicka: eet.TrzbaHlavickaType{
+			Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
+			Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
+			Prvnizaslani: true,
+			Overeni:      false,
+		},
+		Data: eet.TrzbaDataType{
+			Dicpopl:   "CZ00000019",
+			Idprovoz:  141,
+			Idpokl:    "1patro-vpravo",
+			Poradcis:  "141-18543-05",
+			Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+			Celktrzba: 236.00,
+			Zakldan1:  100.00,
+			Dan1:      21.00,
+			Zakldan2:  100.00,
+			Dan2:      15.00,
+			Rezim:     0,
+		},
+		KontrolniKody: eet.TrzbaKontrolniKodyType{
+			Pkp: eet.PkpElementType{
+				PkpType:  eet.PkpType("LnIZVjGlkdvO55gRP9Wa4k48X0QZrLU5aWsFDpYlwcCC/S8KHuUI0hxxS9pPP/vhuvKhe+a2YoZJ6wZDMSlPs0QDtt5i6D6XhQx/Oj84Azoo8fgSf5R6QOpnpsmw+X75jsUlwzGm4+YLGrhbScjdUdHIBLw2XCJus5cPXAb3aWcab59X2L/zaZ87oJRIQsmERMgPBtT8GIZNEfnX89OL/EMyyxibUC0C97aEokK1Lvvm55xidC9wWoMJJtKjNjScsGg5HpmOe0Zqekovtyvwt5mYVCx/fXa3OTsas2vVMskZKLyaxd7GYkJ5Y9nWCyuD8/pzKWR/8BxApIL601VHaQ=="),
+				Digest:   "SHA256",
+				Cipher:   "RSA2048",
+				Encoding: "base64",
+			},
+			Bkp: eet.BkpElementType{
+				BkpType:  "ABA7EB19-7AD8D753-60ED57B3-9AC9957E-C192030B",
+				Digest:   "SHA1",
+				Encoding: "base16",
+			},
+		},
+	}
+
 	rawKey := readFile(t, "testdata/EET_CA1_Playground-CZ00000019.key")
 	pkPB, _ := pem.Decode(rawKey)
 	pk, err := wsse.ParsePrivateKey(pkPB)
 	require.NoError(t, err, "parse private key")
 
-	expPkp := trzba1.KontrolniKody.Pkp
-	expBkp := trzba1.KontrolniKody.Bkp
+	expPkp := trzba.KontrolniKody.Pkp
+	expBkp := trzba.KontrolniKody.Bkp
 
-	err = trzba1.SetSecurityCodes(pk)
+	err = trzba.SetSecurityCodes(pk)
 	require.NoError(t, err, "set Trzba's security codes")
 
-	pkp := trzba1.KontrolniKody.Pkp
-	bkp := trzba1.KontrolniKody.Bkp
+	pkp := trzba.KontrolniKody.Pkp
+	bkp := trzba.KontrolniKody.Bkp
 
 	require.Equal(t, expPkp.Encoding, pkp.Encoding, "no changes were made to other attributes, should be equal")
 	require.Equal(t, expBkp.Encoding, bkp.Encoding, "no changes were made to other attributes, should be equal")
@@ -253,42 +253,42 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 	require.Equal(t, string(expBkp.BkpType), string(bkp.BkpType), "no changes were made to other attributes, should be equal")
 }
 
-var trzba2 = &eet.TrzbaType{
-	Hlavicka: eet.TrzbaHlavickaType{
-		Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-		Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
-		Prvnizaslani: true,
-		Overeni:      false,
-	},
-	Data: eet.TrzbaDataType{
-		Dicpopl:   "CZ00000019",
-		Idprovoz:  141,
-		Idpokl:    "1patro-vpravo",
-		Poradcis:  "141-18543-05",
-		Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
-		Celktrzba: 236.00,
-		Zakldan1:  100.00,
-		Dan1:      21.00,
-		Zakldan2:  100.00,
-		Dan2:      15.00,
-		Rezim:     0,
-	},
-	KontrolniKody: eet.TrzbaKontrolniKodyType{
-		Pkp: eet.PkpElementType{
-			PkpType:  eet.PkpType("LnIZVjGlkdvO55gRP9Wa4k48X0QZrLU5aWsFDpYlwcCC/S8KHuUI0hxxS9pPP/vhuvKhe+a2YoZJ6wZDMSlPs0QDtt5i6D6XhQx/Oj84Azoo8fgSf5R6QOpnpsmw+X75jsUlwzGm4+YLGrhbScjdUdHIBLw2XCJus5cPXAb3aWcab59X2L/zaZ87oJRIQsmERMgPBtT8GIZNEfnX89OL/EMyyxibUC0C97aEokK1Lvvm55xidC9wWoMJJtKjNjScsGg5HpmOe0Zqekovtyvwt5mYVCx/fXa3OTsas2vVMskZKLyaxd7GYkJ5Y9nWCyuD8/pzKWR/8BxApIL601VHaQ=="),
-			Digest:   "SHA256",
-			Cipher:   "RSA2048",
-			Encoding: "base64",
-		},
-		Bkp: eet.BkpElementType{
-			BkpType:  "ABA7EB19-7AD8D753-60ED57B3-9AC9957E-C192030B",
-			Digest:   "SHA1",
-			Encoding: "base16",
-		},
-	},
-}
-
 func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
+	var trzba = &eet.TrzbaType{
+		Hlavicka: eet.TrzbaHlavickaType{
+			Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
+			Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
+			Prvnizaslani: true,
+			Overeni:      false,
+		},
+		Data: eet.TrzbaDataType{
+			Dicpopl:   "CZ00000019",
+			Idprovoz:  141,
+			Idpokl:    "1patro-vpravo",
+			Poradcis:  "141-18543-05",
+			Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+			Celktrzba: 236.00,
+			Zakldan1:  100.00,
+			Dan1:      21.00,
+			Zakldan2:  100.00,
+			Dan2:      15.00,
+			Rezim:     0,
+		},
+		KontrolniKody: eet.TrzbaKontrolniKodyType{
+			Pkp: eet.PkpElementType{
+				PkpType:  eet.PkpType("LnIZVjGlkdvO55gRP9Wa4k48X0QZrLU5aWsFDpYlwcCC/S8KHuUI0hxxS9pPP/vhuvKhe+a2YoZJ6wZDMSlPs0QDtt5i6D6XhQx/Oj84Azoo8fgSf5R6QOpnpsmw+X75jsUlwzGm4+YLGrhbScjdUdHIBLw2XCJus5cPXAb3aWcab59X2L/zaZ87oJRIQsmERMgPBtT8GIZNEfnX89OL/EMyyxibUC0C97aEokK1Lvvm55xidC9wWoMJJtKjNjScsGg5HpmOe0Zqekovtyvwt5mYVCx/fXa3OTsas2vVMskZKLyaxd7GYkJ5Y9nWCyuD8/pzKWR/8BxApIL601VHaQ=="),
+				Digest:   "SHA256",
+				Cipher:   "RSA2048",
+				Encoding: "base64",
+			},
+			Bkp: eet.BkpElementType{
+				BkpType:  "ABA7EB19-7AD8D753-60ED57B3-9AC9957E-C192030B",
+				Digest:   "SHA1",
+				Encoding: "base16",
+			},
+		},
+	}
+
 	rawKey := readFile(b, "testdata/EET_CA1_Playground-CZ00000019.key")
 	pkPB, _ := pem.Decode(rawKey)
 	pk, err := wsse.ParsePrivateKey(pkPB)
@@ -296,6 +296,6 @@ func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		trzba2.SetSecurityCodes(pk)
+		trzba.SetSecurityCodes(pk)
 	}
 }
