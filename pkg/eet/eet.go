@@ -31,6 +31,11 @@ func ParseTime(s string) (time.Time, error) {
 	return t, nil
 }
 
+// MarshalText encodes CastkaType value to the correct form with two included decimal places.
+func (c CastkaType) MarshalText() ([]byte, error) {
+	return []byte(fmt.Sprintf("%.2f", float64(c))), nil
+}
+
 // Etree returns the TrzbaType t as an etree.Element.
 func (t *TrzbaType) Etree() (*etree.Element, error) {
 	tContent, err := xml.Marshal(t)

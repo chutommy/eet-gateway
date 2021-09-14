@@ -36,10 +36,6 @@ type CZDICType string
 // Must match the pattern ((0|-?[1-9]\d{0,7})\.\d\d|-0\.(0[1-9]|[1-9]\d))
 type CastkaType float64
 
-func (c CastkaType) MarshalText() ([]byte, error) {
-	return []byte(fmt.Sprintf("%.2f", float64(c))), nil
-}
-
 type DateTime time.Time
 
 func (t *DateTime) UnmarshalText(text []byte) error {
