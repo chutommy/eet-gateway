@@ -15,7 +15,7 @@ func TestNewSoapEnvelope(t *testing.T) {
 	var trzba = &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-			Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
+			Datodesl:     eet.DateTime(mustParseTime("2019-08-11T15:36:25+02:00")),
 			Prvnizaslani: true,
 			Overeni:      false,
 		},
@@ -24,7 +24,7 @@ func TestNewSoapEnvelope(t *testing.T) {
 			Idprovoz:  141,
 			Idpokl:    "1patro-vpravo",
 			Poradcis:  "141-18543-05",
-			Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+			Dattrzby:  eet.DateTime(mustParseTime("2019-08-11T15:36:14+02:00")),
 			Celktrzba: 236.00,
 			Zakldan1:  100.00,
 			Dan1:      21.00,
@@ -69,7 +69,7 @@ func BenchmarkNewSoapEnvelope(b *testing.B) {
 	var trzba = &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-			Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
+			Datodesl:     eet.DateTime(mustParseTime("2019-08-11T15:36:25+02:00")),
 			Prvnizaslani: true,
 			Overeni:      false,
 		},
@@ -78,7 +78,7 @@ func BenchmarkNewSoapEnvelope(b *testing.B) {
 			Idprovoz:  141,
 			Idpokl:    "1patro-vpravo",
 			Poradcis:  "141-18543-05",
-			Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+			Dattrzby:  eet.DateTime(mustParseTime("2019-08-11T15:36:14+02:00")),
 			Celktrzba: 236.00,
 			Zakldan1:  100.00,
 			Dan1:      21.00,

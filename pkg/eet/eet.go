@@ -11,26 +11,6 @@ import (
 
 const DateTimeLayout = "2006-01-02T15:04:05-07:00"
 
-// MustParseTime parses time and panic error is met.
-func MustParseTime(s string) time.Time {
-	t, err := ParseTime(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return t
-}
-
-// ParseTime parses time to the correct string format.
-func ParseTime(s string) (time.Time, error) {
-	t, err := time.Parse(DateTimeLayout, s)
-	if err != nil {
-		return t, fmt.Errorf("invalid time format: %w", err)
-	}
-
-	return t, nil
-}
-
 // MarshalText encodes CastkaType value to the correct form with two included decimal places.
 func (c CastkaType) MarshalText() ([]byte, error) {
 	return []byte(fmt.Sprintf("%.2f", float64(c))), nil

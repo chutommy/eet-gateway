@@ -21,7 +21,7 @@ var trzbaSet = []struct {
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-				Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
+				Datodesl:     eet.DateTime(mustParseTime("2019-08-11T15:36:25+02:00")),
 				Prvnizaslani: true,
 				Overeni:      false,
 			},
@@ -30,7 +30,7 @@ var trzbaSet = []struct {
 				Idprovoz:  141,
 				Idpokl:    "1patro-vpravo",
 				Poradcis:  "141-18543-05",
-				Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+				Dattrzby:  eet.DateTime(mustParseTime("2019-08-11T15:36:14+02:00")),
 				Celktrzba: 236.00,
 				Zakldan1:  100.00,
 				Dan1:      21.00,
@@ -58,7 +58,7 @@ var trzbaSet = []struct {
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "b9bd618a-7d3d-4a15-a405-bc9d0aba4e9b",
-				Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:37:27+02:00")),
+				Datodesl:     eet.DateTime(mustParseTime("2019-08-11T15:37:27+02:00")),
 				Prvnizaslani: true,
 				Overeni:      false,
 			},
@@ -67,7 +67,7 @@ var trzbaSet = []struct {
 				Idprovoz:  141,
 				Idpokl:    "1patro-vpravo",
 				Poradcis:  "141-18543-05",
-				Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+				Dattrzby:  eet.DateTime(mustParseTime("2019-08-11T15:36:14+02:00")),
 				Celktrzba: 236.00,
 				Zakldan1:  100.00,
 				Dan1:      21.00,
@@ -95,7 +95,7 @@ var trzbaSet = []struct {
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
-				Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:37:52+02:00")),
+				Datodesl:     eet.DateTime(mustParseTime("2019-08-11T15:37:52+02:00")),
 				Prvnizaslani: true,
 				Overeni:      false,
 			},
@@ -104,7 +104,7 @@ var trzbaSet = []struct {
 				Idprovoz:  141,
 				Idpokl:    "1patro-vpravo",
 				Poradcis:  "141-18543-05",
-				Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+				Dattrzby:  eet.DateTime(mustParseTime("2019-08-11T15:36:14+02:00")),
 				Celktrzba: 236.00,
 				Zakldan1:  100.00,
 				Dan1:      21.00,
@@ -167,24 +167,24 @@ func BenchmarkTrzbaType_Etree(b *testing.B) {
 }
 
 func TestParseTime(t *testing.T) {
-	t1, err := eet.ParseTime("2019-08-11T15:37:52+02:00")
+	t1, err := parseTime("2019-08-11T15:37:52+02:00")
 	require.NoError(t, err, "valid time format")
 	require.NotZero(t, t1, "not zero time value")
 
-	t2, err := eet.ParseTime("2019-08-11D15:37:52+02:00")
+	t2, err := parseTime("2019-08-11D15:37:52+02:00")
 	require.Error(t, err, "invalid time format")
 	require.Zero(t, t2, "zero time value")
 }
 
 func BenchmarkParseTime(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		eet.ParseTime("2019-08-11T15:37:52+02:00")
+		parseTime("2019-08-11T15:37:52+02:00")
 	}
 }
 
 func BenchmarkMustParseTime(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		eet.MustParseTime("2019-08-11T15:37:52+02:00")
+		mustParseTime("2019-08-11T15:37:52+02:00")
 	}
 }
 
@@ -192,7 +192,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 	var trzba = &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-			Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
+			Datodesl:     eet.DateTime(mustParseTime("2019-08-11T15:36:25+02:00")),
 			Prvnizaslani: true,
 			Overeni:      false,
 		},
@@ -201,7 +201,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 			Idprovoz:  141,
 			Idpokl:    "1patro-vpravo",
 			Poradcis:  "141-18543-05",
-			Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+			Dattrzby:  eet.DateTime(mustParseTime("2019-08-11T15:36:14+02:00")),
 			Celktrzba: 236.00,
 			Zakldan1:  100.00,
 			Dan1:      21.00,
@@ -257,7 +257,7 @@ func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
 	var trzba = &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
-			Datodesl:     eet.DateTime(eet.MustParseTime("2019-08-11T15:36:25+02:00")),
+			Datodesl:     eet.DateTime(mustParseTime("2019-08-11T15:36:25+02:00")),
 			Prvnizaslani: true,
 			Overeni:      false,
 		},
@@ -266,7 +266,7 @@ func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
 			Idprovoz:  141,
 			Idpokl:    "1patro-vpravo",
 			Poradcis:  "141-18543-05",
-			Dattrzby:  eet.DateTime(eet.MustParseTime("2019-08-11T15:36:14+02:00")),
+			Dattrzby:  eet.DateTime(mustParseTime("2019-08-11T15:36:14+02:00")),
 			Celktrzba: 236.00,
 			Zakldan1:  100.00,
 			Dan1:      21.00,
