@@ -3,6 +3,7 @@ package main
 // WARNING: This file consists of dev snippets.
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
+	"github.com/chutommy/eetgateway/pkg/soap"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
@@ -44,7 +46,11 @@ func main() {
 	errCheck(err)
 	env, err := eet.NewSoapEnvelope(t, crt, pk.(*rsa.PrivateKey)) // PORT
 	errCheck(err)
-	fmt.Println(string(env))
+	c := soap.NewMFCRClient(false)
+	respBody, err := c.Do(context.Background(), env)
+	errCheck(err)
+	fmt.Println(string(respBody))
+	// fmt.Println(string(env))
 }
 
 func crypto() (*pem.Block, *pem.Block) {
