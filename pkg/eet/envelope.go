@@ -54,6 +54,7 @@ func getEnvelope() *etree.Document {
 
 func buildEnvelope() *etree.Document {
 	doc := etree.NewDocument()
+	doc.CreateProcInst("xml", `version="1.0" encoding="UTF-8"`)
 
 	envelope := doc.CreateElement("Envelope")
 	envelope.Space = "s"
