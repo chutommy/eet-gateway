@@ -1,6 +1,7 @@
 package eet
 
 import (
+	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
@@ -26,10 +27,12 @@ func NewSoapEnvelope(trzba *TrzbaType, ks dsig.X509KeyStore, crt *x509.Certifica
 		return nil, fmt.Errorf("convert certificate to base64: %w", err)
 	}
 
-	signingContext := dsig.NewDefaultSigningContext(ks)
-	signingContext.IdAttribute = "Id"
-	signingContext.Prefix = ""
-	signingContext.Canonicalizer = dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList("")
+	signingContext := &dsig.SigningContext{
+		Hash:          crypto.SHA256,
+		KeyStore:      ks,
+		IdAttribute:   "Id",
+		Canonicalizer: dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList(""),
+	}
 	err = signingContext.SetSignatureMethod(dsig.RSASHA256SignatureMethod)
 	if err != nil {
 		return nil, fmt.Errorf("set signature method: %w", err)
@@ -39,9 +42,8 @@ func NewSoapEnvelope(trzba *TrzbaType, ks dsig.X509KeyStore, crt *x509.Certifica
 	env.FindElement("./Envelope/Header/Security/BinarySecurityToken").SetText(string(binCrt))
 	env.FindElement("./Envelope/Body").AddChild(trzbaElem)
 	elemToSign := env.FindElement("./Envelope/Body")
-	elemToSign.Space = ""
-	elemToSign.ChildElements()[0].Space = ""
-	elemToSign.SelectAttr("Id").Space = ""
+	elemToSign.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
+	elemToSign.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
 	signature, err := signingContext.ConstructSignature(elemToSign, false)
 	if err != nil {
 		return nil, fmt.Errorf("construct a signature: %w", err)
