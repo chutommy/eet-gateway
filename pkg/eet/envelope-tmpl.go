@@ -6,7 +6,7 @@ import (
 
 var envelopeTmpl *etree.Document
 
-func getEnvelope() *etree.Document {
+func getSoapEnvelope() *etree.Document {
 	if envelopeTmpl == nil {
 		envelopeTmpl = buildSOAPEnvelope()
 	}
