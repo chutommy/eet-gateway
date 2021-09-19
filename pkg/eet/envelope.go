@@ -1,8 +1,6 @@
 package eet
 
 import (
-	"crypto"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -52,7 +50,7 @@ func NewSoapEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([
 }
 
 func setDigestVal(body *etree.Element, sig *etree.Element) error {
-	digest, err := calcDigest(body)
+	digest, err := wsse.CalcDigest(body)
 	if err != nil {
 		return fmt.Errorf("calculate digest of the body element: %w", err)
 	}
@@ -65,7 +63,7 @@ func setDigestVal(body *etree.Element, sig *etree.Element) error {
 
 func setSignatureVal(pk *rsa.PrivateKey, sig *etree.Element) error {
 	signedInfo := sig.FindElement("./SignedInfo")
-	rawSignature, err := calcSignature(pk, signedInfo.Copy())
+	rawSignature, err := wsse.CalcSignature(pk, signedInfo.Copy())
 	if err != nil {
 		return fmt.Errorf("calculate signature value: %w", err)
 	}
@@ -74,36 +72,4 @@ func setSignatureVal(pk *rsa.PrivateKey, sig *etree.Element) error {
 	sig.FindElement("./SignatureValue").SetText(signatureVal)
 
 	return nil
-}
-
-func calcSignature(pk *rsa.PrivateKey, signedInfo *etree.Element) ([]byte, error) {
-	signedInfo.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
-	detatchedSignedInfo := signedInfo.Copy()
-
-	digest, err := calcDigest(detatchedSignedInfo)
-	if err != nil {
-		return nil, fmt.Errorf("calculate digest of signed info: %w", err)
-	}
-
-	rawSig, err := rsa.SignPKCS1v15(rand.Reader, pk, crypto.SHA256, digest)
-	if err != nil {
-		return nil, fmt.Errorf("signing signedInfo digest: %w", err)
-	}
-
-	return rawSig, nil
-}
-
-func calcDigest(e *etree.Element) ([]byte, error) {
-	canonical, err := excC14NCanonicalize(e)
-	if err != nil {
-		return nil, fmt.Errorf("canonicalize the element (c14n): %w", err)
-	}
-
-	hash := crypto.SHA256.New()
-	_, err = hash.Write(canonical)
-	if err != nil {
-		return nil, fmt.Errorf("hash canonicalized element: %w", err)
-	}
-
-	return hash.Sum(nil), nil
 }

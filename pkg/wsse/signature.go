@@ -1,24 +1,44 @@
 package wsse
 
 import (
+	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
 
-	"github.com/ma314smith/signedxml"
+	"github.com/beevik/etree"
 )
 
-// SignXML fill the XML digest and signature value with the given private key.
-func SignXML(data []byte, pk *rsa.PrivateKey) ([]byte, error) {
-	signer, err := signedxml.NewSigner(string(data))
+// CalcSignature calculates a signature value of the signedInfo element.
+func CalcSignature(pk *rsa.PrivateKey, signedInfo *etree.Element) ([]byte, error) {
+	signedInfo.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
+	detachedSignedInfo := signedInfo.Copy()
+
+	digest, err := CalcDigest(detachedSignedInfo)
 	if err != nil {
-		return nil, fmt.Errorf("parse xml: %w", err)
+		return nil, fmt.Errorf("calculate digest of signed info: %w", err)
 	}
 
-	signer.SetReferenceIDAttribute("Id")
-	signedXML, err := signer.Sign(pk)
+	rawSig, err := rsa.SignPKCS1v15(rand.Reader, pk, crypto.SHA256, digest)
 	if err != nil {
-		return nil, fmt.Errorf("sign xml with private key: %w", err)
+		return nil, fmt.Errorf("signing signedInfo digest: %w", err)
 	}
 
-	return []byte(signedXML), nil
+	return rawSig, nil
+}
+
+// CalcDigest calculates a digest value of the given element.
+func CalcDigest(e *etree.Element) ([]byte, error) {
+	canonical, err := excC14NCanonicalize(e)
+	if err != nil {
+		return nil, fmt.Errorf("canonicalize the element (c14n): %w", err)
+	}
+
+	hash := crypto.SHA256.New()
+	_, err = hash.Write(canonical)
+	if err != nil {
+		return nil, fmt.Errorf("hash canonicalized element: %w", err)
+	}
+
+	return hash.Sum(nil), nil
 }

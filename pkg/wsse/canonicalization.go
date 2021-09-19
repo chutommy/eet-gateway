@@ -1,4 +1,4 @@
-package eet
+package wsse
 
 import (
 	"fmt"

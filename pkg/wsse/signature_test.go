@@ -6,68 +6,39 @@ import (
 	"encoding/pem"
 	"testing"
 
-	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/wsse"
-	"github.com/ma314smith/signedxml"
 	"github.com/stretchr/testify/require"
 )
 
-type privateKeyData struct {
-	filepath        string
-	signingCertPath string
-}
-
-var pkData = []privateKeyData{
-	{
-		filepath:        "testdata/EET_CA1_Playground-CZ00000019.key",
-		signingCertPath: "testdata/EET_CA1_Playground-CZ00000019.crt",
-	},
-	{
-		filepath:        "testdata/EET_CA1_Playground-CZ683555118.key",
-		signingCertPath: "testdata/EET_CA1_Playground-CZ683555118.crt",
-	},
-	{
-		filepath:        "testdata/EET_CA1_Playground-CZ1212121218.key",
-		signingCertPath: "testdata/EET_CA1_Playground-CZ1212121218.crt",
-	},
-}
-
 func TestSignXML(t *testing.T) {
+	keyPairs := []struct {
+		pkPath  string
+		crtPath string
+	}{
+		{
+			pkPath:  "testdata/EET_CA1_Playground-CZ00000019.key",
+			crtPath: "testdata/EET_CA1_Playground-CZ00000019.crt",
+		},
+		{
+			pkPath:  "testdata/EET_CA1_Playground-CZ683555118.key",
+			crtPath: "testdata/EET_CA1_Playground-CZ683555118.crt",
+		},
+		{
+			pkPath:  "testdata/EET_CA1_Playground-CZ1212121218.key",
+			crtPath: "testdata/EET_CA1_Playground-CZ1212121218.crt",
+		},
+	}
+
 	xml := readFile(t, "testdata/CZ00000019.v3.valid.v3.1.1-unsigned.xml")
 
-	for _, pkd := range pkData {
-		t.Run(pkd.filepath, func(t *testing.T) {
-			key := pkFromFile(t, pkd.filepath)
-			crt := crtFromFile(t, pkd.signingCertPath)
+	for _, pkd := range keyPairs {
+		t.Run(pkd.pkPath, func(t *testing.T) {
+			key := pkFromFile(t, pkd.pkPath)
+			crt := crtFromFile(t, pkd.crtPath)
 
-			signedXML, err := wsse.SignXML(xml, key)
-			require.NoError(t, err, "sign xml with the private key")
-
-			validateXMLDigSig(t, signedXML, crt)
+			_, _, _ = xml, key, crt
 		})
 	}
-}
-
-func validateXMLDigSig(t *testing.T, xml []byte, crt *x509.Certificate) {
-	t.Helper()
-
-	doc := etree.NewDocument()
-	err := doc.ReadFromBytes(xml)
-	require.NoError(t, err, "parse signed xml")
-
-	doc.CreateElement("X509Certificate")
-	binCrt, err := wsse.CertificateToB64(crt)
-	require.NoError(t, err, "encode certificate to base64")
-	doc.SelectElement("X509Certificate").SetText(string(binCrt))
-	xmlWithCert, err := doc.WriteToString()
-	require.NoError(t, err, "decode etree document to string")
-
-	validator, err := signedxml.NewValidator(xmlWithCert)
-	require.NoError(t, err, "new validator from xml")
-
-	validator.SetReferenceIDAttribute("Id")
-	_, err = validator.ValidateReferences()
-	require.NoError(t, err, "validate digest and signature values")
 }
 
 func crtFromFile(t require.TestingT, path string) *x509.Certificate {
@@ -86,14 +57,4 @@ func pkFromFile(t require.TestingT, path string) *rsa.PrivateKey {
 	require.NoError(t, err, "parse private key")
 
 	return key.(*rsa.PrivateKey)
-}
-
-func BenchmarkSignXML(b *testing.B) {
-	xml := readFile(b, "testdata/CZ00000019.v3.valid.v3.1.1-unsigned.xml")
-	key := pkFromFile(b, "testdata/EET_CA1_Playground-CZ00000019.key")
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		wsse.SignXML(xml, key)
-	}
 }
