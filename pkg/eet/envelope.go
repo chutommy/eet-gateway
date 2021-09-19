@@ -7,17 +7,13 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/wsse"
+	dsig "github.com/russellhaering/goxmldsig"
 )
 
 // NewSoapEnvelope a returns a populated and signed SOAP request envelope.
-func NewSoapEnvelope(trzba *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+func NewSoapEnvelope(trzba *TrzbaType, ks dsig.X509KeyStore, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
 	if err := trzba.SetSecurityCodes(pk); err != nil {
 		return nil, fmt.Errorf("setting security codes: %w", err)
-	}
-
-	binCrt, err := wsse.CertificateToB64(crt)
-	if err != nil {
-		return nil, fmt.Errorf("convert certificate to base64: %w", err)
 	}
 
 	trzbaElem, err := trzba.Etree()
@@ -25,18 +21,39 @@ func NewSoapEnvelope(trzba *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey
 		return nil, fmt.Errorf("marshal trzba to etree.Element: %w", err)
 	}
 
+	binCrt, err := wsse.CertificateToB64(crt)
+	if err != nil {
+		return nil, fmt.Errorf("convert certificate to base64: %w", err)
+	}
+
+	signingContext := dsig.NewDefaultSigningContext(ks)
+	signingContext.IdAttribute = "Id"
+	signingContext.Prefix = ""
+	signingContext.Canonicalizer = dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList("")
+	err = signingContext.SetSignatureMethod(dsig.RSASHA256SignatureMethod)
+	if err != nil {
+		return nil, fmt.Errorf("set signature method: %w", err)
+	}
+
 	env := getEnvelope()
 	env.FindElement("./Envelope/Header/Security/BinarySecurityToken").SetText(string(binCrt))
 	env.FindElement("./Envelope/Body").AddChild(trzbaElem)
+	elemToSign := env.FindElement("./Envelope/Body")
+	elemToSign.Space = ""
+	elemToSign.ChildElements()[0].Space = ""
+	elemToSign.SelectAttr("Id").Space = ""
+	signature, err := signingContext.ConstructSignature(elemToSign, false)
+	if err != nil {
+		return nil, fmt.Errorf("construct a signature: %w", err)
+	}
+	*(env.FindElement("./Envelope/Body")) = *elemToSign
+	signatureElem := env.FindElement("./Envelope/Header/Security/Signature")
+	signatureElem.AddChild(signature.FindElement("./SignedInfo"))
+	signatureElem.AddChild(signature.FindElement("./SignatureValue"))
 
-	bEnv, err := env.WriteToBytes()
+	signedEnv, err := env.WriteToBytes()
 	if err != nil {
 		return nil, fmt.Errorf("parse envelope document to bytes: %w", err)
-	}
-
-	signedEnv, err := wsse.SignXML(bEnv, pk)
-	if err != nil {
-		return nil, fmt.Errorf("sign envelope: %w", err)
 	}
 
 	return signedEnv, nil
@@ -78,17 +95,17 @@ func buildEnvelope() *etree.Document {
 	signature := security.CreateElement("Signature")
 	signature.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
 
-	signedInfo := signature.CreateElement("SignedInfo")
-	signedInfo.CreateElement("CanonicalizationMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/10/xml-exc-c14n#")
-	signedInfo.CreateElement("SignatureMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
+	// signedInfo := signature.CreateElement("SignedInfo")
+	// signedInfo.CreateElement("CanonicalizationMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/10/xml-exc-c14n#")
+	// signedInfo.CreateElement("SignatureMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
 
-	reference := signedInfo.CreateElement("Reference")
-	reference.CreateAttr("URI", "#_1")
-	reference.CreateElement("Transforms").CreateElement("Transform").CreateAttr("Algorithm", "http://www.w3.org/2001/10/xml-exc-c14n#")
-	reference.CreateElement("DigestMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/04/xmlenc#sha256")
-	reference.CreateElement("DigestValue")
+	// reference := signedInfo.CreateElement("Reference")
+	// reference.CreateAttr("URI", "#_1")
+	// reference.CreateElement("Transforms").CreateElement("Transform").CreateAttr("Algorithm", "http://www.w3.org/2001/10/xml-exc-c14n#")
+	// reference.CreateElement("DigestMethod").CreateAttr("Algorithm", "http://www.w3.org/2001/04/xmlenc#sha256")
+	// reference.CreateElement("DigestValue")
 
-	signature.CreateElement("SignatureValue")
+	// signature.CreateElement("SignatureValue")
 
 	keyInfo := signature.CreateElement("KeyInfo")
 	securityTokenReference := keyInfo.CreateElement("SecurityTokenReference")
