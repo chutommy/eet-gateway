@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/beevik/etree"
@@ -37,10 +38,16 @@ func NewSoapEnvelope(trzba *TrzbaType, ks dsig.X509KeyStore, crt *x509.Certifica
 	// singing element
 	bodyElem := buildBodyElem()
 	bodyElem.AddChild(trzbaElem)
-	digestVal, signatureVal, err := calculateSignature(ks, bodyElem)
+	signatureVal, err := calcSignature(ks, bodyElem)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("calculate digest and signature values: %w", err)
 	}
+
+	digest, err := calcDigest(bodyElem)
+	if err != nil {
+		return nil, fmt.Errorf("calculate digest of the body element: %w", err)
+	}
+	digestVal := base64.StdEncoding.EncodeToString(digest)
 
 	// fill envelope
 	env := getEnvelope()
@@ -58,7 +65,7 @@ func NewSoapEnvelope(trzba *TrzbaType, ks dsig.X509KeyStore, crt *x509.Certifica
 	return signedEnv, nil
 }
 
-func calculateSignature(ks dsig.X509KeyStore, elem *etree.Element) (digestVal string, signatureVal string, err error) {
+func calcSignature(ks dsig.X509KeyStore, elem *etree.Element) (signatureVal string, err error) {
 	signingCtx := &dsig.SigningContext{
 		Hash:          crypto.SHA256,
 		KeyStore:      ks,
@@ -66,16 +73,30 @@ func calculateSignature(ks dsig.X509KeyStore, elem *etree.Element) (digestVal st
 		Canonicalizer: dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList(""),
 	}
 	if err = signingCtx.SetSignatureMethod(dsig.RSASHA256SignatureMethod); err != nil {
-		return "", "", fmt.Errorf("set signature method: %w", err)
+		return "", fmt.Errorf("set signature method: %w", err)
 	}
 
 	s, err := signingCtx.ConstructSignature(elem, false)
 	if err != nil {
-		return "", "", fmt.Errorf("construct a signature: %w", err)
+		return "", fmt.Errorf("construct a signature: %w", err)
 	}
 
-	digestVal = s.FindElementPath(xPathSignatureToDigestVal).Text()
 	signatureVal = s.FindElementPath(xPathSignatureToSignatureVal).Text()
 
-	return digestVal, signatureVal, nil
+	return signatureVal, nil
+}
+
+func calcDigest(elem *etree.Element) ([]byte, error) {
+	canonical, err := dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList("").Canonicalize(elem)
+	if err != nil {
+		return nil, fmt.Errorf("canonicalize the element: %w", err)
+	}
+
+	hash := crypto.SHA256.New()
+	_, err = hash.Write(canonical)
+	if err != nil {
+		return nil, fmt.Errorf("hash canonicalized element: %w", err)
+	}
+
+	return hash.Sum(nil), nil
 }
