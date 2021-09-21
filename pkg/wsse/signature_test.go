@@ -3,51 +3,59 @@ package wsse_test
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"testing"
 
+	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/stretchr/testify/require"
 )
 
-func TestSignXML(t *testing.T) {
+func TestCalc(t *testing.T) {
 	keyPairs := []struct {
+		xmlPath string
 		pkPath  string
-		crtPath string
 	}{
 		{
+			xmlPath: "testdata/CZ00000019.v3.valid.v3.1.1.xml",
 			pkPath:  "testdata/EET_CA1_Playground-CZ00000019.key",
-			crtPath: "testdata/EET_CA1_Playground-CZ00000019.crt",
 		},
 		{
+			xmlPath: "testdata/CZ683555118.v3.valid.v3.1.1.xml",
 			pkPath:  "testdata/EET_CA1_Playground-CZ683555118.key",
-			crtPath: "testdata/EET_CA1_Playground-CZ683555118.crt",
 		},
 		{
+			xmlPath: "testdata/CZ1212121218.v3.valid.v3.1.1.xml",
 			pkPath:  "testdata/EET_CA1_Playground-CZ1212121218.key",
-			crtPath: "testdata/EET_CA1_Playground-CZ1212121218.crt",
 		},
 	}
-
-	xml := readFile(t, "testdata/CZ00000019.v3.valid.v3.1.1-unsigned.xml")
 
 	for _, pkd := range keyPairs {
-		t.Run(pkd.pkPath, func(t *testing.T) {
+		t.Run(pkd.xmlPath, func(t *testing.T) {
+			xml := readFile(t, pkd.xmlPath)
 			key := pkFromFile(t, pkd.pkPath)
-			crt := crtFromFile(t, pkd.crtPath)
 
-			_, _, _ = xml, key, crt
+			doc := etree.NewDocument()
+			err := doc.ReadFromBytes(xml)
+			require.NoError(t, err)
+			body := doc.FindElement("./Envelope/Body")
+			body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
+			body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
+			signature := doc.FindElement("./Envelope/Header/Security/Signature")
+			signedInfo := signature.FindElement("./SignedInfo")
+
+			d, err := wsse.CalcDigest(body)
+			dv := base64.StdEncoding.EncodeToString(d)
+			require.NoError(t, err)
+			require.Equal(t, signedInfo.FindElement("./Reference/DigestValue").Text(), dv)
+
+			s, err := wsse.CalcSignature(key, signedInfo)
+			sv := base64.StdEncoding.EncodeToString(s)
+			require.NoError(t, err)
+			require.Equal(t, signature.FindElement("./SignatureValue").Text(), sv)
 		})
 	}
-}
-
-func crtFromFile(t require.TestingT, path string) *x509.Certificate {
-	rawCrt := readFile(t, path)
-	pbCrt, _ := pem.Decode(rawCrt)
-	crt, err := wsse.ParseCertificate(pbCrt)
-	require.NoError(t, err, "compose certificate")
-
-	return crt
 }
 
 func pkFromFile(t require.TestingT, path string) *rsa.PrivateKey {
