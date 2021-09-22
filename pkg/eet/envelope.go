@@ -10,13 +10,13 @@ import (
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
-// NewTrzbaEnvelope a returns a populated and signed SOAP request envelope.
+// NewTrzbaEnvelope returns a populated and signed SOAP request envelope.
 func NewTrzbaEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
-	if err := t.SetSecurityCodes(pk); err != nil {
+	if err := t.setSecurityCodes(pk); err != nil {
 		return nil, fmt.Errorf("setting security codes: %w", err)
 	}
 
-	trzba, err := t.Etree()
+	trzba, err := t.etree()
 	if err != nil {
 		return nil, fmt.Errorf("marshal trzba to etree.Element: %w", err)
 	}

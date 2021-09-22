@@ -16,8 +16,7 @@ func (c CastkaType) MarshalText() ([]byte, error) {
 	return []byte(fmt.Sprintf("%.2f", float64(c))), nil
 }
 
-// Etree returns the TrzbaType t as an etree.Element.
-func (t *TrzbaType) Etree() (*etree.Element, error) {
+func (t *TrzbaType) etree() (*etree.Element, error) {
 	tContent, err := xml.Marshal(t)
 	if err != nil {
 		return nil, fmt.Errorf("xml marshal trzba type content: %w", err)
@@ -37,8 +36,8 @@ func (t *TrzbaType) Etree() (*etree.Element, error) {
 	return trzba, nil
 }
 
-// SetSecurityCodes sets all required security codes of the TrzbaType elements.
-func (t *TrzbaType) SetSecurityCodes(pk *rsa.PrivateKey) error {
+// setSecurityCodes sets all required security codes of the TrzbaType elements.
+func (t *TrzbaType) setSecurityCodes(pk *rsa.PrivateKey) error {
 	err := t.setPkp(pk)
 	if err != nil {
 		return fmt.Errorf("set pkp: %w", err)
