@@ -66,10 +66,10 @@ type OdpovedPotvrzeniType struct {
 }
 
 type OdpovedType struct {
-	Hlavicka  OdpovedHlavickaType   `xml:"http://fs.mfcr.cz/eet/schema/v3 Hlavicka"`
-	Potvrzeni OdpovedPotvrzeniType  `xml:"http://fs.mfcr.cz/eet/schema/v3 Potvrzeni,omitempty"`
-	Chyba     OdpovedChybaType      `xml:"http://fs.mfcr.cz/eet/schema/v3 Chyba,omitempty"`
-	Varovani  []OdpovedVarovaniType `xml:"http://fs.mfcr.cz/eet/schema/v3 Varovani,omitempty"`
+	Hlavicka  OdpovedHlavickaType   `xml:"Hlavicka"`
+	Potvrzeni OdpovedPotvrzeniType  `xml:"Potvrzeni,omitempty"`
+	Chyba     OdpovedChybaType      `xml:"Chyba,omitempty"`
+	Varovani  []OdpovedVarovaniType `xml:"Varovani,omitempty"`
 }
 
 type OdpovedVarovaniType struct {
@@ -142,14 +142,14 @@ type TrzbaHlavickaType struct {
 }
 
 type TrzbaKontrolniKodyType struct {
-	Pkp PkpElementType `xml:"http://fs.mfcr.cz/eet/schema/v3 pkp"`
-	Bkp BkpElementType `xml:"http://fs.mfcr.cz/eet/schema/v3 bkp"`
+	Pkp PkpElementType `xml:"pkp"`
+	Bkp BkpElementType `xml:"bkp"`
 }
 
 type TrzbaType struct {
-	Hlavicka      TrzbaHlavickaType      `xml:"http://fs.mfcr.cz/eet/schema/v3 Hlavicka"`
-	Data          TrzbaDataType          `xml:"http://fs.mfcr.cz/eet/schema/v3 Data"`
-	KontrolniKody TrzbaKontrolniKodyType `xml:"http://fs.mfcr.cz/eet/schema/v3 KontrolniKody"`
+	Hlavicka      TrzbaHlavickaType      `xml:"Hlavicka"`
+	Data          TrzbaDataType          `xml:"Data"`
+	KontrolniKody TrzbaKontrolniKodyType `xml:"KontrolniKody"`
 }
 
 // Must match the pattern [0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}

@@ -4,6 +4,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/xml"
 	"fmt"
 
 	"github.com/beevik/etree"
@@ -72,4 +73,31 @@ func setSignatureVal(pk *rsa.PrivateKey, sig *etree.Element) error {
 	sig.FindElement("./SignatureValue").SetText(signatureVal)
 
 	return nil
+}
+
+// OdpovedBody represents a SOAP Body of the response envelope.
+type OdpovedBody struct {
+	Odpoved OdpovedType `xml:"Odpoved"`
+}
+
+// ParseOdpovedEnvelope returns a parsed SOAP response envelope.
+func ParseOdpovedEnvelope(env []byte) (*OdpovedType, error) {
+	doc := etree.NewDocument()
+	err := doc.ReadFromBytes(env)
+	if err != nil {
+		return nil, fmt.Errorf("parse envelope to etree: %w", err)
+	}
+
+	doc.SetRoot(doc.FindElement("./Envelope/Body"))
+	odpovedBytes, err := doc.WriteToBytes()
+	if err != nil {
+		return nil, fmt.Errorf("serialize etree document to bytes: %w", err)
+	}
+
+	var odpoved OdpovedBody
+	if err = xml.Unmarshal(odpovedBytes, &odpoved); err != nil {
+		return nil, fmt.Errorf("decode odpoved bytes: %w", err)
+	}
+
+	return &odpoved.Odpoved, nil
 }
