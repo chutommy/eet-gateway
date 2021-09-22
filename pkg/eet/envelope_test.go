@@ -44,7 +44,7 @@ func TestNewSoapEnvelope(t *testing.T) {
 	pk, err := wsse.ParsePrivateKey(pemPk)
 	require.NoError(t, err, "parse private key")
 
-	envelope, err := eet.NewSoapEnvelope(trzba, crt, pk)
+	envelope, err := eet.NewTrzbaEnvelope(trzba, crt, pk)
 	require.NoError(t, err, "build a new SOAP envelope")
 	require.NotEmpty(t, envelope, "no error returned")
 
@@ -100,6 +100,6 @@ func BenchmarkNewSoapEnvelope(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		eet.NewSoapEnvelope(trzba, crt, pk)
+		eet.NewTrzbaEnvelope(trzba, crt, pk)
 	}
 }
