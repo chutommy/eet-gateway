@@ -1,4 +1,4 @@
-package soap
+package mfcr
 
 import (
 	"bytes"
@@ -15,19 +15,19 @@ const (
 	soapAction = "http://fs.mfcr.cz/eet/OdeslaniTrzby"
 )
 
-// MFCRClient represents a client that can communicate with the EET server.
-type MFCRClient interface {
+// Client represents a client that can communicate with the EET server.
+type Client interface {
 	Do(ctx context.Context, reqBody []byte) ([]byte, error)
 }
 
-type mfcrClient struct {
+type client struct {
 	c   *http.Client
 	url string
 }
 
-// NewMFCRClient returns a MFCRClient implementation.
-func NewMFCRClient(prod bool) MFCRClient {
-	return &mfcrClient{
+// NewClient returns a Client implementation.
+func NewClient(prod bool) Client {
+	return &client{
 		c:   http.DefaultClient,
 		url: url(prod),
 	}
@@ -40,9 +40,9 @@ func url(prod bool) string {
 	return playgroundURL
 }
 
-// Do make a valid SOAP request to the MFCR EET server with the request body reqBody and
-// redirect the response body to respBody.
-func (c *mfcrClient) Do(ctx context.Context, reqBody []byte) ([]byte, error) {
+// Do makes a valid SOAP request to the MFCR EET server with the request body reqBody and
+// redirects the response body to respBody.
+func (c *client) Do(ctx context.Context, reqBody []byte) ([]byte, error) {
 	req, err := createRequest(ctx, c.url, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("construct http request: %w", err)
@@ -64,7 +64,7 @@ func (c *mfcrClient) Do(ctx context.Context, reqBody []byte) ([]byte, error) {
 	return respBody, nil
 }
 
-func (c *mfcrClient) doHTTP(req *http.Request) (*http.Response, error) {
+func (c *client) doHTTP(req *http.Request) (*http.Response, error) {
 	resp, err := c.c.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("send request: %w", err)

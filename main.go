@@ -13,7 +13,8 @@ import (
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
-	"github.com/chutommy/eetgateway/pkg/soap"
+	"github.com/chutommy/eetgateway/pkg/keystore"
+	"github.com/chutommy/eetgateway/pkg/mfcr"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
@@ -45,13 +46,19 @@ func main() {
 	errCheck(err)
 	crt, err := wsse.ParseCertificate(pbCert)
 	errCheck(err)
-	env, err := eet.NewTrzbaEnvelope(t, crt, pk.(*rsa.PrivateKey)) // PORT
+
+	c := mfcr.NewClient(false)
 	errCheck(err)
-	c := soap.NewMFCRClient(false)
-	respBody, err := c.Do(context.Background(), env)
+
+	ks := &ks{
+		key: pk.(*rsa.PrivateKey),
+		crt: crt,
+	}
+
+	gSrv := eet.NewGatewayService(c, ks)
+	odpoved, err := gSrv.Send(context.Background(), "id", t)
 	errCheck(err)
-	odpoved, err := eet.ParseOdpovedEnvelope(respBody)
-	errCheck(err)
+
 	jsonResp, err := json.Marshal(odpoved)
 	fmt.Println(string(jsonResp))
 }
@@ -88,4 +95,16 @@ func parseTime(s string) (time.Time, error) {
 	}
 
 	return t, nil
+}
+
+type ks struct {
+	key *rsa.PrivateKey
+	crt *x509.Certificate
+}
+
+func (ks *ks) Get(id string) (*keystore.KeyPair, error) {
+	return &keystore.KeyPair{
+		Cert: ks.crt,
+		Key:  ks.key,
+	}, nil
 }

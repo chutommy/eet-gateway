@@ -11,8 +11,8 @@ import (
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
-// NewTrzbaEnvelope returns a populated and signed SOAP request envelope.
-func NewTrzbaEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+// newRequestEnvelope returns a populated and signed SOAP request envelope.
+func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
 	if err := t.setSecurityCodes(pk); err != nil {
 		return nil, fmt.Errorf("setting security codes: %w", err)
 	}
@@ -80,8 +80,8 @@ type OdpovedBody struct {
 	Odpoved OdpovedType `xml:"Odpoved"`
 }
 
-// ParseOdpovedEnvelope returns a parsed SOAP response envelope.
-func ParseOdpovedEnvelope(env []byte) (*OdpovedType, error) {
+// parseResponseEnvelope returns a parsed SOAP response envelope.
+func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
 	doc := etree.NewDocument()
 	err := doc.ReadFromBytes(env)
 	if err != nil {
