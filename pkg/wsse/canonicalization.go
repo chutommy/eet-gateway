@@ -74,10 +74,11 @@ func toExcC14n(ctx, declared nsContext, el *etree.Element) error {
 			}
 		}
 
-		ns, ok := scope.prefixes[prefix]
-		if !ok {
-			return fmt.Errorf("undeclared scope prefix: %s", prefix)
-		}
+		ns := scope.prefixes[prefix]
+		// ns, ok := scope.prefixes[prefix]
+		// if !ok {
+		// 	return fmt.Errorf("undeclared scope prefix: %s", prefix)
+		// }
 
 		el.Attr = append(el.Attr, declared.declare(prefix, ns))
 	}
