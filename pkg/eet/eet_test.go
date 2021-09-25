@@ -54,11 +54,13 @@ func TestDateTimeLayout(t *testing.T) {
 var trzbaSet = []struct {
 	requestFile string
 	pkFile      string
+	crtFile     string
 	trzba       *eet.TrzbaType
 }{
 	{
 		requestFile: "testdata/request_1.xml",
 		pkFile:      "testdata/EET_CA1_Playground-CZ00000019.key",
+		crtFile:     "testdata/EET_CA1_Playground-CZ00000019.crt",
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
@@ -97,6 +99,7 @@ var trzbaSet = []struct {
 	{
 		requestFile: "testdata/request_2.xml",
 		pkFile:      "testdata/EET_CA1_Playground-CZ1212121218.key",
+		crtFile:     "testdata/EET_CA1_Playground-CZ1212121218.crt",
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "b9bd618a-7d3d-4a15-a405-bc9d0aba4e9b",
@@ -135,6 +138,7 @@ var trzbaSet = []struct {
 	{
 		requestFile: "testdata/request_3.xml",
 		pkFile:      "testdata/EET_CA1_Playground-CZ683555118.key",
+		crtFile:     "testdata/EET_CA1_Playground-CZ683555118.crt",
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
