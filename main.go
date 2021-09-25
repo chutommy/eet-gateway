@@ -59,7 +59,7 @@ func main() {
 	odpoved, err := gSrv.Send(context.Background(), "id", t)
 	errCheck(err)
 
-	jsonResp, err := json.Marshal(odpoved)
+	jsonResp, err := json.MarshalIndent(odpoved, "", "  ")
 	fmt.Println(string(jsonResp))
 }
 
