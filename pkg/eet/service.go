@@ -8,6 +8,7 @@ import (
 	"github.com/chutommy/eetgateway/pkg/mfcr"
 )
 
+// GatewayService represents an abstractioin of EET Gateway functionalities.
 type GatewayService interface {
 	Send(ctx context.Context, certID string, trzba *TrzbaType) (*OdpovedType, error)
 }
@@ -17,6 +18,7 @@ type gatewayService struct {
 	keyStore   keystore.Service
 }
 
+// Send sends TrzbaType using mfcr.Client, validate and verifies response and returns OdpovedType.
 func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaType) (*OdpovedType, error) {
 	kp, err := g.keyStore.Get(certID)
 	if err != nil {
@@ -41,6 +43,7 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 	return odpoved, nil
 }
 
+// NewGatewayService returns GatewayService implementation.
 func NewGatewayService(mfcrClient mfcr.Client, keyStore keystore.Service) GatewayService {
 	return &gatewayService{
 		mfcrClient: mfcrClient,
