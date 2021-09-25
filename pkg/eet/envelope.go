@@ -1,14 +1,21 @@
 package eet
 
 import (
+	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/xml"
+	"errors"
 	"fmt"
 
 	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/wsse"
+)
+
+var (
+	ErrInvalidDigest = errors.New("reference digest is invalid: computed digest differs from the digest in the XML")
+	ErrInvalidWSSE   = errors.New("invalid WSSE structure")
 )
 
 // newRequestEnvelope returns a populated and signed SOAP request envelope.
@@ -88,8 +95,9 @@ func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
 		return nil, fmt.Errorf("parse envelope to etree: %w", err)
 	}
 
-	doc.SetRoot(doc.FindElement("./Envelope/Body"))
-	odpovedBytes, err := doc.WriteToBytes()
+	bodyDoc := etree.NewDocument()
+	bodyDoc.SetRoot(doc.FindElement("./Envelope/Body").Copy())
+	odpovedBytes, err := bodyDoc.WriteToBytes()
 	if err != nil {
 		return nil, fmt.Errorf("serialize etree document to bytes: %w", err)
 	}
@@ -99,5 +107,80 @@ func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
 		return nil, fmt.Errorf("decode odpoved bytes: %w", err)
 	}
 
+	if odpoved.Odpoved.Chyba.Kod == 0 {
+		if err = checkDigSig(doc); err != nil {
+			return nil, fmt.Errorf("check digital signature: %w", err)
+		}
+	}
+
 	return &odpoved.Odpoved, nil
+}
+
+func checkDigSig(doc *etree.Document) error {
+	if err := validateDigestValue(doc); err != nil {
+		return fmt.Errorf("invalid digest value: %w", err)
+	}
+
+	if err := verifySignature(doc); err != nil {
+		return fmt.Errorf("verify signature: %w", err)
+	}
+
+	// TODO check binary security token certificate
+
+	return nil
+}
+
+func verifySignature(doc *etree.Document) error {
+	binToken := doc.FindElement("./Envelope/Header/Security/BinarySecurityToken").Text()
+	rawCrt, _ := base64.StdEncoding.DecodeString(binToken)
+	crt, err := x509.ParseCertificate(rawCrt)
+	if err != nil {
+		return fmt.Errorf("parse x509 certificate: %w", err)
+	}
+
+	signature := doc.FindElement("./Envelope/Header/Security/Signature")
+	signatureValB64 := signature.FindElement("./SignatureValue").Text()
+	signatureVal, err := base64.StdEncoding.DecodeString(signatureValB64)
+	if err != nil {
+		return fmt.Errorf("decode base64 signature value: %w", err)
+	}
+
+	signedInfo := signature.FindElement("./SignedInfo")
+	signedInfo.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
+	digest, err := wsse.CalcDigest(signedInfo)
+	if err != nil {
+		return fmt.Errorf("calculate digest value of signed info: %w", err)
+	}
+
+	err = rsa.VerifyPKCS1v15(crt.PublicKey.(*rsa.PublicKey), crypto.SHA256, digest, signatureVal)
+	if err != nil {
+		return fmt.Errorf("verify PKCS1v15 signature: %w", err)
+	}
+	return nil
+}
+
+func validateDigestValue(doc *etree.Document) error {
+	bodyElem := doc.FindElement("./Envelope/Body")
+	bodyElem.CreateAttr("xmlns:eet", "http://fs.mfcr.cz/eet/schema/v3")
+	bodyElem.CreateAttr("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/")
+	bodyElem.CreateAttr("xmlns:wsu", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
+	digest, _ := wsse.CalcDigest(bodyElem)
+	expDigestVal := base64.StdEncoding.EncodeToString(digest[:])
+
+	signedInfo := doc.FindElement("./Envelope/Header/Security/Signature/SignedInfo")
+	if signedInfo == nil {
+		return fmt.Errorf("find signed info %w", ErrInvalidWSSE)
+	}
+
+	digestValElem := signedInfo.FindElement("./Reference/DigestValue")
+	if digestValElem == nil {
+		return fmt.Errorf("find digest value", ErrInvalidWSSE)
+	}
+
+	actDigestVal := digestValElem.Text()
+	if expDigestVal != actDigestVal {
+		return ErrInvalidDigest
+	}
+
+	return nil
 }
