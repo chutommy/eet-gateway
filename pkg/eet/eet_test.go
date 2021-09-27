@@ -197,8 +197,11 @@ func TestTrzbaType_Etree(t *testing.T) {
 			// string representation of the TrzbaType etree element with expected values
 			expTrzbaElem, err := expTrzba.Etree()
 			require.NoError(t, err, "etree conversion error")
+
+			trzbaElem := expTrzbaElem.FindElement("//Trzba")
+			require.NotEmpty(t, trzbaElem)
 			expDoc := etree.NewDocument()
-			expDoc.SetRoot(expTrzbaElem.FindElement("//Trzba"))
+			expDoc.SetRoot(trzbaElem)
 			expS, err := doc.WriteToString()
 			require.NoError(t, err, "parse etree to string")
 

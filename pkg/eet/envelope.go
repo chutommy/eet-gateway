@@ -28,12 +28,26 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 		return nil, fmt.Errorf("convert certificate to base64: %w", err)
 	}
 
+	// build request message
 	body := buildBodyElem()
 	body.AddChild(trzba)
 	env := getSoapEnvelope()
-	env.FindElement("./Envelope").AddChild(body)
-	env.FindElement("./Envelope/Header/Security/BinarySecurityToken").SetText(string(binCrt))
-	sig := env.FindElement("./Envelope/Header/Security/Signature")
+	envElem, err := findElement(env.Root(), ".")
+	if err != nil {
+		return nil, err
+	}
+	envElem.AddChild(body)
+
+	bstElem, err := findElement(envElem, "./Header/Security/BinarySecurityToken")
+	if err != nil {
+		return nil, err
+	}
+	bstElem.SetText(string(binCrt))
+
+	sig, err := findElement(env.Root(), "./Header/Security/Signature")
+	if err != nil {
+		return nil, err
+	}
 
 	if err = setDigestVal(body, sig); err != nil {
 		return nil, fmt.Errorf("set digest value: %w", err)
@@ -58,20 +72,32 @@ func setDigestVal(body *etree.Element, sig *etree.Element) error {
 	}
 
 	digestVal := base64.StdEncoding.EncodeToString(digest)
-	sig.FindElement("./SignedInfo/Reference/DigestValue").SetText(digestVal)
+	digestValElem, err := findElement(sig, "./SignedInfo/Reference/DigestValue")
+	if err != nil {
+		return err
+	}
+	digestValElem.SetText(digestVal)
 
 	return nil
 }
 
 func setSignatureVal(pk *rsa.PrivateKey, sig *etree.Element) error {
-	signedInfo := sig.FindElement("./SignedInfo")
+	signedInfo, err := findElement(sig, "./SignedInfo")
+	if err != nil {
+		return err
+	}
+
 	rawSignature, err := wsse.CalcSignature(pk, signedInfo.Copy())
 	if err != nil {
 		return fmt.Errorf("calculate signature value: %w", err)
 	}
 
 	signatureVal := base64.StdEncoding.EncodeToString(rawSignature)
-	sig.FindElement("./SignatureValue").SetText(signatureVal)
+	sigValElem, err := findElement(sig, "./SignatureValue")
+	if err != nil {
+		return err
+	}
+	sigValElem.SetText(signatureVal)
 
 	return nil
 }
@@ -90,7 +116,12 @@ func parseResponseEnvelope(trzba *TrzbaType, env []byte) (*OdpovedType, error) {
 	}
 
 	bodyDoc := etree.NewDocument()
-	bodyDoc.SetRoot(doc.FindElement("./Envelope/Body").Copy())
+	bodyElem, err := findElement(doc.Root(), "./Body")
+	if err != nil {
+		return nil, err
+	}
+	bodyDoc.SetRoot(bodyElem.Copy())
+
 	odpovedBytes, err := bodyDoc.WriteToBytes()
 	if err != nil {
 		return nil, fmt.Errorf("serialize etree document to bytes: %w", err)
@@ -129,22 +160,40 @@ func checkDigSig(doc *etree.Document) error {
 }
 
 func verifySignature(doc *etree.Document) error {
-	binToken := doc.FindElement("./Envelope/Header/Security/BinarySecurityToken").Text()
+	binTokenElem, err := findElement(doc.Root(), "./Header/Security/BinarySecurityToken")
+	if err != nil {
+		return err
+	}
+	binToken := binTokenElem.Text()
+
 	rawCrt, _ := base64.StdEncoding.DecodeString(binToken)
 	crt, err := x509.ParseCertificate(rawCrt)
 	if err != nil {
 		return fmt.Errorf("parse x509 certificate: %w", err)
 	}
 
-	signature := doc.FindElement("./Envelope/Header/Security/Signature")
-	signatureValB64 := signature.FindElement("./SignatureValue").Text()
+	signature, err := findElement(doc.Root(), "./Header/Security/Signature")
+	if err != nil {
+		return err
+	}
+
+	sigValElem, err := findElement(signature, "./SignatureValue")
+	if err != nil {
+		return err
+	}
+	signatureValB64 := sigValElem.Text()
+
 	signatureVal, err := base64.StdEncoding.DecodeString(signatureValB64)
 	if err != nil {
 		return fmt.Errorf("decode base64 signature value: %w", err)
 	}
 
-	signedInfo := signature.FindElement("./SignedInfo")
+	signedInfo, err := findElement(signature, "./SignedInfo")
+	if err != nil {
+		return err
+	}
 	signedInfo.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
+
 	digest, err := wsse.CalcDigest(signedInfo)
 	if err != nil {
 		return fmt.Errorf("calculate digest value of signed info: %w", err)
@@ -158,21 +207,25 @@ func verifySignature(doc *etree.Document) error {
 }
 
 func validateDigestValue(doc *etree.Document) error {
-	bodyElem := doc.FindElement("./Envelope/Body")
+	bodyElem, err := findElement(doc.Root(), "./Body")
+	if err != nil {
+		return err
+	}
+
 	bodyElem.CreateAttr("xmlns:eet", "http://fs.mfcr.cz/eet/schema/v3")
 	bodyElem.CreateAttr("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/")
 	bodyElem.CreateAttr("xmlns:wsu", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 	digest, _ := wsse.CalcDigest(bodyElem)
 	expDigestVal := base64.StdEncoding.EncodeToString(digest[:])
 
-	signedInfo := doc.FindElement("./Envelope/Header/Security/Signature/SignedInfo")
-	if signedInfo == nil {
-		return fmt.Errorf("find signed info %w", ErrInvalidWSSE)
+	signedInfo, err := findElement(doc.Root(), "./Header/Security/Signature/SignedInfo")
+	if err != nil {
+		return err
 	}
 
-	digestValElem := signedInfo.FindElement("./Reference/DigestValue")
-	if digestValElem == nil {
-		return fmt.Errorf("find digest value: %w", ErrInvalidWSSE)
+	digestValElem, err := findElement(signedInfo, "./Reference/DigestValue")
+	if err != nil {
+		return err
 	}
 
 	actDigestVal := digestValElem.Text()
@@ -181,4 +234,13 @@ func validateDigestValue(doc *etree.Document) error {
 	}
 
 	return nil
+}
+
+func findElement(root *etree.Element, path string) (*etree.Element, error) {
+	e := root.FindElement(path)
+	if e == nil {
+		return nil, fmt.Errorf("element in %s of %s element not found: %w", path, root.FullTag(), ErrInvalidSOAPMessage)
+	}
+
+	return e, nil
 }
