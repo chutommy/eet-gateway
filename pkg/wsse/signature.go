@@ -12,9 +12,7 @@ import (
 // CalcSignature calculates a signature value of the signedInfo element.
 func CalcSignature(pk *rsa.PrivateKey, signedInfo *etree.Element) ([]byte, error) {
 	signedInfo.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
-	detachedSignedInfo := signedInfo.Copy()
-
-	digest, err := CalcDigest(detachedSignedInfo)
+	digest, err := CalcDigest(signedInfo.Copy())
 	if err != nil {
 		return nil, fmt.Errorf("calculate digest of signed info: %w", err)
 	}
@@ -29,7 +27,7 @@ func CalcSignature(pk *rsa.PrivateKey, signedInfo *etree.Element) ([]byte, error
 
 // CalcDigest calculates a digest value of the given element.
 func CalcDigest(e *etree.Element) ([]byte, error) {
-	canonical, err := excC14NCanonicalize(e)
+	canonical, err := excC14NCanonicalize(e.Copy())
 	if err != nil {
 		return nil, fmt.Errorf("canonicalize the element (c14n): %w", err)
 	}

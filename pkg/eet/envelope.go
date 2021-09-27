@@ -20,7 +20,7 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 
 	trzba, err := t.etree()
 	if err != nil {
-		return nil, fmt.Errorf("marshal trzba to etree.Element: %w", err)
+		return nil, fmt.Errorf("marshal trzba to etree element: %w", err)
 	}
 
 	binCrt, err := wsse.CertificateToB64(crt)
