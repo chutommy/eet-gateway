@@ -2,10 +2,17 @@ package eet
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/mfcr"
+)
+
+var (
+	ErrInvalidDigest = errors.New("reference digest is invalid: computed digest differs from the digest in the XML")
+	ErrInvalidWSSE   = errors.New("invalid WSSE structure")
+	ErrInvalidBKP    = errors.New("response BKP is invalid")
 )
 
 // GatewayService represents an abstractioin of EET Gateway functionalities.

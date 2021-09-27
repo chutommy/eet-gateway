@@ -6,16 +6,10 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/xml"
-	"errors"
 	"fmt"
 
 	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/wsse"
-)
-
-var (
-	ErrInvalidDigest = errors.New("reference digest is invalid: computed digest differs from the digest in the XML")
-	ErrInvalidWSSE   = errors.New("invalid WSSE structure")
 )
 
 // newRequestEnvelope returns a populated and signed SOAP request envelope.
