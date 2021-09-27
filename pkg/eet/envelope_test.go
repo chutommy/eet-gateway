@@ -1,6 +1,7 @@
 package eet_test
 
 import (
+	"crypto/rsa"
 	"encoding/pem"
 	"encoding/xml"
 	"fmt"
@@ -70,11 +71,14 @@ func TestParseResponse(t *testing.T) {
 	tests := []struct {
 		name     string
 		respFile string
+		bkp      string
+		expErr   error
 		valid    bool
 	}{
 		{
 			name:     "accepted sale",
 			respFile: "testdata/response_1.xml",
+			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
 			valid:    true,
 		},
 		{
@@ -85,21 +89,33 @@ func TestParseResponse(t *testing.T) {
 		{
 			name:     "invalid reference element",
 			respFile: "testdata/response_3.xml",
+			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
+			expErr:   eet.ErrInvalidDigest,
 			valid:    false,
 		},
 		{
 			name:     "invalid digest",
 			respFile: "testdata/response_4.xml",
+			expErr:   eet.ErrInvalidDigest,
 			valid:    false,
 		},
 		{
 			name:     "invalid signature",
 			respFile: "testdata/response_5.xml",
+			expErr:   rsa.ErrVerification,
 			valid:    false,
 		},
 		{
 			name:     "invalid xml",
 			respFile: "testdata/response_6.xml",
+			expErr:   etree.ErrXML,
+			valid:    false,
+		},
+		{
+			name:     "invalid bkp",
+			respFile: "testdata/response_7.xml",
+			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7371",
+			expErr:   eet.ErrInvalidBKP,
 			valid:    false,
 		},
 	}
@@ -107,12 +123,18 @@ func TestParseResponse(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			resp := readFile(t, tc.respFile)
-			odp, err := eet.ParseResponseEnvelope(resp)
+			odp, err := eet.ParseResponseEnvelope(&eet.TrzbaType{
+				KontrolniKody: eet.TrzbaKontrolniKodyType{
+					Bkp: eet.BkpElementType{
+						BkpType: eet.BkpType(tc.bkp),
+					},
+				},
+			}, resp)
 			if tc.valid {
 				require.NoError(t, err)
 				require.NotEmpty(t, odp)
 			} else {
-				require.Error(t, err)
+				require.ErrorIs(t, err, tc.expErr)
 				require.Empty(t, odp)
 			}
 		})
@@ -121,10 +143,20 @@ func TestParseResponse(t *testing.T) {
 
 func BenchmarkParseResponse(b *testing.B) {
 	respFile := "testdata/response_1.xml"
+	trzba := &eet.TrzbaType{
+		KontrolniKody: eet.TrzbaKontrolniKodyType{
+			Bkp: eet.BkpElementType{
+				BkpType: "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
+			},
+		},
+	}
 	resp := readFile(b, respFile)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = eet.ParseResponseEnvelope(resp)
+		_, err := eet.ParseResponseEnvelope(trzba, resp)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
