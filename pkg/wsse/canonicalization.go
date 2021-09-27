@@ -48,11 +48,11 @@ func toExcC14n(ctx, declared nsContext, el *etree.Element) error {
 		return fmt.Errorf("create subcontext: %w", err)
 	}
 
-	filteredAttrs := []etree.Attr{}
 	utilizedPrefixes := map[string]struct{}{
 		el.Space: {},
 	}
 
+	var filteredAttrs []etree.Attr
 	for _, attr := range el.Attr {
 		if attr.Space != xmlnsPrefix && (attr.Space != emptyPrefix || attr.Key != xmlnsPrefix) {
 			if attr.Space != emptyPrefix {

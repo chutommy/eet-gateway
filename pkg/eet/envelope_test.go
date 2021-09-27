@@ -154,9 +154,6 @@ func BenchmarkParseResponse(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := eet.ParseResponseEnvelope(trzba, resp)
-		if err != nil {
-			b.Fatal(err)
-		}
+		_, _ = eet.ParseResponseEnvelope(trzba, resp)
 	}
 }

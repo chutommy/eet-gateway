@@ -50,7 +50,7 @@ func BenchmarkParseCertificate(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		wsse.ParseCertificate(pb)
+		_, _ = wsse.ParseCertificate(pb)
 	}
 }
 
@@ -62,6 +62,6 @@ func BenchmarkCertificateToB64(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		wsse.CertificateToB64(crt)
+		_, _ = wsse.CertificateToB64(crt)
 	}
 }

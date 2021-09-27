@@ -11,7 +11,6 @@ import (
 
 var (
 	ErrInvalidDigest      = errors.New("reference digest is invalid: computed digest differs from the digest in the XML")
-	ErrInvalidWSSE        = errors.New("invalid WSSE structure")
 	ErrInvalidBKP         = errors.New("response BKP is invalid")
 	ErrInvalidSOAPMessage = errors.New("SOAP message has unexpected structure")
 )
