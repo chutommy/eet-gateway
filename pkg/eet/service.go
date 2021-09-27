@@ -42,7 +42,7 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 		return nil, fmt.Errorf("make soap request to MFCR server: %w", err)
 	}
 
-	odpoved, err := parseResponseEnvelope(respEnv)
+	odpoved, err := parseResponseEnvelope(trzba, respEnv)
 	if err != nil {
 		return nil, fmt.Errorf("parse response envelope: %w", err)
 	}

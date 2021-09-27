@@ -82,7 +82,7 @@ type OdpovedBody struct {
 }
 
 // parseResponseEnvelope returns a parsed SOAP response envelope.
-func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
+func parseResponseEnvelope(trzba *TrzbaType, env []byte) (*OdpovedType, error) {
 	doc := etree.NewDocument()
 	err := doc.ReadFromBytes(env)
 	if err != nil {
@@ -104,6 +104,10 @@ func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
 	if odpoved.Odpoved.Chyba.Kod == 0 {
 		if err = checkDigSig(doc); err != nil {
 			return nil, fmt.Errorf("check digital signature: %w", err)
+		}
+
+		if trzba.KontrolniKody.Bkp.BkpType != odpoved.Odpoved.Hlavicka.Bkp {
+			return nil, fmt.Errorf("different bkp: %w", ErrInvalidBKP)
 		}
 	}
 
