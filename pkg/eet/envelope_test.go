@@ -65,3 +65,66 @@ func BenchmarkNewSoapEnvelope(b *testing.B) {
 		_, _ = eet.NewRequestEnvelope(tc.trzba, crt, pk)
 	}
 }
+
+func TestParseResponse(t *testing.T) {
+	tests := []struct {
+		name     string
+		respFile string
+		valid    bool
+	}{
+		{
+			name:     "accepted sale",
+			respFile: "testdata/response_1.xml",
+			valid:    true,
+		},
+		{
+			name:     "denied sale",
+			respFile: "testdata/response_2.xml",
+			valid:    true,
+		},
+		{
+			name:     "invalid reference element",
+			respFile: "testdata/response_3.xml",
+			valid:    false,
+		},
+		{
+			name:     "invalid digest",
+			respFile: "testdata/response_4.xml",
+			valid:    false,
+		},
+		{
+			name:     "invalid signature",
+			respFile: "testdata/response_5.xml",
+			valid:    false,
+		},
+		{
+			name:     "invalid xml",
+			respFile: "testdata/response_6.xml",
+			valid:    false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			resp := readFile(t, tc.respFile)
+			odp, err := eet.ParseResponseEnvelope(resp)
+			if tc.valid {
+				require.NoError(t, err)
+				require.NotEmpty(t, odp)
+			} else {
+				require.Error(t, err)
+				require.Empty(t, odp)
+			}
+		})
+	}
+}
+
+func BenchmarkParseResponse(b *testing.B) {
+	respFile := "testdata/response_1.xml"
+	resp := readFile(b, respFile)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = eet.ParseResponseEnvelope(resp)
+	}
+}

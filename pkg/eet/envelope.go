@@ -174,7 +174,7 @@ func validateDigestValue(doc *etree.Document) error {
 
 	digestValElem := signedInfo.FindElement("./Reference/DigestValue")
 	if digestValElem == nil {
-		return fmt.Errorf("find digest value", ErrInvalidWSSE)
+		return fmt.Errorf("find digest value: %w", ErrInvalidWSSE)
 	}
 
 	actDigestVal := digestValElem.Text()

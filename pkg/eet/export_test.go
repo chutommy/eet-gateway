@@ -31,6 +31,6 @@ func NewRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 	return newRequestEnvelope(t, crt, pk)
 }
 
-// func ParseResponseEnvelope(env []byte) (*OdpovedType, error) {
-// 	return parseResponseEnvelope(env)
-// }
+func ParseResponseEnvelope(env []byte) (*OdpovedType, error) {
+	return parseResponseEnvelope(env)
+}
