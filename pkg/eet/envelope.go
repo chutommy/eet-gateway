@@ -38,22 +38,22 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 	}
 	envElem.AddChild(body)
 
-	bstElem, err := findElement(envElem, "./Header/Security/BinarySecurityToken")
+	tokenElem, err := findElement(envElem, "./Header/Security/BinarySecurityToken")
 	if err != nil {
 		return nil, err
 	}
-	bstElem.SetText(string(binCrt))
+	tokenElem.SetText(string(binCrt))
 
-	sig, err := findElement(env.Root(), "./Header/Security/Signature")
+	sign, err := findElement(env.Root(), "./Header/Security/Signature")
 	if err != nil {
 		return nil, err
 	}
 
-	if err = setDigestVal(body, sig); err != nil {
+	if err = setDigestVal(body, sign); err != nil {
 		return nil, fmt.Errorf("set digest value: %w", err)
 	}
 
-	if err = setSignatureVal(pk, sig); err != nil {
+	if err = setSignatureVal(pk, sign); err != nil {
 		return nil, fmt.Errorf("set signature value: %w", err)
 	}
 
@@ -65,14 +65,14 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 	return signedEnv, nil
 }
 
-func setDigestVal(body *etree.Element, sig *etree.Element) error {
+func setDigestVal(body *etree.Element, sign *etree.Element) error {
 	digest, err := wsse.CalcDigest(body)
 	if err != nil {
 		return fmt.Errorf("calculate digest of the body element: %w", err)
 	}
 
 	digestVal := base64.StdEncoding.EncodeToString(digest)
-	digestValElem, err := findElement(sig, "./SignedInfo/Reference/DigestValue")
+	digestValElem, err := findElement(sign, "./SignedInfo/Reference/DigestValue")
 	if err != nil {
 		return err
 	}
@@ -81,23 +81,23 @@ func setDigestVal(body *etree.Element, sig *etree.Element) error {
 	return nil
 }
 
-func setSignatureVal(pk *rsa.PrivateKey, sig *etree.Element) error {
-	signedInfo, err := findElement(sig, "./SignedInfo")
+func setSignatureVal(pk *rsa.PrivateKey, sign *etree.Element) error {
+	signedInfo, err := findElement(sign, "./SignedInfo")
 	if err != nil {
 		return err
 	}
 
-	rawSignature, err := wsse.CalcSignature(pk, signedInfo.Copy())
+	rawSig, err := wsse.CalcSignature(pk, signedInfo.Copy())
 	if err != nil {
 		return fmt.Errorf("calculate signature value: %w", err)
 	}
 
-	signatureVal := base64.StdEncoding.EncodeToString(rawSignature)
-	sigValElem, err := findElement(sig, "./SignatureValue")
+	signVal := base64.StdEncoding.EncodeToString(rawSig)
+	signValElem, err := findElement(sign, "./SignatureValue")
 	if err != nil {
 		return err
 	}
-	sigValElem.SetText(signatureVal)
+	signValElem.SetText(signVal)
 
 	return nil
 }
@@ -160,35 +160,35 @@ func checkDigSig(doc *etree.Document) error {
 }
 
 func verifySignature(doc *etree.Document) error {
-	binTokenElem, err := findElement(doc.Root(), "./Header/Security/BinarySecurityToken")
+	tokenElem, err := findElement(doc.Root(), "./Header/Security/BinarySecurityToken")
 	if err != nil {
 		return err
 	}
-	binToken := binTokenElem.Text()
+	token := tokenElem.Text()
 
-	rawCrt, _ := base64.StdEncoding.DecodeString(binToken)
+	rawCrt, _ := base64.StdEncoding.DecodeString(token)
 	crt, err := x509.ParseCertificate(rawCrt)
 	if err != nil {
 		return fmt.Errorf("parse x509 certificate: %w", err)
 	}
 
-	signature, err := findElement(doc.Root(), "./Header/Security/Signature")
+	sign, err := findElement(doc.Root(), "./Header/Security/Signature")
 	if err != nil {
 		return err
 	}
 
-	sigValElem, err := findElement(signature, "./SignatureValue")
+	signValElem, err := findElement(sign, "./SignatureValue")
 	if err != nil {
 		return err
 	}
-	signatureValB64 := sigValElem.Text()
+	signValB64 := signValElem.Text()
 
-	signatureVal, err := base64.StdEncoding.DecodeString(signatureValB64)
+	signVal, err := base64.StdEncoding.DecodeString(signValB64)
 	if err != nil {
 		return fmt.Errorf("decode base64 signature value: %w", err)
 	}
 
-	signedInfo, err := findElement(signature, "./SignedInfo")
+	signedInfo, err := findElement(sign, "./SignedInfo")
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func verifySignature(doc *etree.Document) error {
 		return fmt.Errorf("calculate digest value of signed info: %w", err)
 	}
 
-	err = rsa.VerifyPKCS1v15(crt.PublicKey.(*rsa.PublicKey), crypto.SHA256, digest, signatureVal)
+	err = rsa.VerifyPKCS1v15(crt.PublicKey.(*rsa.PublicKey), crypto.SHA256, digest, signVal)
 	if err != nil {
 		return fmt.Errorf("verify PKCS1v15 signature: %w", err)
 	}

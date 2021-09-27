@@ -51,24 +51,24 @@ func buildSecurity() *etree.Element {
 }
 
 func buildBinarySecurityToken() *etree.Element {
-	binarySecurityToken := etree.NewElement("BinarySecurityToken")
-	binarySecurityToken.Space = "wse"
-	binarySecurityToken.CreateAttr("xmlns:wse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
-	binarySecurityToken.CreateAttr("EncodingType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary")
-	binarySecurityToken.CreateAttr("ValueType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3")
-	binarySecurityToken.CreateAttr("u:Id", "BinaryToken1")
+	token := etree.NewElement("BinarySecurityToken")
+	token.Space = "wse"
+	token.CreateAttr("xmlns:wse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
+	token.CreateAttr("EncodingType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary")
+	token.CreateAttr("ValueType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3")
+	token.CreateAttr("u:Id", "BinaryToken1")
 
-	return binarySecurityToken
+	return token
 }
 
 func buildSignature() *etree.Element {
-	signature := etree.NewElement("Signature")
-	signature.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
-	signature.AddChild(buildSignedInfo())
-	signature.CreateElement("SignatureValue")
-	signature.AddChild(buildKeyInfo())
+	sign := etree.NewElement("Signature")
+	sign.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
+	sign.AddChild(buildSignedInfo())
+	sign.CreateElement("SignatureValue")
+	sign.AddChild(buildKeyInfo())
 
-	return signature
+	return sign
 }
 
 func buildSignedInfo() *etree.Element {
