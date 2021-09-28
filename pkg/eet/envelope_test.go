@@ -9,6 +9,7 @@ import (
 
 	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/eet"
+	"github.com/chutommy/eetgateway/pkg/mfcr"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/stretchr/testify/require"
 )
@@ -67,7 +68,7 @@ func BenchmarkNewSoapEnvelope(b *testing.B) {
 	}
 }
 
-func TestParseResponse(t *testing.T) {
+func TestParseAndVerifyResponse(t *testing.T) {
 	tests := []struct {
 		name     string
 		respFile string
@@ -114,34 +115,57 @@ func TestParseResponse(t *testing.T) {
 		{
 			name:     "invalid bkp",
 			respFile: "testdata/response_7.xml",
-			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7371",
+			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7370",
 			expErr:   eet.ErrInvalidBKP,
 			valid:    false,
 		},
 	}
 
+	caSvc := mfcr.NewCAService()
+
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			resp := readFile(t, tc.respFile)
-			odp, err := eet.ParseResponseEnvelope(&eet.TrzbaType{
-				KontrolniKody: eet.TrzbaKontrolniKodyType{
-					Bkp: eet.BkpElementType{
-						BkpType: eet.BkpType(tc.bkp),
-					},
-				},
-			}, resp)
+
+			odp, err := eet.ParseResponseEnvelope(resp)
+			if err == nil {
+				var trzba *eet.TrzbaType
+				{
+					// build TrzbaType to pass tests
+					trzba = &eet.TrzbaType{
+						Hlavicka: eet.TrzbaHlavickaType{
+							Overeni: false,
+						},
+						KontrolniKody: eet.TrzbaKontrolniKodyType{
+							Bkp: eet.BkpElementType{
+								BkpType: eet.BkpType(tc.bkp),
+							},
+						},
+					}
+				}
+				err = eet.VerifyResponse(trzba, resp, odp, caSvc.Verify)
+			}
 			if tc.valid {
 				require.NoError(t, err)
 				require.NotEmpty(t, odp)
 			} else {
 				require.ErrorIs(t, err, tc.expErr)
-				require.Empty(t, odp)
 			}
 		})
 	}
 }
 
-func BenchmarkParseResponse(b *testing.B) {
+func BenchmarkParseResponseEnvelope(b *testing.B) {
+	respFile := "testdata/response_1.xml"
+	resp := readFile(b, respFile)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = eet.ParseResponseEnvelope(resp)
+	}
+}
+
+func BenchmarkVerifyResponse(b *testing.B) {
 	respFile := "testdata/response_1.xml"
 	trzba := &eet.TrzbaType{
 		KontrolniKody: eet.TrzbaKontrolniKodyType{
@@ -151,9 +175,12 @@ func BenchmarkParseResponse(b *testing.B) {
 		},
 	}
 	resp := readFile(b, respFile)
+	odpoved, err := eet.ParseResponseEnvelope(resp)
+	require.NoError(b, err)
+	caSvc := mfcr.NewCAService()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = eet.ParseResponseEnvelope(trzba, resp)
+		_ = eet.VerifyResponse(trzba, resp, odpoved, caSvc.Verify)
 	}
 }

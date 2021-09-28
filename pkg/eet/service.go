@@ -22,6 +22,7 @@ type GatewayService interface {
 
 type gatewayService struct {
 	mfcrClient mfcr.Client
+	caSvc      mfcr.CAService
 	keyStore   keystore.Service
 }
 
@@ -42,18 +43,23 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 		return nil, fmt.Errorf("make soap request to MFCR server: %w", err)
 	}
 
-	odpoved, err := parseResponseEnvelope(trzba, respEnv)
+	odpoved, err := parseResponseEnvelope(respEnv)
 	if err != nil {
 		return nil, fmt.Errorf("parse response envelope: %w", err)
+	}
+
+	if err := verifyResponse(trzba, respEnv, odpoved, g.caSvc.Verify); err != nil {
+		return nil, fmt.Errorf("verify response: %w", err)
 	}
 
 	return odpoved, nil
 }
 
 // NewGatewayService returns GatewayService implementation.
-func NewGatewayService(mfcrClient mfcr.Client, keyStore keystore.Service) GatewayService {
+func NewGatewayService(mfcrClient mfcr.Client, caSvc mfcr.CAService, keyStore keystore.Service) GatewayService {
 	return &gatewayService{
 		mfcrClient: mfcrClient,
+		caSvc:      caSvc,
 		keyStore:   keyStore,
 	}
 }

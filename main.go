@@ -50,13 +50,15 @@ func main() {
 	c := mfcr.NewClient(mfcr.PlaygroundURL)
 	errCheck(err)
 
+	caSvc := mfcr.NewCAService()
+
 	ks := &ks{
 		key: pk.(*rsa.PrivateKey),
 		crt: crt,
 	}
 
-	gSrv := eet.NewGatewayService(c, ks)
-	odpoved, err := gSrv.Send(context.Background(), "id", t)
+	gSvc := eet.NewGatewayService(c, caSvc, ks)
+	odpoved, err := gSvc.Send(context.Background(), "id", t)
 	errCheck(err)
 
 	jsonResp, err := json.MarshalIndent(odpoved, "", "  ")

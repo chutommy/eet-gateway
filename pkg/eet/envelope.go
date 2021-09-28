@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/xml"
+	"errors"
 	"fmt"
 
 	"github.com/beevik/etree"
@@ -108,7 +109,7 @@ type OdpovedBody struct {
 }
 
 // parseResponseEnvelope returns a parsed SOAP response envelope.
-func parseResponseEnvelope(trzba *TrzbaType, env []byte) (*OdpovedType, error) {
+func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
 	doc := etree.NewDocument()
 	err := doc.ReadFromBytes(env)
 	if err != nil {
@@ -132,17 +133,56 @@ func parseResponseEnvelope(trzba *TrzbaType, env []byte) (*OdpovedType, error) {
 		return nil, fmt.Errorf("decode odpoved bytes: %w", err)
 	}
 
-	if odpoved.Odpoved.Chyba.Kod == 0 {
-		if err = checkDigSig(doc); err != nil {
-			return nil, fmt.Errorf("check digital signature: %w", err)
+	return &odpoved.Odpoved, nil
+}
+
+func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, verifyCrt func(*x509.Certificate) error) error {
+	doc := etree.NewDocument()
+	if err := doc.ReadFromBytes(respEnv); err != nil {
+		return fmt.Errorf("parse envelope to etree: %w", err)
+	}
+
+	if odpoved.Chyba.Kod == 0 {
+		if err := checkDigSig(doc); err != nil {
+			return fmt.Errorf("check digital signature: %w", err)
 		}
 
-		if trzba.KontrolniKody.Bkp.BkpType != odpoved.Odpoved.Hlavicka.Bkp {
-			return nil, fmt.Errorf("different bkp: %w", ErrInvalidBKP)
+		if trzba.KontrolniKody.Bkp.BkpType != odpoved.Hlavicka.Bkp {
+			return fmt.Errorf("different bkp: %w", ErrInvalidBKP)
+		}
+
+		if !trzba.Hlavicka.Overeni {
+			if err := verifyCertificate(doc, verifyCrt); err != nil {
+				return fmt.Errorf("check certificate: %w", err)
+			}
 		}
 	}
 
-	return &odpoved.Odpoved, nil
+	return nil
+}
+
+func verifyCertificate(doc *etree.Document, verifyCrt func(*x509.Certificate) error) error {
+	tokenElem := doc.FindElement("./Envelope/Header/Security/BinarySecurityToken")
+	if tokenElem == nil {
+		return errors.New("invalid security header, could not find BinarySecurityToken element")
+	}
+
+	tokenB64 := tokenElem.Text()
+	rawCrt, err := base64.StdEncoding.DecodeString(tokenB64)
+	if err != nil {
+		return fmt.Errorf("decode binary security token from base64 encoding: %w", err)
+	}
+
+	crt, err := x509.ParseCertificate(rawCrt)
+	if err != nil {
+		return fmt.Errorf("parse raw certificate: %w", err)
+	}
+
+	if err = verifyCrt(crt); err != nil {
+		return fmt.Errorf("verify security token: %w", err)
+	}
+
+	return nil
 }
 
 func checkDigSig(doc *etree.Document) error {
@@ -153,8 +193,6 @@ func checkDigSig(doc *etree.Document) error {
 	if err := verifySignature(doc); err != nil {
 		return fmt.Errorf("verify signature: %w", err)
 	}
-
-	// TODO check binary security token certificate
 
 	return nil
 }
