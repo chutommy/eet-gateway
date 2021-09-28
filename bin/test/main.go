@@ -1,56 +1,30 @@
 package main
 
 import (
-	"io/ioutil"
+	"crypto/x509"
+	"encoding/base64"
+
+	"github.com/chutommy/eetgateway/pkg/mfcr"
 )
 
-func main() {
-	// raw, err := ioutil.ReadFile("data/testdata/ppp68.pem")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	//
-	// pbCrt, rest := pem.Decode(raw)
-	// crt, err := wsse.ParseCertificate(pbCrt)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// _ = crt
-	//
-	// pbCA, rest := pem.Decode(rest)
-	// ca, err := wsse.ParseCertificate(pbCA)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// _ = ca
-	//
-	// pbPk, _ := pem.Decode(rest)
-	// pk, err := wsse.ParsePrivateKey(pbPk)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// _ = pk
-	//
-	// envDoc := etree.NewDocument()
-	// err = envDoc.ReadFromString(respEnv)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	//
-	// bst := envDoc.FindElement("./Envelope/Header/Security/BinarySecurityToken").Text()
-	// t, _ := base64.StdEncoding.DecodeString(bst)
-	// c, err := x509.ParseCertificate(t)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// _ = c
+var tokenB64 = `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`
 
-	raw, err := ioutil.ReadFile("data/testdata/ppp68.pem")
+func main() {
+	crtB, err := base64.StdEncoding.DecodeString(tokenB64)
+	errCheck(err)
+	crt, err := x509.ParseCertificate(crtB)
+	errCheck(err)
+
+	caSvc := mfcr.NewCAService()
+	err = caSvc.Verify(crt)
+	errCheck(err)
+
+	// TODO revocation checking
+	//      O = Česká republika - Generální finanční ředitelství
+}
+
+func errCheck(err error) {
 	if err != nil {
 		panic(err)
 	}
-
-	// TODO check certificate
-
-	_ = raw
 }
