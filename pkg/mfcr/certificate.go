@@ -2,8 +2,11 @@ package mfcr
 
 import (
 	"crypto/x509"
+	"errors"
 	"fmt"
 )
+
+var ErrInvalidOrganizationName = errors.New("invalid organization name")
 
 // iCACertificate is the certificate of subordinate CA for issuing qualified
 // certificates in PEM format..
@@ -55,6 +58,11 @@ cdzAiTUF92rQUfuVwr0zGuvZLnsoLIIsaWrx+pgHcBnL49PVJQV5w4c=
 -----END CERTIFICATE-----
 `
 
+const (
+	// OrganizationName is the legal name that the organization is registered with authority at the national level.
+	OrganizationName = "Česká republika - Generální finanční ředitelství"
+)
+
 // CAService verifies certificates signed off by the CA.
 type CAService interface {
 	Verify(crt *x509.Certificate) error
@@ -75,6 +83,10 @@ func (c *caService) Verify(crt *x509.Certificate) error {
 
 	if _, err := crt.Verify(opts); err != nil {
 		return fmt.Errorf("verify certificate: %w", err)
+	}
+
+	if n := crt.Subject.Organization[0]; n != OrganizationName {
+		return fmt.Errorf("%s: %w", n, ErrInvalidOrganizationName)
 	}
 
 	return nil
