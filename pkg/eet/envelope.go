@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/xml"
-	"errors"
 	"fmt"
 
 	"github.com/beevik/etree"
@@ -164,7 +163,7 @@ func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, veri
 func verifyCertificate(doc *etree.Document, verifyCrt func(*x509.Certificate) error) error {
 	tokenElem := doc.FindElement("./Envelope/Header/Security/BinarySecurityToken")
 	if tokenElem == nil {
-		return errors.New("invalid security header, could not find BinarySecurityToken element")
+		return fmt.Errorf("could not find BinarySecurityToken element: %w", ErrInvalidSOAPMessage)
 	}
 
 	tokenB64 := tokenElem.Text()
