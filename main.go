@@ -47,7 +47,7 @@ func main() {
 	crt, err := wsse.ParseCertificate(pbCert)
 	errCheck(err)
 
-	c := mfcr.NewClient(false)
+	c := mfcr.NewClient(mfcr.PlaygroundURL)
 	errCheck(err)
 
 	ks := &ks{

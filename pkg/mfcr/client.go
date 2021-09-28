@@ -3,14 +3,16 @@ package mfcr
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 )
 
 const (
-	productionURL = "https://prod.eet.cz/eet/services/EETServiceSOAP/v3"
-	playgroundURL = "https://pg.eet.cz/eet/services/EETServiceSOAP/v3"
+	ProductionURL = "https://prod.eet.cz/eet/services/EETServiceSOAP/v3"
+	PlaygroundURL = "https://pg.eet.cz/eet/services/EETServiceSOAP/v3"
 
 	soapAction = "http://fs.mfcr.cz/eet/OdeslaniTrzby"
 )
@@ -27,18 +29,25 @@ type client struct {
 }
 
 // NewClient returns a Client implementation.
-func NewClient(prod bool) Client {
-	return &client{
-		c:   http.DefaultClient,
-		url: url(prod),
+func NewClient(url string) Client {
+	certPool, err := x509.SystemCertPool()
+	if err != nil {
+		panic(err)
 	}
-}
 
-func url(prod bool) string {
-	if prod {
-		return productionURL
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:            certPool,
+				InsecureSkipVerify: false,
+			},
+		},
 	}
-	return playgroundURL
+
+	return &client{
+		c:   c,
+		url: url,
+	}
 }
 
 // Do makes a valid SOAP request to the MFCR EET server with the request body reqBody and
