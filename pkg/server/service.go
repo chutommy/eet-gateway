@@ -24,7 +24,7 @@ func NewService(handler Handler, addr string) Service {
 	return &httpService{
 		server: &http.Server{
 			Addr:    addr,
-			Handler: handler.httpHandler(),
+			Handler: handler.handler(),
 			// TLSConfig:         nil,
 			ReadTimeout:       time.Second * 10,
 			ReadHeaderTimeout: time.Second * 2,
