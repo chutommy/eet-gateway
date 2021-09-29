@@ -141,19 +141,17 @@ func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, veri
 		return fmt.Errorf("parse envelope to etree: %w", err)
 	}
 
-	if odpoved.Chyba.Kod == 0 {
-		if err := checkDigSig(doc); err != nil {
-			return fmt.Errorf("check digital signature: %w", err)
-		}
-
+	if !trzba.Hlavicka.Overeni && odpoved.Chyba.Kod == 0 {
 		if trzba.KontrolniKody.Bkp.BkpType != odpoved.Hlavicka.Bkp {
 			return fmt.Errorf("different bkp: %w", ErrInvalidBKP)
 		}
 
-		if !trzba.Hlavicka.Overeni {
-			if err := verifyCertificate(doc, verifyCrt); err != nil {
-				return fmt.Errorf("check certificate: %w", err)
-			}
+		if err := checkDigSig(doc); err != nil {
+			return fmt.Errorf("check digital signature: %w", err)
+		}
+
+		if err := verifyCertificate(doc, verifyCrt); err != nil {
+			return fmt.Errorf("check certificate: %w", err)
 		}
 	}
 
