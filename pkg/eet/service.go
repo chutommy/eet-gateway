@@ -15,7 +15,7 @@ var (
 	ErrInvalidSOAPMessage = errors.New("SOAP message has unexpected structure")
 )
 
-// GatewayService represents an abstractioin of EET Gateway functionalities.
+// GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
 	Send(ctx context.Context, certID string, trzba *TrzbaType) (*OdpovedType, error)
 	Ping() error
