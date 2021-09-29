@@ -21,7 +21,7 @@ import (
 var t = &eet.TrzbaType{
 	Hlavicka: eet.TrzbaHlavickaType{
 		Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
-		Datodesl:     eet.DateTime(mustParseTime("2021-08-11T15:37:52+02:00")),
+		Datodesl:     eet.DateTime(mustParseTime("2021-09-11T15:37:52+02:00")),
 		Prvnizaslani: true,
 		Overeni:      false,
 	},
@@ -30,7 +30,7 @@ var t = &eet.TrzbaType{
 		Idprovoz:  141,
 		Idpokl:    "1patro-vpravo",
 		Poradcis:  "141-18543-05",
-		Dattrzby:  eet.DateTime(mustParseTime("2021-08-11T15:36:14+02:00")),
+		Dattrzby:  eet.DateTime(mustParseTime("2021-09-11T15:36:14+02:00")),
 		Celktrzba: 10.00,
 		Zakldan1:  100.00,
 		Dan1:      21.00,
