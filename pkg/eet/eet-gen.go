@@ -49,8 +49,9 @@ func (t DateTime) MarshalText() ([]byte, error) {
 type FikType string
 
 type OdpovedChybaType struct {
-	Kod  int  `xml:"kod,attr" json:"kod,omitempty"`
-	Test bool `xml:"test,attr,omitempty" json:"test,omitempty"`
+	Zprava string `xml:",chardata" json:"zprava,omitempty"`
+	Kod    int    `xml:"kod,attr" json:"kod,omitempty"`
+	Test   bool   `xml:"test,attr,omitempty" json:"test,omitempty"`
 }
 
 type OdpovedHlavickaType struct {
