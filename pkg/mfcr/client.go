@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,7 @@ const (
 // Client represents a client that can communicate with the EET server.
 type Client interface {
 	Do(ctx context.Context, reqBody []byte) ([]byte, error)
-	Ping() (int, error)
+	Ping() error
 }
 
 type client struct {
@@ -95,14 +96,18 @@ func createRequest(ctx context.Context, url string, reqBody []byte) (*http.Reque
 }
 
 // Ping pings the host and returns the status code of the HTTP response.
-func (c *client) Ping() (int, error) {
+func (c *client) Ping() error {
 	resp, err := c.c.Head(c.url)
 	if err != nil {
-		return 0, fmt.Errorf("ping %s: %w", c.url, err)
+		return fmt.Errorf("ping %s: %w", c.url, err)
 	}
 	if err = resp.Body.Close(); err != nil {
-		return 0, fmt.Errorf("close response body: %w", err)
+		return fmt.Errorf("close response body: %w", err)
 	}
 
-	return resp.StatusCode, nil
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(http.StatusText(resp.StatusCode))
+	}
+
+	return nil
 }

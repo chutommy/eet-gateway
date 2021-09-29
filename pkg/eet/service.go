@@ -18,6 +18,7 @@ var (
 // GatewayService represents an abstractioin of EET Gateway functionalities.
 type GatewayService interface {
 	Send(ctx context.Context, certID string, trzba *TrzbaType) (*OdpovedType, error)
+	Ping() error
 }
 
 type gatewayService struct {
@@ -53,6 +54,15 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 	}
 
 	return odpoved, nil
+}
+
+// Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
+func (g *gatewayService) Ping() error {
+	if err := g.mfcrClient.Ping(); err != nil {
+		return fmt.Errorf("ping MFCR server: %w", err)
+	}
+
+	return nil
 }
 
 // NewGatewayService returns GatewayService implementation.
