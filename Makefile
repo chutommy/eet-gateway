@@ -1,6 +1,6 @@
 .PHONY: gotest
 gotest:
-	go test -cover -run=. -v ./pkg/...
+	go test -run=. -v ./pkg/...
 
 .PHONY: gobench
 gobench:
