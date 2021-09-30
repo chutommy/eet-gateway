@@ -3,10 +3,8 @@ package main
 // WARNING: This file consists of dev snippets.
 
 import (
-	"context"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
@@ -15,32 +13,18 @@ import (
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/mfcr"
+	"github.com/chutommy/eetgateway/pkg/server"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
-var t = &eet.TrzbaType{
-	Hlavicka: eet.TrzbaHlavickaType{
-		Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
-		Datodesl:     eet.DateTime(mustParseTime("2021-09-11T15:37:52+02:00")),
-		Prvnizaslani: true,
-		Overeni:      false,
-	},
-	Data: eet.TrzbaDataType{
-		Dicpopl:   "CZ683555118",
-		Idprovoz:  141,
-		Idpokl:    "1patro-vpravo",
-		Poradcis:  "141-18543-05",
-		Dattrzby:  eet.DateTime(mustParseTime("2021-09-11T15:36:14+02:00")),
-		Celktrzba: 10.00,
-		Zakldan1:  100.00,
-		Dan1:      21.00,
-		Zakldan2:  100.00,
-		Dan2:      15.00,
-		Rezim:     0,
-	},
+func main() {
+	gSvc := gatewaySvc()
+	h := server.NewHandler(gSvc)
+	srv := server.NewService(h, ":8080")
+	fmt.Println(srv.ListenAndServe())
 }
 
-func main() {
+func gatewaySvc() eet.GatewayService {
 	pbPK, pbCert := crypto()
 	pk, err := x509.ParsePKCS8PrivateKey(pbPK.Bytes) // ADAPTER
 	errCheck(err)
@@ -58,11 +42,8 @@ func main() {
 	}
 
 	gSvc := eet.NewGatewayService(c, caSvc, ks)
-	odpoved, err := gSvc.Send(context.Background(), "id", t)
-	errCheck(err)
 
-	jsonResp, err := json.MarshalIndent(odpoved, "", "  ")
-	fmt.Println(string(jsonResp))
+	return gSvc
 }
 
 func crypto() (*pem.Block, *pem.Block) {
