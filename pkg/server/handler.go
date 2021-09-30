@@ -38,9 +38,28 @@ func (h *handler) ginEngine() *gin.Engine {
 }
 
 func (h *handler) ping(c *gin.Context) {
-	panic("not implemented") // TODO
+	if err := h.gatewaySvc.Ping(); err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }
 
 func (h *handler) eet(c *gin.Context) {
-	panic("not implemented") // TODO
+	certID := c.Param("certID")
+
+	var trzba *eet.TrzbaType
+	if err := c.ShouldBindJSON(&trzba); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	odpoved, err := h.gatewaySvc.Send(c, certID, trzba)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, odpoved)
 }
