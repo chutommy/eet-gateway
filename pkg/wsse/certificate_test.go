@@ -85,3 +85,13 @@ func TestPrivateKey(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkParsePrivateKey(b *testing.B) {
+	raw := readFile(b, "testdata/EET_CA1_Playground-CZ00000019.key")
+	pkPB, _ := pem.Decode(raw)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = wsse.ParsePrivateKey(pkPB)
+	}
+}
