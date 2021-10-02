@@ -81,12 +81,12 @@ func (c *caService) Verify(crt *x509.Certificate) error {
 		},
 	}
 
-	if _, err := crt.Verify(opts); err != nil {
-		return fmt.Errorf("verify certificate: %w", err)
-	}
-
 	if n := crt.Subject.Organization[0]; n != OrganizationName {
 		return fmt.Errorf("%s: %w", n, ErrInvalidOrganizationName)
+	}
+
+	if _, err := crt.Verify(opts); err != nil {
+		return fmt.Errorf("verify certificate: %w", err)
 	}
 
 	return nil
