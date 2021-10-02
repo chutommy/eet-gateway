@@ -76,7 +76,7 @@ func main() {
 		IdleTimeout:       time.Second * 100,
 		MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
 	})
-	fmt.Println(srv.ListenAndServe())
+	fmt.Println(srv.ListenAndServe(10 * time.Second))
 }
 
 func errCheck(err error) {
