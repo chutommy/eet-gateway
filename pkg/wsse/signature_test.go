@@ -38,7 +38,7 @@ func TestCalc(t *testing.T) {
 
 			doc := etree.NewDocument()
 			err := doc.ReadFromBytes(xml)
-			require.NoError(t, err, "retrive etree from a valid xml value")
+			require.NoError(t, err, "retrieve etree from a valid xml value")
 			body := doc.FindElement("./Envelope/Body")
 			body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 			body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")

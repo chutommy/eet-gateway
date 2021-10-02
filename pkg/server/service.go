@@ -33,7 +33,8 @@ func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 	}()
 
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	// SIGKILL cannot be handled
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	// blocking
 	<-quit
 

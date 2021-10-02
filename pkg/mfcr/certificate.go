@@ -10,7 +10,7 @@ var ErrInvalidOrganizationName = errors.New("invalid organization name")
 
 const (
 	// ICACertificate is the certificate of subordinate CA for issuing qualified
-	// certificates in PEM format..
+	// certificates in PEM format.
 	// CN = I.CA QUALIFIED 2 CA/RSA 02/2016; SN:  100001006 (5F5E4EE HEX)
 	// https://www.ica.cz/HCA-qualificate
 	ICACertificate = `

@@ -251,7 +251,7 @@ func validateDigestValue(doc *etree.Document) error {
 	bodyElem.CreateAttr("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/")
 	bodyElem.CreateAttr("xmlns:wsu", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 	digest, _ := wsse.CalcDigest(bodyElem)
-	expDigestVal := base64.StdEncoding.EncodeToString(digest[:])
+	expDigestVal := base64.StdEncoding.EncodeToString(digest)
 
 	signedInfo, err := findElement(doc.Root(), "./Header/Security/Signature/SignedInfo")
 	if err != nil {

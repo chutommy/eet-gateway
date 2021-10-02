@@ -71,67 +71,67 @@ func BenchmarkNewSoapEnvelope(b *testing.B) {
 	}
 }
 
-func TestParseAndVerifyResponse(t *testing.T) {
-	tests := []struct {
-		name     string
-		respFile string
-		bkp      string
-		expErr   error
-		valid    bool
-	}{
-		{
-			name:     "accepted sale",
-			respFile: "testdata/response_1.xml",
-			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
-			valid:    true,
-		},
-		{
-			name:     "denied sale",
-			respFile: "testdata/response_2.xml",
-			valid:    true,
-		},
-		{
-			name:     "invalid reference element",
-			respFile: "testdata/response_3.xml",
-			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
-			expErr:   rsa.ErrVerification,
-			valid:    false,
-		},
-		{
-			name:     "invalid digest",
-			respFile: "testdata/response_4.xml",
-			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
-			expErr:   eet.ErrInvalidDigest,
-			valid:    false,
-		},
-		{
-			name:     "invalid signature",
-			respFile: "testdata/response_5.xml",
-			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
-			expErr:   rsa.ErrVerification,
-			valid:    false,
-		},
-		{
-			name:     "invalid xml",
-			respFile: "testdata/response_6.xml",
-			expErr:   etree.ErrXML,
-			valid:    false,
-		},
-		{
-			name:     "invalid bkp",
-			respFile: "testdata/response_7.xml",
-			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7370",
-			expErr:   eet.ErrInvalidBKP,
-			valid:    false,
-		},
-	}
+var parseAndVerifyResponseTests = []struct {
+	name     string
+	respFile string
+	bkp      string
+	expErr   error
+	valid    bool
+}{
+	{
+		name:     "accepted sale",
+		respFile: "testdata/response_1.xml",
+		bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
+		valid:    true,
+	},
+	{
+		name:     "denied sale",
+		respFile: "testdata/response_2.xml",
+		valid:    true,
+	},
+	{
+		name:     "invalid reference element",
+		respFile: "testdata/response_3.xml",
+		bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
+		expErr:   rsa.ErrVerification,
+		valid:    false,
+	},
+	{
+		name:     "invalid digest",
+		respFile: "testdata/response_4.xml",
+		bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
+		expErr:   eet.ErrInvalidDigest,
+		valid:    false,
+	},
+	{
+		name:     "invalid signature",
+		respFile: "testdata/response_5.xml",
+		bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
+		expErr:   rsa.ErrVerification,
+		valid:    false,
+	},
+	{
+		name:     "invalid xml",
+		respFile: "testdata/response_6.xml",
+		expErr:   etree.ErrXML,
+		valid:    false,
+	},
+	{
+		name:     "invalid bkp",
+		respFile: "testdata/response_7.xml",
+		bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7370",
+		expErr:   eet.ErrInvalidBKP,
+		valid:    false,
+	},
+}
 
+func TestParseAndVerifyResponse(t *testing.T) {
 	pool, err := x509.SystemCertPool()
 	require.NoError(t, err, "system certificate pool")
 	require.True(t, pool.AppendCertsFromPEM([]byte(mfcr.ICACertificate)), "valid PEM SSL certificate")
 	caSvc := mfcr.NewCAService(pool)
 
-	for _, tc := range tests {
+	for _, tc := range parseAndVerifyResponseTests {
 		t.Run(tc.name, func(t *testing.T) {
 			resp := readFile(t, tc.respFile)
 

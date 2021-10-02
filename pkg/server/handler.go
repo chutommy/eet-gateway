@@ -7,16 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Handle abstracts requests handling options.
+// Handler provides handling options for incoming requests.
 type Handler interface {
-	Handler() http.Handler
+	HTTPHandler() http.Handler
 }
 
 type handler struct {
 	gatewaySvc eet.GatewayService
 }
 
-func (h *handler) Handler() http.Handler {
+func (h *handler) HTTPHandler() http.Handler {
 	return h.ginEngine()
 }
 

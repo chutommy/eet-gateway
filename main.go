@@ -42,6 +42,7 @@ func main() {
 			TLSClientConfig: &tls.Config{
 				RootCAs:            certPool,
 				InsecureSkipVerify: false,
+				MinVersion:         tls.VersionTLS13,
 			},
 		},
 	}
@@ -68,7 +69,7 @@ func main() {
 	h := server.NewHandler(gSvc)
 	srv := server.NewService(&http.Server{
 		Addr:    ":8080",
-		Handler: h.Handler(),
+		Handler: h.HTTPHandler(),
 		// TLSConfig:         nil,
 		ReadTimeout:       time.Second * 10,
 		ReadHeaderTimeout: time.Second * 2,

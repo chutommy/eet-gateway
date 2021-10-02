@@ -237,8 +237,8 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 			// set expectations and empty security codes
 			expPkp := tc.trzba.KontrolniKody.Pkp
 			expBkp := tc.trzba.KontrolniKody.Bkp
-			tc.trzba.KontrolniKody.Pkp = *new(eet.PkpElementType)
-			tc.trzba.KontrolniKody.Bkp = *new(eet.BkpElementType)
+			tc.trzba.KontrolniKody.Pkp = eet.PkpElementType{}
+			tc.trzba.KontrolniKody.Bkp = eet.BkpElementType{}
 
 			// actual values
 			err = tc.trzba.SetSecurityCodes(pk)

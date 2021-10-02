@@ -73,7 +73,7 @@ func webContentToFile(url, path string) error {
 }
 
 func writeFile(path string, data []byte) error {
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0600)
 }
 
 func webContent(url string) ([]byte, error) {

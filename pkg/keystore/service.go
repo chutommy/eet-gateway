@@ -16,4 +16,4 @@ type Service interface {
 	Get(id string) (*KeyPair, error)
 }
 
-// TODO in memory certificate dabase implementation
+// TODO in memory certificate database implementation
