@@ -3,8 +3,6 @@ package mfcr
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -30,21 +28,7 @@ type client struct {
 }
 
 // NewClient returns a Client implementation.
-func NewClient(url string) Client {
-	certPool, err := x509.SystemCertPool()
-	if err != nil {
-		panic(err)
-	}
-
-	c := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:            certPool,
-				InsecureSkipVerify: false,
-			},
-		},
-	}
-
+func NewClient(c *http.Client, url string) Client {
 	return &client{
 		c:   c,
 		url: url,

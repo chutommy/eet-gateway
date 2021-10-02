@@ -4,10 +4,12 @@ package main
 
 import (
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/keystore"
@@ -80,7 +82,19 @@ func main() {
 	errCheck(err)
 
 	// dep services
-	c := mfcr.NewClient(mfcr.PlaygroundURL)
+	certPool, err := x509.SystemCertPool()
+	if err != nil {
+		panic(err)
+	}
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:            certPool,
+				InsecureSkipVerify: false,
+			},
+		},
+	}
+	client := mfcr.NewClient(c, mfcr.PlaygroundURL)
 	errCheck(err)
 
 	pool, err := x509.SystemCertPool()
@@ -97,7 +111,7 @@ func main() {
 		crt: crt,
 	}
 
-	gSvc := eet.NewGatewayService(c, caSvc, ks)
+	gSvc := eet.NewGatewayService(client, caSvc, ks)
 
 	// server
 	h := server.NewHandler(gSvc)
