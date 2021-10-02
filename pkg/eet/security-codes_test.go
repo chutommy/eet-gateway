@@ -45,7 +45,7 @@ func TestPkp(t *testing.T) {
 			require.NoError(t, err, "calculate pkp")
 			pkpB64 := base64.StdEncoding.EncodeToString(pkp)
 
-			require.Equal(t, string(tc.expPkpB64), pkpB64)
+			require.Equal(t, string(tc.expPkpB64), pkpB64, "pkp of the same TrzbaType and certificate")
 		})
 	}
 }
@@ -88,10 +88,10 @@ func TestBkp(t *testing.T) {
 		t.Run(fmt.Sprintf("calculate bkp %s", tc.expBkp), func(t *testing.T) {
 			// the bkp is calculated from the raw value of PKP (not encoded to base64)
 			pkp, err := base64.StdEncoding.DecodeString(string(tc.pkp))
-			require.NoError(t, err)
+			require.NoError(t, err, "retrieve raw value of the pkp")
 
 			bkp := eet.Bkp(pkp)
-			require.Equal(t, string(tc.expBkp), string(bkp))
+			require.Equal(t, string(tc.expBkp), string(bkp), "from the same pkp value")
 		})
 	}
 }
@@ -99,7 +99,7 @@ func TestBkp(t *testing.T) {
 func BenchmarkBkp(b *testing.B) {
 	pkp := []byte("OpFQuM1bRD4kMVLsMIkg8eglTwSMX65w4UJ4RwkbqHhe7IW/MCW//0rlp2b0FRzssM3tmXpinzPRX3wUy+smjeek1wPZ2fDypPG2nf5WSDXpPOg4wjbMI97e906A9uZCvJY7XY9z67fjxHsUr5GnI5Lj2kc1Qiv7x7J6MxKkF0Z3mwOJTxL9qKtnEz/ZIMgovj/aMbb0c3Lg2VZQFSL5ZSnEGj6flT2v3//swEwSLF7xVsyimKKzVE1B/QuIAxZ9tUYjHoZiDmtOPcScYx4D9YsjsBf4tNmqbDDUSmY7dksGx2JOZkWfQ8YHU/nz0JF/yF7P2RT1IMpPUz6IPMc+Yg==")
 	rawBkp, err := base64.StdEncoding.DecodeString(string(pkp))
-	require.NoError(b, err)
+	require.NoError(b, err, "decode pkp")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -129,7 +129,7 @@ func TestSetDelimiters(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("bkp %s", tc.bkpB64), func(t *testing.T) {
 			bkp := eet.SetDelimiters(tc.bkpB64)
-			require.Equal(t, string(tc.expBkp), string(bkp))
+			require.Equal(t, string(tc.expBkp), string(bkp), "set delimiters")
 		})
 	}
 }

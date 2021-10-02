@@ -22,7 +22,7 @@ func TestNewSoapEnvelope(t *testing.T) {
 			rawCrt := readFile(t, tc.crtFile)
 			pemCrt, _ := pem.Decode(rawCrt)
 			crt, err := wsse.ParseCertificate(pemCrt)
-			require.NoError(t, err, "parse ssl certificate")
+			require.NoError(t, err, "parse SSL certificate")
 
 			// load private key
 			rawPk := readFile(t, tc.pkFile)
@@ -31,21 +31,23 @@ func TestNewSoapEnvelope(t *testing.T) {
 			require.NoError(t, err, "parse private key")
 
 			envelope, err := eet.NewRequestEnvelope(tc.trzba, crt, pk)
-			require.NoError(t, err, "build a new SOAP envelope")
-			require.NotEmpty(t, envelope, "no error returned")
+			require.NoError(t, err, "build a new valid SOAP envelope")
+			require.NotEmpty(t, envelope, "valid TrzbaType and cert/pk key pair")
 
 			// get actual trzba value of the envelope
 			doc := etree.NewDocument()
 			err = doc.ReadFromBytes(envelope)
 			require.NoError(t, err, "build a new document from the generated envelope")
-			doc.SetRoot(doc.FindElement("./Envelope/Body/Trzba"))
+			trzbaElem := doc.FindElement("//Trzba")
+			require.NotNil(t, trzbaElem, "find element Trzba")
+			doc.SetRoot(trzbaElem)
 			trzbaBytes, err := doc.WriteToBytes()
 			require.NoError(t, err, "write trzba element from the generated envelope back to bytes")
 			var actTrzba *eet.TrzbaType
 			err = xml.Unmarshal(trzbaBytes, &actTrzba)
 			require.NoError(t, err, "unmarshal generated envelope back to the TrzbaType")
 
-			require.EqualValues(t, tc.trzba, actTrzba)
+			require.EqualValues(t, tc.trzba, actTrzba, "nothing modified")
 		})
 	}
 }
@@ -56,7 +58,7 @@ func BenchmarkNewSoapEnvelope(b *testing.B) {
 	rawCrt := readFile(b, tc.crtFile)
 	pemCrt, _ := pem.Decode(rawCrt)
 	crt, err := wsse.ParseCertificate(pemCrt)
-	require.NoError(b, err, "parse ssl certificate")
+	require.NoError(b, err, "parse SSL certificate")
 
 	rawPk := readFile(b, tc.pkFile)
 	pemPk, _ := pem.Decode(rawPk)
@@ -125,8 +127,8 @@ func TestParseAndVerifyResponse(t *testing.T) {
 	}
 
 	pool, err := x509.SystemCertPool()
-	require.NoError(t, err)
-	require.True(t, pool.AppendCertsFromPEM([]byte(mfcr.ICACertificate)))
+	require.NoError(t, err, "system certificate pool")
+	require.True(t, pool.AppendCertsFromPEM([]byte(mfcr.ICACertificate)), "valid PEM SSL certificate")
 	caSvc := mfcr.NewCAService(pool)
 
 	for _, tc := range tests {
@@ -152,10 +154,10 @@ func TestParseAndVerifyResponse(t *testing.T) {
 				err = eet.VerifyResponse(trzba, resp, odp, caSvc.Verify)
 			}
 			if tc.valid {
-				require.NoError(t, err)
-				require.NotEmpty(t, odp)
+				require.NoError(t, err, "valid test case")
+				require.NotEmpty(t, odp, "valid response OdpovedType")
 			} else {
-				require.ErrorIs(t, err, tc.expErr)
+				require.ErrorIs(t, err, tc.expErr, "invalid test case")
 			}
 		})
 	}
@@ -182,11 +184,11 @@ func BenchmarkVerifyResponse(b *testing.B) {
 	}
 	resp := readFile(b, respFile)
 	odpoved, err := eet.ParseResponseEnvelope(resp)
-	require.NoError(b, err)
+	require.NoError(b, err, "parse valid response envelope")
 
 	pool, err := x509.SystemCertPool()
-	require.NoError(b, err)
-	require.True(b, pool.AppendCertsFromPEM([]byte(mfcr.ICACertificate)))
+	require.NoError(b, err, "retrieve system certificate pool")
+	require.True(b, pool.AppendCertsFromPEM([]byte(mfcr.ICACertificate)), "valid SSL certificate")
 	caSvc := mfcr.NewCAService(pool)
 
 	b.ResetTimer()

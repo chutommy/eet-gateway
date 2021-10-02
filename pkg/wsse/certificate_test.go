@@ -25,8 +25,8 @@ func TestCertificate(t *testing.T) {
 
 			p, _ := pem.Decode(raw)
 			c, err := wsse.ParseCertificate(p)
-			require.NoError(t, err, "new certificate")
-			require.Equal(t, string(p.Bytes), string(c.Raw), "DER certificate")
+			require.NoError(t, err, "parse SSL certificate")
+			require.Equal(t, string(p.Bytes), string(c.Raw), "DER form of he same certificate")
 
 			bin, err := wsse.CertificateToB64(c)
 			require.NoError(t, err, "encode certificate to base64")
@@ -58,7 +58,7 @@ func BenchmarkCertificateToB64(b *testing.B) {
 	raw := readFile(b, "testdata/EET_CA1_Playground-CZ00000019.crt")
 	pb, _ := pem.Decode(raw)
 	crt, err := wsse.ParseCertificate(pb)
-	require.NoError(b, err, "parse certificate")
+	require.NoError(b, err, "parse SSL certificate")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

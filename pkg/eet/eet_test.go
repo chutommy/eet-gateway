@@ -48,7 +48,7 @@ func TestDateTimeLayout(t *testing.T) {
 
 	t2, err := parseTime("2019-08-11D15:37:52+02:00")
 	require.Error(t, err, "invalid time format")
-	require.Zero(t, t2, "zero time value")
+	require.Zero(t, t2, "invalid time format, zero time expected")
 }
 
 var trzbaSet = []struct {
@@ -180,7 +180,7 @@ func TestTrzbaType_Etree(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(tc.requestFile, func(t *testing.T) {
 			elem, err := tc.trzba.Etree()
-			require.NoError(t, err, "etree conversion error")
+			require.NoError(t, err, "etree conversion")
 
 			// string representation of the TrzbaType etree element
 			doc := etree.NewDocument()
@@ -196,16 +196,16 @@ func TestTrzbaType_Etree(t *testing.T) {
 
 			// string representation of the TrzbaType etree element with expected values
 			expTrzbaElem, err := expTrzba.Etree()
-			require.NoError(t, err, "etree conversion error")
+			require.NoError(t, err, "etree conversion")
 
 			trzbaElem := expTrzbaElem.FindElement("//Trzba")
-			require.NotEmpty(t, trzbaElem)
+			require.NotEmpty(t, trzbaElem, "find element Trzba")
 			expDoc := etree.NewDocument()
 			expDoc.SetRoot(trzbaElem)
 			expS, err := doc.WriteToString()
 			require.NoError(t, err, "parse etree to string")
 
-			require.EqualValues(t, expS, s)
+			require.EqualValues(t, expS, s, "same source")
 		})
 	}
 }
@@ -229,7 +229,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 			// invalid private key
 			{
 				invalidPk, err := rsa.GenerateKey(rand.Reader, 16)
-				require.NoError(t, err)
+				require.NoError(t, err, "generate rsa Key")
 				err = tc.trzba.SetSecurityCodes(invalidPk)
 				require.Error(t, err, "invalid private key")
 			}
@@ -242,7 +242,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 
 			// actual values
 			err = tc.trzba.SetSecurityCodes(pk)
-			require.NoError(t, err, "set Trzba's security codes")
+			require.NoError(t, err, "set valid Trzba's security codes")
 			pkp := tc.trzba.KontrolniKody.Pkp
 			bkp := tc.trzba.KontrolniKody.Bkp
 
@@ -256,7 +256,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 
 			// marshal PkpType to convert its value to base64 encoding
 			pkpVal, err := pkp.PkpType.MarshalText()
-			require.NoError(t, err, "not empty")
+			require.NoError(t, err, "security codes should have been set")
 
 			require.Equal(t, string(expPkp.PkpType), string(pkpVal), "no changes were made to other attributes, should be equal")
 			require.Equal(t, string(expBkp.BkpType), string(bkp.BkpType), "no changes were made to other attributes, should be equal")

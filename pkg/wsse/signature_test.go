@@ -38,7 +38,7 @@ func TestCalc(t *testing.T) {
 
 			doc := etree.NewDocument()
 			err := doc.ReadFromBytes(xml)
-			require.NoError(t, err)
+			require.NoError(t, err, "retrive etree from a valid xml value")
 			body := doc.FindElement("./Envelope/Body")
 			body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 			body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
@@ -47,13 +47,13 @@ func TestCalc(t *testing.T) {
 
 			d, err := wsse.CalcDigest(body)
 			dv := base64.StdEncoding.EncodeToString(d)
-			require.NoError(t, err)
-			require.Equal(t, signedInfo.FindElement("./Reference/DigestValue").Text(), dv)
+			require.NoError(t, err, "encode digest to base64")
+			require.Equal(t, signedInfo.FindElement("./Reference/DigestValue").Text(), dv, "digest values")
 
 			s, err := wsse.CalcSignature(key, signedInfo)
 			sv := base64.StdEncoding.EncodeToString(s)
-			require.NoError(t, err)
-			require.Equal(t, signature.FindElement("./SignatureValue").Text(), sv)
+			require.NoError(t, err, "encode signature to base64")
+			require.Equal(t, signature.FindElement("./SignatureValue").Text(), sv, "signature values")
 		})
 	}
 }
