@@ -2,6 +2,7 @@ package eet_test
 
 import (
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/pem"
 	"encoding/xml"
 	"fmt"
@@ -123,7 +124,10 @@ func TestParseAndVerifyResponse(t *testing.T) {
 		},
 	}
 
-	caSvc := mfcr.NewCAService()
+	pool, err := x509.SystemCertPool()
+	require.NoError(t, err)
+	require.True(t, pool.AppendCertsFromPEM([]byte(mfcr.ICACertificate)))
+	caSvc := mfcr.NewCAService(pool)
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -179,7 +183,11 @@ func BenchmarkVerifyResponse(b *testing.B) {
 	resp := readFile(b, respFile)
 	odpoved, err := eet.ParseResponseEnvelope(resp)
 	require.NoError(b, err)
-	caSvc := mfcr.NewCAService()
+
+	pool, err := x509.SystemCertPool()
+	require.NoError(b, err)
+	require.True(b, pool.AppendCertsFromPEM([]byte(mfcr.ICACertificate)))
+	caSvc := mfcr.NewCAService(pool)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
