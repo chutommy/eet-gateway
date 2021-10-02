@@ -52,17 +52,17 @@ func (h *handler) ping(c *gin.Context) {
 func (h *handler) eet(c *gin.Context) {
 	certID := c.Param("certID")
 
-	var trzba *eet.TrzbaType
-	if err := c.ShouldBindJSON(&trzba); err != nil {
+	var req *HTTPRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.Send(c, certID, trzba)
+	odpoved, err := h.gatewaySvc.Send(c, certID, encodeRequest(req))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, odpoved)
+	c.JSON(http.StatusOK, decodeResponse(odpoved))
 }

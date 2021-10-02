@@ -49,7 +49,6 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 		return nil, err
 	}
 
-	// TODO check if are control codes set
 	if err = setDigestVal(body, sign); err != nil {
 		return nil, fmt.Errorf("set digest value: %w", err)
 	}
