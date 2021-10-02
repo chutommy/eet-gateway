@@ -9,14 +9,14 @@ import (
 
 // Handle abstracts requests handling options.
 type Handler interface {
-	handler() http.Handler
+	Handler() http.Handler
 }
 
 type handler struct {
 	gatewaySvc eet.GatewayService
 }
 
-func (h *handler) handler() http.Handler {
+func (h *handler) Handler() http.Handler {
 	return h.ginEngine()
 }
 

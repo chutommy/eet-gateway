@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/keystore"
@@ -65,7 +66,16 @@ func main() {
 
 	// server
 	h := server.NewHandler(gSvc)
-	srv := server.NewService(h, ":8080")
+	srv := server.NewService(&http.Server{
+		Addr:    ":8080",
+		Handler: h.Handler(),
+		// TLSConfig:         nil,
+		ReadTimeout:       time.Second * 10,
+		ReadHeaderTimeout: time.Second * 2,
+		WriteTimeout:      time.Second * 10,
+		IdleTimeout:       time.Second * 100,
+		MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
+	})
 	fmt.Println(srv.ListenAndServe())
 }
 
