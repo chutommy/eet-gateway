@@ -75,3 +75,51 @@ func TestCalc(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkCalcSignature(b *testing.B) {
+	tc := calcTests[0]
+	xml := readFile(b, tc.xmlFile)
+
+	// load certificate and private key
+	rawKey := readFile(b, tc.pfxFile)
+	roots, err := ca.PlaygroundRoots()
+	require.NoError(b, err, "retrieve playground roots")
+	_, key, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+	require.NoError(b, err, "parse taxpayer's private key")
+
+	envelope := etree.NewDocument()
+	err = envelope.ReadFromBytes(xml)
+	require.NoError(b, err, "retrieve etree from a valid xml value")
+
+	// get signed info
+	body := envelope.FindElement("./Envelope/Body")
+	// create namespaces defined outside the scope
+	body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
+	body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
+	signedInfo := envelope.FindElement("./Envelope/Header/Security/Signature/SignedInfo")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = wsse.CalcSignature(key, signedInfo)
+	}
+}
+
+func BenchmarkCalcDigest(b *testing.B) {
+	tc := calcTests[0]
+	xml := readFile(b, tc.xmlFile)
+
+	envelope := etree.NewDocument()
+	err := envelope.ReadFromBytes(xml)
+	require.NoError(b, err, "retrieve etree from a valid xml value")
+
+	// get signed info
+	body := envelope.FindElement("./Envelope/Body")
+	// create namespaces defined outside the scope
+	body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
+	body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = wsse.CalcDigest(body)
+	}
+}
