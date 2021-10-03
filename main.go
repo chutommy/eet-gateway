@@ -21,22 +21,15 @@ import (
 )
 
 func main() {
-	// pk and cert
-	rawCrt, err := ioutil.ReadFile("data/testdata/EET_CA1_Playground-CZ683555118.crt")
-	errCheck(err)
-	pbCrt, _ := pem.Decode(rawCrt)
-	rawKey, err := ioutil.ReadFile("data/testdata/EET_CA1_Playground-CZ683555118.key")
-	errCheck(err)
-	pbPK, _ := pem.Decode(rawKey)
-	pk, err := x509.ParsePKCS8PrivateKey(pbPK.Bytes)
-	errCheck(err)
+	pgCAblock, _ := pem.Decode(ca.CAEET1Playground)
+	pgCA2025block, _ := pem.Decode(ca.CAEET1Playground2025)
+	pgCApblock, _ := pem.Decode(ca.CAEET1Production)
+	pgCAp2025block, _ := pem.Decode(ca.CAEET1Production2025)
 
-	pgCAp, err := ioutil.ReadFile("data/certificates/ca-eet/cacert-produkcni.crt")
+	pgCACert, err := wsse.ParseCertificate(pgCAblock)
 	errCheck(err)
-	pgCAp2025, err := ioutil.ReadFile("data/certificates/ca-eet/cacert-playground-2025.crt")
+	pgCA2025Cert, err := wsse.ParseCertificate(pgCA2025block)
 	errCheck(err)
-	pgCApblock, _ := pem.Decode(pgCAp)
-	pgCAp2025block, _ := pem.Decode(pgCAp2025)
 	pgCApCert, err := wsse.ParseCertificate(pgCApblock)
 	errCheck(err)
 	pgCAp2025Cert, err := wsse.ParseCertificate(pgCAp2025block)
@@ -76,7 +69,7 @@ func main() {
 	caSvc := mfcr.NewCAService(pool)
 
 	ks := &ks{
-		key: pk.(*rsa.PrivateKey),
+		key: pk,
 		crt: crt,
 	}
 
