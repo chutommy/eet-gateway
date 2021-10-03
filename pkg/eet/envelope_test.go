@@ -11,19 +11,13 @@ import (
 	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/mfcr"
-	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewSoapEnvelope(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(fmt.Sprintf("build soap envelope %s", tc.requestFile), func(t *testing.T) {
-			// load certificate and private key
-			rawKey := readFile(t, tc.pfxFile)
-			roots, err := ca.PlaygroundRoots()
-			require.NoError(t, err, "retrieve playground roots")
-			crt, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-			require.NoError(t, err, "parse taxpayer's private key")
+			crt, pk := parseTaxpayerCertificate(t, tc.pfxFile)
 
 			envelope, err := eet.NewRequestEnvelope(tc.trzba, crt, pk)
 			require.NoError(t, err, "build a new valid SOAP envelope")
@@ -52,14 +46,7 @@ func TestNewSoapEnvelope(t *testing.T) {
 
 func BenchmarkNewSoapEnvelope(b *testing.B) {
 	tc := trzbaSet[0]
-
-	// load certificate and private key
-	rawKey := readFile(b, tc.pfxFile)
-	roots, err := ca.PlaygroundRoots()
-	require.NoError(b, err, "retrieve playground roots")
-	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-	require.NoError(b, err, "parse taxpayer's private key")
-
+	crt, pk := parseTaxpayerCertificate(b, tc.pfxFile)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = eet.NewRequestEnvelope(tc.trzba, crt, pk)

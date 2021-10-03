@@ -1,6 +1,8 @@
 package wsse_test
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"io/ioutil"
 	"testing"
@@ -16,6 +18,16 @@ func readFile(t require.TestingT, path string) []byte {
 	require.NoError(t, err, "read file")
 
 	return raw
+}
+
+func parseTaxpayerCertificate(t require.TestingT, pfxFile string) (*x509.Certificate, *rsa.PrivateKey) {
+	rawKey := readFile(t, pfxFile)
+	roots, err := ca.PlaygroundRoots()
+	require.NoError(t, err, "retrieve playground roots")
+	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+	require.NoError(t, err, "parse taxpayer's private key")
+
+	return crt, pk
 }
 
 var calcTests = []struct {
@@ -40,16 +52,10 @@ func TestCalc(t *testing.T) {
 	for _, tc := range calcTests {
 		t.Run(tc.xmlFile, func(t *testing.T) {
 			xml := readFile(t, tc.xmlFile)
-
-			// load certificate and private key
-			rawKey := readFile(t, tc.pfxFile)
-			roots, err := ca.PlaygroundRoots()
-			require.NoError(t, err, "retrieve playground roots")
-			_, key, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-			require.NoError(t, err, "parse taxpayer's private key")
+			_, pk := parseTaxpayerCertificate(t, tc.pfxFile)
 
 			envelope := etree.NewDocument()
-			err = envelope.ReadFromBytes(xml)
+			err := envelope.ReadFromBytes(xml)
 			require.NoError(t, err, "retrieve etree from a valid xml value")
 
 			// get signed info
@@ -68,7 +74,7 @@ func TestCalc(t *testing.T) {
 			require.NoError(t, err, "encode digest to base64")
 			require.Equal(t, digestValElem.Text(), calculatedDigestB64, "digest values")
 
-			calculatedSignature, err := wsse.CalcSignature(key, signedInfoElem)
+			calculatedSignature, err := wsse.CalcSignature(pk, signedInfoElem)
 			calculatedSignatureB64 := base64.StdEncoding.EncodeToString(calculatedSignature)
 			require.NoError(t, err, "encode signature to base64")
 			require.Equal(t, sigValElem.Text(), calculatedSignatureB64, "signature values")
@@ -79,16 +85,10 @@ func TestCalc(t *testing.T) {
 func BenchmarkCalcSignature(b *testing.B) {
 	tc := calcTests[0]
 	xml := readFile(b, tc.xmlFile)
-
-	// load certificate and private key
-	rawKey := readFile(b, tc.pfxFile)
-	roots, err := ca.PlaygroundRoots()
-	require.NoError(b, err, "retrieve playground roots")
-	_, key, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-	require.NoError(b, err, "parse taxpayer's private key")
+	_, pk := parseTaxpayerCertificate(b, tc.pfxFile)
 
 	envelope := etree.NewDocument()
-	err = envelope.ReadFromBytes(xml)
+	err := envelope.ReadFromBytes(xml)
 	require.NoError(b, err, "retrieve etree from a valid xml value")
 
 	// get signed info
@@ -100,7 +100,7 @@ func BenchmarkCalcSignature(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = wsse.CalcSignature(key, signedInfo)
+		_, _ = wsse.CalcSignature(pk, signedInfo)
 	}
 }
 

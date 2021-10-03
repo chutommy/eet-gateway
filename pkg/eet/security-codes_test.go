@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
-	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,12 +34,7 @@ var pkpTestSet = []struct {
 func TestPkp(t *testing.T) {
 	for _, tc := range pkpTestSet {
 		t.Run(fmt.Sprintf("calculate pkp %s", tc.plaintext), func(t *testing.T) {
-			// load private key
-			rawKey := readFile(t, tc.pfxFile)
-			roots, err := ca.PlaygroundRoots()
-			require.NoError(t, err, "retrieve playground roots")
-			_, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-			require.NoError(t, err, "parse taxpayer's private key")
+			_, pk := parseTaxpayerCertificate(t, tc.pfxFile)
 
 			pkp, err := eet.Pkp(tc.plaintext, pk)
 			require.NoError(t, err, "calculate pkp")
@@ -54,14 +47,7 @@ func TestPkp(t *testing.T) {
 
 func BenchmarkPkp(b *testing.B) {
 	tc := pkpTestSet[0]
-
-	// load certificate and private key
-	rawKey := readFile(b, tc.pfxFile)
-	roots, err := ca.PlaygroundRoots()
-	require.NoError(b, err, "retrieve playground roots")
-	_, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-	require.NoError(b, err, "parse taxpayer's private key")
-
+	_, pk := parseTaxpayerCertificate(b, tc.pfxFile)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = eet.Pkp(tc.plaintext, pk)

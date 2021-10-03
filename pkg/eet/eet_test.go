@@ -3,6 +3,7 @@ package eet_test
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
@@ -48,6 +49,16 @@ func parseTime(s string) (time.Time, error) {
 	}
 
 	return t, nil
+}
+
+func parseTaxpayerCertificate(t require.TestingT, pfxFile string) (*x509.Certificate, *rsa.PrivateKey) {
+	rawKey := readFile(t, pfxFile)
+	roots, err := ca.PlaygroundRoots()
+	require.NoError(t, err, "retrieve playground roots")
+	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+	require.NoError(t, err, "parse taxpayer's private key")
+
+	return crt, pk
 }
 
 func TestDateTimeLayout(t *testing.T) {
@@ -232,12 +243,7 @@ func BenchmarkTrzbaType_Etree(b *testing.B) {
 func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(tc.pfxFile, func(t *testing.T) {
-			// load private key
-			rawKey := readFile(t, tc.pfxFile)
-			roots, err := ca.PlaygroundRoots()
-			require.NoError(t, err, "retrieve playground roots")
-			_, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-			require.NoError(t, err, "parse taxpayer's private key")
+			_, pk := parseTaxpayerCertificate(t, tc.pfxFile)
 
 			{
 				// invalid private key
@@ -256,7 +262,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 			tc.trzba.KontrolniKody.Bkp = eet.BkpElementType{}
 
 			// set security codes
-			err = tc.trzba.SetSecurityCodes(pk)
+			err := tc.trzba.SetSecurityCodes(pk)
 			require.NoError(t, err, "set valid Trzba's security codes")
 
 			// actual values
@@ -271,14 +277,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 
 func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
 	trzbaArg := trzbaSet[0]
-
-	// load private key
-	rawKey := readFile(b, trzbaArg.pfxFile)
-	roots, err := ca.PlaygroundRoots()
-	require.NoError(b, err, "retrieve playground roots")
-	_, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
-	require.NoError(b, err, "parse taxpayer's private key")
-
+	_, pk := parseTaxpayerCertificate(b, trzbaArg.pfxFile)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = trzbaArg.trzba.SetSecurityCodes(pk)
