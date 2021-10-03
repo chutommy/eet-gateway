@@ -3,7 +3,6 @@ package eet_test
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/pem"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/beevik/etree"
+	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/stretchr/testify/require"
@@ -53,14 +53,12 @@ func TestDateTimeLayout(t *testing.T) {
 
 var trzbaSet = []struct {
 	requestFile string
-	pkFile      string
-	crtFile     string
+	pfxFile     string
 	trzba       *eet.TrzbaType
 }{
 	{
 		requestFile: "testdata/request_1.xml",
-		pkFile:      "testdata/EET_CA1_Playground-CZ00000019.key",
-		crtFile:     "testdata/EET_CA1_Playground-CZ00000019.crt",
+		pfxFile:     "testdata/EET_CA1_Playground-CZ00000019.p12",
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "878b2e10-c4a5-4f05-8c90-abc181cd6837",
@@ -98,8 +96,7 @@ var trzbaSet = []struct {
 	},
 	{
 		requestFile: "testdata/request_2.xml",
-		pkFile:      "testdata/EET_CA1_Playground-CZ1212121218.key",
-		crtFile:     "testdata/EET_CA1_Playground-CZ1212121218.crt",
+		pfxFile:     "testdata/EET_CA1_Playground-CZ1212121218.p12",
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "b9bd618a-7d3d-4a15-a405-bc9d0aba4e9b",
@@ -137,8 +134,7 @@ var trzbaSet = []struct {
 	},
 	{
 		requestFile: "testdata/request_3.xml",
-		pkFile:      "testdata/EET_CA1_Playground-CZ683555118.key",
-		crtFile:     "testdata/EET_CA1_Playground-CZ683555118.crt",
+		pfxFile:     "testdata/EET_CA1_Playground-CZ683555118.p12",
 		trzba: &eet.TrzbaType{
 			Hlavicka: eet.TrzbaHlavickaType{
 				Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
@@ -220,11 +216,12 @@ func BenchmarkTrzbaType_Etree(b *testing.B) {
 
 func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 	for _, tc := range trzbaSet {
-		t.Run(tc.pkFile, func(t *testing.T) {
-			rawKey := readFile(t, tc.pkFile)
-			pkPB, _ := pem.Decode(rawKey)
-			pk, err := wsse.ParsePrivateKey(pkPB)
-			require.NoError(t, err, "parse private key")
+		t.Run(tc.pfxFile, func(t *testing.T) {
+			rawKey := readFile(t, tc.pfxFile)
+			roots, err := ca.PlaygroundRoots()
+			require.NoError(t, err, "retrieve playground roots")
+			_, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+			require.NoError(t, err, "parse taxpayer's private key")
 
 			// invalid private key
 			{
@@ -267,10 +264,11 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
 	trzbaArg := trzbaSet[0]
 
-	rawKey := readFile(b, trzbaArg.pkFile)
-	pkPB, _ := pem.Decode(rawKey)
-	pk, err := wsse.ParsePrivateKey(pkPB)
-	require.NoError(b, err, "parse private key")
+	rawKey := readFile(b, trzbaArg.pfxFile)
+	roots, err := ca.PlaygroundRoots()
+	require.NoError(b, err, "retrieve playground roots")
+	_, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+	require.NoError(b, err, "parse taxpayer's private key")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

@@ -1,10 +1,5 @@
 package ca
 
-const (
-	// OrganizationName is the legal name that the organization is registered with authority at the national level.
-	OrganizationName = "Česká republika - Generální finanční ředitelství"
-)
-
 var (
 	// ICACertificate is the certificate of subordinate CA for issuing qualified
 	// certificates in PEM format.
@@ -55,10 +50,10 @@ Fbq9I3WzkYyxlizNmEAFVDhT2YdK19lWK8dlabxjIH9KF1yuhIG71NJWM6EVz905
 cdzAiTUF92rQUfuVwr0zGuvZLnsoLIIsaWrx+pgHcBnL49PVJQV5w4c=
 -----END CERTIFICATE-----`)
 
-	// CAEET1Playground is a root certificate of the Certificate Authority EET for development purposes.
+	// RootCAEET1Playground is a root certificate of the Certificate Authority EET for development purposes.
 	// The certificate is valid from September 29, 2016 to September 29, 2022.
 	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	CAEET1Playground = []byte(`
+	RootCAEET1Playground = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIE2TCCA8GgAwIBAgIFAIPD9YUwDQYJKoZIhvcNAQELBQAwdzESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD
@@ -88,10 +83,10 @@ QHHc8v6JsMXFzrvg2tDAtQzNC3Ibsquw+Sur6ItgYMmkmOk9WfK33q7lUfXx34X5
 F9OTF6UdKfXkvt+NmW7ayYwd+F4+3pfFr3wvBNdrG6tm/SUZBQ41Tt4OTKWg
 -----END CERTIFICATE-----`)
 
-	// CAEET1Playground2025 is a root certificate of the Certificate Authority EET for development purposes.
+	// RootCAEET1Playground2025 is a root certificate of the Certificate Authority EET for development purposes.
 	// The certificate is valid from September 29, 2016 to September 29, 2025.
 	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	CAEET1Playground2025 = []byte(`
+	RootCAEET1Playground2025 = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIE2TCCA8GgAwIBAgIFAKXDnhgwDQYJKoZIhvcNAQELBQAwdzESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD
@@ -121,10 +116,10 @@ dZLmkDd+9QirvDeO+gJX3JZvYLAVV4jqrF7vdxi5J57oIFP6cToNk3JJColhclgn
 QZkGDCaEbqi3U+Rcx3B54gPdhZSDuiW4efE6LI8ogUmCvhsrn//L2ULJfPLf
 -----END CERTIFICATE-----`)
 
-	// CAEET1Production is a root certificate of the Certificate Authority EET for production purposes.
+	// RootCAEET1Production is a root certificate of the Certificate Authority EET for production purposes.
 	// The certificate is valid from August 31, 2016 to August 31, 2022.
 	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	CAEET1Production = []byte(`
+	RootCAEET1Production = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIEZjCCA06gAwIBAgIFAL46sBMwDQYJKoZIhvcNAQELBQAwbDESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD
@@ -152,10 +147,10 @@ Hgtr96Y+W0iqmTcJFaPUh6Ije6T3EjdqJhQYiiIINWbq0M+OBUY07VrBoTERClnl
 UMIkISGhjf2xjWpz5Jau3aIurVCCQwOz/jw=
 -----END CERTIFICATE-----`)
 
-	// CAEET1Production2025 is a root certificate of the Certificate Authority EET for production purposes.
+	// RootCAEET1Production2025 is a root certificate of the Certificate Authority EET for production purposes.
 	// The certificate is valid from August 31, 2016 to September 29, 2025.
 	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	CAEET1Production2025 = []byte(`
+	RootCAEET1Production2025 = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIEZjCCA06gAwIBAgIFAJA6c9AwDQYJKoZIhvcNAQELBQAwbDESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD

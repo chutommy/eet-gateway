@@ -1,6 +1,7 @@
 package eet
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
@@ -23,7 +24,7 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 		return nil, fmt.Errorf("marshal trzba to etree element: %w", err)
 	}
 
-	binCrt, err := wsse.CertificateToB64(crt)
+	binCrt, err := crtToB64(crt)
 	if err != nil {
 		return nil, fmt.Errorf("convert certificate to base64: %w", err)
 	}
@@ -63,6 +64,20 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 	}
 
 	return signedEnv, nil
+}
+
+func crtToB64(crt *x509.Certificate) ([]byte, error) {
+	binary := new(bytes.Buffer)
+	encoder := base64.NewEncoder(base64.StdEncoding, binary)
+	if _, err := encoder.Write(crt.Raw); err != nil {
+		return nil, fmt.Errorf("encode bytes to binary: %w", err)
+	}
+
+	if err := encoder.Close(); err != nil {
+		return nil, fmt.Errorf("close binary encoder: %w", err)
+	}
+
+	return binary.Bytes(), nil
 }
 
 func setDigestVal(body *etree.Element, sign *etree.Element) error {

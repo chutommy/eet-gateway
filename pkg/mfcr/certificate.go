@@ -4,14 +4,17 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-
-	"github.com/chutommy/eetgateway/pkg/mfcr/ca"
 )
 
 var (
 	ErrInvalidOrganizationName = errors.New("invalid organization name")
 	ErrNotCACertificate        = errors.New("not a certificate authority's certificate")
 	ErrInvalidKeyPair          = errors.New("invalid private/public keypair")
+)
+
+const (
+	// OrganizationName is the legal name that the organization is registered with authority at the national level.
+	OrganizationName = "Česká republika - Generální finanční ředitelství"
 )
 
 // CAService verifies certificates signed off by the CA.
@@ -32,7 +35,7 @@ func (c *caService) Verify(crt *x509.Certificate) error {
 		},
 	}
 
-	if n := crt.Subject.Organization[0]; n != ca.OrganizationName {
+	if n := crt.Subject.Organization[0]; n != OrganizationName {
 		return fmt.Errorf("%s: %w", n, ErrInvalidOrganizationName)
 	}
 

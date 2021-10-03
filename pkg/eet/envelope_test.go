@@ -3,15 +3,14 @@ package eet_test
 import (
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/pem"
 	"encoding/xml"
 	"fmt"
 	"testing"
 
 	"github.com/beevik/etree"
+	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/mfcr"
-	"github.com/chutommy/eetgateway/pkg/mfcr/ca"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/stretchr/testify/require"
 )
@@ -19,17 +18,12 @@ import (
 func TestNewSoapEnvelope(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(fmt.Sprintf("build soap envelope %s", tc.requestFile), func(t *testing.T) {
-			// load certificate
-			rawCrt := readFile(t, tc.crtFile)
-			pemCrt, _ := pem.Decode(rawCrt)
-			crt, err := wsse.ParseCertificate(pemCrt)
-			require.NoError(t, err, "parse SSL certificate")
-
-			// load private key
-			rawPk := readFile(t, tc.pkFile)
-			pemPk, _ := pem.Decode(rawPk)
-			pk, err := wsse.ParsePrivateKey(pemPk)
-			require.NoError(t, err, "parse private key")
+			// load certificate and private key
+			rawKey := readFile(t, tc.pfxFile)
+			roots, err := ca.PlaygroundRoots()
+			require.NoError(t, err, "retrieve playground roots")
+			crt, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+			require.NoError(t, err, "parse taxpayer's private key")
 
 			envelope, err := eet.NewRequestEnvelope(tc.trzba, crt, pk)
 			require.NoError(t, err, "build a new valid SOAP envelope")
@@ -56,15 +50,12 @@ func TestNewSoapEnvelope(t *testing.T) {
 func BenchmarkNewSoapEnvelope(b *testing.B) {
 	tc := trzbaSet[0]
 
-	rawCrt := readFile(b, tc.crtFile)
-	pemCrt, _ := pem.Decode(rawCrt)
-	crt, err := wsse.ParseCertificate(pemCrt)
-	require.NoError(b, err, "parse SSL certificate")
-
-	rawPk := readFile(b, tc.pkFile)
-	pemPk, _ := pem.Decode(rawPk)
-	pk, err := wsse.ParsePrivateKey(pemPk)
-	require.NoError(b, err, "parse private key")
+	// load certificate and private key
+	rawKey := readFile(b, tc.pfxFile)
+	roots, err := ca.PlaygroundRoots()
+	require.NoError(b, err, "retrieve playground roots")
+	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+	require.NoError(b, err, "parse taxpayer's private key")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

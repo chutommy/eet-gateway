@@ -6,40 +6,25 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
+	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/mfcr"
-	"github.com/chutommy/eetgateway/pkg/mfcr/ca"
 	"github.com/chutommy/eetgateway/pkg/server"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
 func main() {
-	pgCAblock, _ := pem.Decode(ca.CAEET1Playground)
-	pgCA2025block, _ := pem.Decode(ca.CAEET1Playground2025)
-	pgCApblock, _ := pem.Decode(ca.CAEET1Production)
-	pgCAp2025block, _ := pem.Decode(ca.CAEET1Production2025)
-
-	pgCACert, err := wsse.ParseCertificate(pgCAblock)
-	errCheck(err)
-	pgCA2025Cert, err := wsse.ParseCertificate(pgCA2025block)
-	errCheck(err)
-	pgCApCert, err := wsse.ParseCertificate(pgCApblock)
-	errCheck(err)
-	pgCAp2025Cert, err := wsse.ParseCertificate(pgCAp2025block)
-	errCheck(err)
-
-	rts := []*x509.Certificate{pgCACert, pgCA2025Cert, pgCApCert, pgCAp2025Cert}
-
 	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
 	errCheck(err)
-	crt, pk, err := wsse.ParseTaxpayerCertificate(rts, p12File, "eet")
+	roots, err := ca.PlaygroundRoots()
+	errCheck(err)
+	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
 	errCheck(err)
 
 	// dep services
