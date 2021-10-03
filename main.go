@@ -29,9 +29,7 @@ func main() {
 
 	// dep services
 	certPool, err := x509.SystemCertPool()
-	if err != nil {
-		panic(err)
-	}
+	errCheck(err)
 	c := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -41,13 +39,12 @@ func main() {
 			},
 		},
 	}
+
 	client := mfcr.NewClient(c, mfcr.PlaygroundURL)
 	errCheck(err)
 
 	pool, err := x509.SystemCertPool()
-	if err != nil {
-		panic(fmt.Errorf("system certificate pool: %w", err))
-	}
+	errCheck(err)
 	if ok := pool.AppendCertsFromPEM(ca.ICACertificate); !ok {
 		panic("failed to parse root certificate")
 	}

@@ -1,11 +1,10 @@
 package ca
 
-var (
-	// ICACertificate is the certificate of subordinate CA for issuing qualified
-	// certificates in PEM format.
-	// CN = I.CA QUALIFIED 2 CA/RSA 02/2016; SN:  100001006 (5F5E4EE HEX)
-	// https://www.ica.cz/HCA-qualificate
-	ICACertificate = []byte(`
+// ICACertificate is the certificate of subordinate CA for issuing qualified
+// certificates in PEM format.
+// CN = I.CA QUALIFIED 2 CA/RSA 02/2016; SN:  100001006 (5F5E4EE HEX)
+// https://www.ica.cz/HCA-qualificate
+var ICACertificate = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIHpTCCBY2gAwIBAgIEBfXk7jANBgkqhkiG9w0BAQsFADBwMQswCQYDVQQGEwJD
 WjEtMCsGA1UECgwkUHJ2bsOtIGNlcnRpZmlrYcSNbsOtIGF1dG9yaXRhLCBhLnMu
@@ -50,10 +49,10 @@ Fbq9I3WzkYyxlizNmEAFVDhT2YdK19lWK8dlabxjIH9KF1yuhIG71NJWM6EVz905
 cdzAiTUF92rQUfuVwr0zGuvZLnsoLIIsaWrx+pgHcBnL49PVJQV5w4c=
 -----END CERTIFICATE-----`)
 
-	// RootCAEET1Playground is a root certificate of the Certificate Authority EET for development purposes.
-	// The certificate is valid from September 29, 2016 to September 29, 2022.
-	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	RootCAEET1Playground = []byte(`
+// RootCAEET1Playground is a root certificate of the Certificate Authority EET for development purposes.
+// The certificate is valid from September 29, 2016 to September 29, 2022.
+// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
+var RootCAEET1Playground = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIE2TCCA8GgAwIBAgIFAIPD9YUwDQYJKoZIhvcNAQELBQAwdzESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD
@@ -83,10 +82,10 @@ QHHc8v6JsMXFzrvg2tDAtQzNC3Ibsquw+Sur6ItgYMmkmOk9WfK33q7lUfXx34X5
 F9OTF6UdKfXkvt+NmW7ayYwd+F4+3pfFr3wvBNdrG6tm/SUZBQ41Tt4OTKWg
 -----END CERTIFICATE-----`)
 
-	// RootCAEET1Playground2025 is a root certificate of the Certificate Authority EET for development purposes.
-	// The certificate is valid from September 29, 2016 to September 29, 2025.
-	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	RootCAEET1Playground2025 = []byte(`
+// RootCAEET1Playground2025 is a root certificate of the Certificate Authority EET for development purposes.
+// The certificate is valid from September 29, 2016 to September 29, 2025.
+// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
+var RootCAEET1Playground2025 = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIE2TCCA8GgAwIBAgIFAKXDnhgwDQYJKoZIhvcNAQELBQAwdzESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD
@@ -116,10 +115,10 @@ dZLmkDd+9QirvDeO+gJX3JZvYLAVV4jqrF7vdxi5J57oIFP6cToNk3JJColhclgn
 QZkGDCaEbqi3U+Rcx3B54gPdhZSDuiW4efE6LI8ogUmCvhsrn//L2ULJfPLf
 -----END CERTIFICATE-----`)
 
-	// RootCAEET1Production is a root certificate of the Certificate Authority EET for production purposes.
-	// The certificate is valid from August 31, 2016 to August 31, 2022.
-	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	RootCAEET1Production = []byte(`
+// RootCAEET1Production is a root certificate of the Certificate Authority EET for production purposes.
+// The certificate is valid from August 31, 2016 to August 31, 2022.
+// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
+var RootCAEET1Production = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIEZjCCA06gAwIBAgIFAL46sBMwDQYJKoZIhvcNAQELBQAwbDESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD
@@ -147,10 +146,10 @@ Hgtr96Y+W0iqmTcJFaPUh6Ije6T3EjdqJhQYiiIINWbq0M+OBUY07VrBoTERClnl
 UMIkISGhjf2xjWpz5Jau3aIurVCCQwOz/jw=
 -----END CERTIFICATE-----`)
 
-	// RootCAEET1Production2025 is a root certificate of the Certificate Authority EET for production purposes.
-	// The certificate is valid from August 31, 2016 to September 29, 2025.
-	// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
-	RootCAEET1Production2025 = []byte(`
+// RootCAEET1Production2025 is a root certificate of the Certificate Authority EET for production purposes.
+// The certificate is valid from August 31, 2016 to September 29, 2025.
+// It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
+var RootCAEET1Production2025 = []byte(`
 -----BEGIN CERTIFICATE-----
 MIIEZjCCA06gAwIBAgIFAJA6c9AwDQYJKoZIhvcNAQELBQAwbDESMBAGCgmSJomT
 8ixkARkWAkNaMUMwQQYDVQQKDDrEjGVza8OhIFJlcHVibGlrYSDigJMgR2VuZXLD
@@ -177,4 +176,3 @@ AQELBQADggEBANQ1FCrSN41Z0p1QZpiXlz78mEZK2YArXGVSIpme3KVfpZ1D+wwR
 dJPXwwGwSf4CLfhTYpSOWLp1+eppP5BTOA/DfBPPaTVwyfjx7lul2fyRAN706TFS
 7S2mM1UWd4um1ARWkEOrlMGNmzpTHWC/esc=
 -----END CERTIFICATE-----`)
-)

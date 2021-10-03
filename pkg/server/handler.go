@@ -34,8 +34,10 @@ func (h *handler) ginEngine() *gin.Engine {
 	// TODO recover middleware
 
 	v1 := r.Group("/v1")
-	v1.GET("/ping", h.ping)
-	v1.POST("/eet/:certID", h.eet)
+	{
+		v1.GET("/ping", h.ping)
+		v1.POST("/eet/:certID", h.eet)
+	}
 
 	return r
 }

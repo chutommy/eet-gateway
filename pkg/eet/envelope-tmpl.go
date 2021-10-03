@@ -62,13 +62,13 @@ func buildBinarySecurityToken() *etree.Element {
 }
 
 func buildSignature() *etree.Element {
-	sign := etree.NewElement("Signature")
-	sign.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
-	sign.AddChild(buildSignedInfo())
-	sign.CreateElement("SignatureValue")
-	sign.AddChild(buildKeyInfo())
+	signature := etree.NewElement("Signature")
+	signature.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
+	signature.AddChild(buildSignedInfo())
+	signature.CreateElement("SignatureValue")
+	signature.AddChild(buildKeyInfo())
 
-	return sign
+	return signature
 }
 
 func buildSignedInfo() *etree.Element {

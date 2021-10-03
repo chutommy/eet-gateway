@@ -161,6 +161,7 @@ func (a sortableAttrs) Less(i, j int) bool {
 		if a[j].Space == xmlnsPrefix {
 			return a[i].Key < a[j].Key
 		}
+
 		return true
 
 	case a[j].Space == xmlnsPrefix:
@@ -170,6 +171,7 @@ func (a sortableAttrs) Less(i, j int) bool {
 		if a[j].Space == emptyPrefix {
 			return a[i].Key < a[j].Key
 		}
+
 		return true
 
 	case a[j].Space == emptyPrefix:

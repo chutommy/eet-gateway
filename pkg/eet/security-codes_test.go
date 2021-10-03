@@ -36,7 +36,7 @@ var pkpTestSet = []struct {
 func TestPkp(t *testing.T) {
 	for _, tc := range pkpTestSet {
 		t.Run(fmt.Sprintf("calculate pkp %s", tc.plaintext), func(t *testing.T) {
-			// load certificate and private key
+			// load private key
 			rawKey := readFile(t, tc.pfxFile)
 			roots, err := ca.PlaygroundRoots()
 			require.NoError(t, err, "retrieve playground roots")

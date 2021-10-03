@@ -9,11 +9,14 @@ import (
 	"github.com/chutommy/eetgateway/pkg/mfcr"
 )
 
-var (
-	ErrInvalidDigest      = errors.New("reference digest is invalid: computed digest differs from the digest in the XML")
-	ErrInvalidBKP         = errors.New("response BKP is invalid")
-	ErrInvalidSOAPMessage = errors.New("SOAP message has unexpected structure")
-)
+// ErrInvalidDigest is returned if the referenced digest is invalid. Computed digest differs from the digest in the XML
+var ErrInvalidDigest = errors.New("invalid referenced digest: computed digest differs from the digest in the XML")
+
+// ErrInvalidBKP is returned if the response BKP code is different.
+var ErrInvalidBKP = errors.New("invalid response BKP")
+
+// ErrInvalidSOAPMessage is returned if an invalid or unexpected SOAP message structure is queried.
+var ErrInvalidSOAPMessage = errors.New("SOAP message with unexpected structure")
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
@@ -50,7 +53,8 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 		return nil, fmt.Errorf("parse response envelope: %w", err)
 	}
 
-	if err := verifyResponse(trzba, respEnv, odpoved, g.caSvc.Verify); err != nil {
+	err = verifyResponse(trzba, respEnv, odpoved, g.caSvc.Verify)
+	if err != nil {
 		return nil, fmt.Errorf("verify response: %w", err)
 	}
 

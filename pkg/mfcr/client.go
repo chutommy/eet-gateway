@@ -9,10 +9,13 @@ import (
 	"net/http"
 )
 
-const (
-	ProductionURL = "https://prod.eet.cz/eet/services/EETServiceSOAP/v3"
-	PlaygroundURL = "https://pg.eet.cz/eet/services/EETServiceSOAP/v3"
+// ProductionURL is the URL of the production EET system.
+const ProductionURL = "https://prod.eet.cz/eet/services/EETServiceSOAP/v3"
 
+// PlaygroundURL is the URL of the playground EET system.
+const PlaygroundURL = "https://pg.eet.cz/eet/services/EETServiceSOAP/v3"
+
+const (
 	soapAction = "http://fs.mfcr.cz/eet/OdeslaniTrzby"
 )
 
@@ -52,6 +55,7 @@ func (c *client) Do(ctx context.Context, reqBody []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read response body: %w", err)
 	}
+
 	if err = resp.Body.Close(); err != nil {
 		return nil, fmt.Errorf("close response body: %w", err)
 	}
@@ -64,6 +68,7 @@ func (c *client) doHTTP(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("send request: %w", err)
 	}
+
 	return resp, nil
 }
 
@@ -85,6 +90,7 @@ func (c *client) Ping() error {
 	if err != nil {
 		return fmt.Errorf("ping %s: %w", c.url, err)
 	}
+
 	if err = resp.Body.Close(); err != nil {
 		return fmt.Errorf("close response body: %w", err)
 	}

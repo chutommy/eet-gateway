@@ -43,6 +43,7 @@ func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 
 	if err := s.server.Shutdown(ctx); err != nil {
 		// TODO log error out
+		return err
 	}
 
 	return nil

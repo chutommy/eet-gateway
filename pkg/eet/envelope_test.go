@@ -29,15 +29,18 @@ func TestNewSoapEnvelope(t *testing.T) {
 			require.NoError(t, err, "build a new valid SOAP envelope")
 			require.NotEmpty(t, envelope, "valid TrzbaType and cert/pk key pair")
 
-			// get actual trzba value of the envelope
+			// get the actual trzba value of the envelope
 			doc := etree.NewDocument()
 			err = doc.ReadFromBytes(envelope)
 			require.NoError(t, err, "build a new document from the generated envelope")
+
 			trzbaElem := doc.FindElement("//Trzba")
 			require.NotNil(t, trzbaElem, "find element Trzba")
 			doc.SetRoot(trzbaElem)
+
 			trzbaBytes, err := doc.WriteToBytes()
 			require.NoError(t, err, "write trzba element from the generated envelope back to bytes")
+
 			var actTrzba *eet.TrzbaType
 			err = xml.Unmarshal(trzbaBytes, &actTrzba)
 			require.NoError(t, err, "unmarshal generated envelope back to the TrzbaType")
@@ -129,22 +132,21 @@ func TestParseAndVerifyResponse(t *testing.T) {
 
 			odp, err := eet.ParseResponseEnvelope(resp)
 			if err == nil {
-				var trzba *eet.TrzbaType
-				{
-					// build TrzbaType to pass tests
-					trzba = &eet.TrzbaType{
-						Hlavicka: eet.TrzbaHlavickaType{
-							Overeni: false,
+				// TrzbaType with required control codes
+				trzba := &eet.TrzbaType{
+					Hlavicka: eet.TrzbaHlavickaType{
+						Overeni: false,
+					},
+					KontrolniKody: eet.TrzbaKontrolniKodyType{
+						Bkp: eet.BkpElementType{
+							BkpType: eet.BkpType(tc.bkp),
 						},
-						KontrolniKody: eet.TrzbaKontrolniKodyType{
-							Bkp: eet.BkpElementType{
-								BkpType: eet.BkpType(tc.bkp),
-							},
-						},
-					}
+					},
 				}
+
 				err = eet.VerifyResponse(trzba, resp, odp, caSvc.Verify)
 			}
+
 			if tc.valid {
 				require.NoError(t, err, "valid test case")
 				require.NotEmpty(t, odp, "valid response OdpovedType")
@@ -174,6 +176,7 @@ func BenchmarkVerifyResponse(b *testing.B) {
 			},
 		},
 	}
+
 	resp := readFile(b, respFile)
 	odpoved, err := eet.ParseResponseEnvelope(resp)
 	require.NoError(b, err, "parse valid response envelope")

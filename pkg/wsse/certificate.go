@@ -39,12 +39,14 @@ func ParseTaxpayerCertificate(roots []*x509.Certificate, data []byte, password s
 
 func checkCACert(roots []*x509.Certificate, caCrt *x509.Certificate) error {
 	var ok bool
+	// iterate over stored CA's root certificates
 	for _, root := range roots {
 		if caCrt.Equal(root) {
 			ok = true
 			break
 		}
 	}
+
 	if !ok {
 		return fmt.Errorf("certificate not found in a pool of valid CA's certificates: %w", mfcr.ErrNotCACertificate)
 	}

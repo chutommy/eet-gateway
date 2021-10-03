@@ -86,6 +86,7 @@ func webContent(url string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read web content: %w", err)
 	}
+
 	if err = resp.Body.Close(); err != nil {
 		return nil, fmt.Errorf("close response body: %w", err)
 	}

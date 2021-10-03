@@ -2,6 +2,7 @@ package wsse_test
 
 import (
 	"encoding/base64"
+	"io/ioutil"
 	"testing"
 
 	"github.com/beevik/etree"
@@ -10,26 +11,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCalc(t *testing.T) {
-	keyPairs := []struct {
-		xmlFile string
-		pfxFile string
-	}{
-		{
-			xmlFile: "testdata/CZ00000019.v3.valid.v3.1.1.xml",
-			pfxFile: "testdata/EET_CA1_Playground-CZ00000019.p12",
-		},
-		{
-			xmlFile: "testdata/CZ683555118.v3.valid.v3.1.1.xml",
-			pfxFile: "testdata/EET_CA1_Playground-CZ683555118.p12",
-		},
-		{
-			xmlFile: "testdata/CZ1212121218.v3.valid.v3.1.1.xml",
-			pfxFile: "testdata/EET_CA1_Playground-CZ1212121218.p12",
-		},
-	}
+func readFile(t require.TestingT, path string) []byte {
+	raw, err := ioutil.ReadFile(path)
+	require.NoError(t, err, "read file")
 
-	for _, tc := range keyPairs {
+	return raw
+}
+
+var calcTests = []struct {
+	xmlFile string
+	pfxFile string
+}{
+	{
+		xmlFile: "testdata/CZ00000019.v3.valid.v3.1.1.xml",
+		pfxFile: "testdata/EET_CA1_Playground-CZ00000019.p12",
+	},
+	{
+		xmlFile: "testdata/CZ683555118.v3.valid.v3.1.1.xml",
+		pfxFile: "testdata/EET_CA1_Playground-CZ683555118.p12",
+	},
+	{
+		xmlFile: "testdata/CZ1212121218.v3.valid.v3.1.1.xml",
+		pfxFile: "testdata/EET_CA1_Playground-CZ1212121218.p12",
+	},
+}
+
+func TestCalc(t *testing.T) {
+	for _, tc := range calcTests {
 		t.Run(tc.xmlFile, func(t *testing.T) {
 			xml := readFile(t, tc.xmlFile)
 
@@ -40,24 +48,30 @@ func TestCalc(t *testing.T) {
 			_, key, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
 			require.NoError(t, err, "parse taxpayer's private key")
 
-			doc := etree.NewDocument()
-			err = doc.ReadFromBytes(xml)
+			envelope := etree.NewDocument()
+			err = envelope.ReadFromBytes(xml)
 			require.NoError(t, err, "retrieve etree from a valid xml value")
-			body := doc.FindElement("./Envelope/Body")
+
+			// get signed info
+			body := envelope.FindElement("./Envelope/Body")
+			// create namespaces defined outside the scope
 			body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 			body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
-			signature := doc.FindElement("./Envelope/Header/Security/Signature")
-			signedInfo := signature.FindElement("./SignedInfo")
+			signature := envelope.FindElement("./Envelope/Header/Security/Signature")
 
-			d, err := wsse.CalcDigest(body)
-			dv := base64.StdEncoding.EncodeToString(d)
+			signedInfoElem := signature.FindElement("./SignedInfo")
+			sigValElem := signature.FindElement("./SignatureValue")
+			digestValElem := signedInfoElem.FindElement("./Reference/DigestValue")
+
+			calculatedDigest, err := wsse.CalcDigest(body)
+			calculatedDigestB64 := base64.StdEncoding.EncodeToString(calculatedDigest)
 			require.NoError(t, err, "encode digest to base64")
-			require.Equal(t, signedInfo.FindElement("./Reference/DigestValue").Text(), dv, "digest values")
+			require.Equal(t, digestValElem.Text(), calculatedDigestB64, "digest values")
 
-			s, err := wsse.CalcSignature(key, signedInfo)
-			sv := base64.StdEncoding.EncodeToString(s)
+			calculatedSignature, err := wsse.CalcSignature(key, signedInfoElem)
+			calculatedSignatureB64 := base64.StdEncoding.EncodeToString(calculatedSignature)
 			require.NoError(t, err, "encode signature to base64")
-			require.Equal(t, signature.FindElement("./SignatureValue").Text(), sv, "signature values")
+			require.Equal(t, sigValElem.Text(), calculatedSignatureB64, "signature values")
 		})
 	}
 }

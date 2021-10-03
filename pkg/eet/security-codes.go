@@ -38,6 +38,7 @@ func setDelimiters(bkpB16B []byte) []byte {
 			bkp[i+delims] = '-'
 			delims++
 		}
+
 		bkp[i+delims] = c
 	}
 

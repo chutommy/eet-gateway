@@ -6,16 +6,12 @@ import (
 	"fmt"
 )
 
-var (
-	ErrInvalidOrganizationName = errors.New("invalid organization name")
-	ErrNotCACertificate        = errors.New("not a certificate authority's certificate")
-	ErrInvalidKeyPair          = errors.New("invalid private/public keypair")
-)
+var ErrInvalidOrganizationName = errors.New("invalid organization name")
+var ErrNotCACertificate = errors.New("not a certificate authority's certificate")
+var ErrInvalidKeyPair = errors.New("invalid private/public keypair")
 
-const (
-	// OrganizationName is the legal name that the organization is registered with authority at the national level.
-	OrganizationName = "Česká republika - Generální finanční ředitelství"
-)
+// OrganizationName is the legal name that the organization is registered with authority at the national level.
+const OrganizationName = "Česká republika - Generální finanční ředitelství"
 
 // CAService verifies certificates signed off by the CA.
 type CAService interface {

@@ -3,6 +3,7 @@ package eet_test
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/base64"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -19,6 +20,14 @@ import (
 func readFile(t require.TestingT, path string) []byte {
 	raw, err := ioutil.ReadFile(path)
 	require.NoError(t, err, "read file")
+	return raw
+}
+
+func mustDecodeB64(src []byte) []byte {
+	raw, err := base64.StdEncoding.DecodeString(string(src))
+	if err != nil {
+		panic(err)
+	}
 
 	return raw
 }
@@ -81,7 +90,7 @@ var trzbaSet = []struct {
 			},
 			KontrolniKody: eet.TrzbaKontrolniKodyType{
 				Pkp: eet.PkpElementType{
-					PkpType:  eet.PkpType("LnIZVjGlkdvO55gRP9Wa4k48X0QZrLU5aWsFDpYlwcCC/S8KHuUI0hxxS9pPP/vhuvKhe+a2YoZJ6wZDMSlPs0QDtt5i6D6XhQx/Oj84Azoo8fgSf5R6QOpnpsmw+X75jsUlwzGm4+YLGrhbScjdUdHIBLw2XCJus5cPXAb3aWcab59X2L/zaZ87oJRIQsmERMgPBtT8GIZNEfnX89OL/EMyyxibUC0C97aEokK1Lvvm55xidC9wWoMJJtKjNjScsGg5HpmOe0Zqekovtyvwt5mYVCx/fXa3OTsas2vVMskZKLyaxd7GYkJ5Y9nWCyuD8/pzKWR/8BxApIL601VHaQ=="),
+					PkpType:  mustDecodeB64(eet.PkpType("LnIZVjGlkdvO55gRP9Wa4k48X0QZrLU5aWsFDpYlwcCC/S8KHuUI0hxxS9pPP/vhuvKhe+a2YoZJ6wZDMSlPs0QDtt5i6D6XhQx/Oj84Azoo8fgSf5R6QOpnpsmw+X75jsUlwzGm4+YLGrhbScjdUdHIBLw2XCJus5cPXAb3aWcab59X2L/zaZ87oJRIQsmERMgPBtT8GIZNEfnX89OL/EMyyxibUC0C97aEokK1Lvvm55xidC9wWoMJJtKjNjScsGg5HpmOe0Zqekovtyvwt5mYVCx/fXa3OTsas2vVMskZKLyaxd7GYkJ5Y9nWCyuD8/pzKWR/8BxApIL601VHaQ==")),
 					Digest:   "SHA256",
 					Cipher:   "RSA2048",
 					Encoding: "base64",
@@ -119,7 +128,7 @@ var trzbaSet = []struct {
 			},
 			KontrolniKody: eet.TrzbaKontrolniKodyType{
 				Pkp: eet.PkpElementType{
-					PkpType:  eet.PkpType("R6Q9JR65KiQA3C5a5NNxVT/vzUV1w3DJJ49QbUgsTsCmnSQHoXFL9bOr9C4c1rQO//fI5OdsZsuvHiwu9aY8rroyb63YMTK4aq77k+9KS8gLdkUk1V3h1DdaV03qeZIeNSmQZZ0NRqFTfVvqcbmAO3bLQOLAS6cEyfWc80egQntBmVE/eOMsnDk5zSjK1K/srS7jDX8zeZYW+ZJSCIy2t2VMxF5PNABXWcs09at7Wa0l+tpLTp8kjAJdAQQLwExrbymT0osaMWtqFhSW27bEf+fWXm0FerXTcLSPwaiIqJWjPSyQQdoc3HUkqjchjWcvuLQrnWhVLF97Kb87hWlOwQ=="),
+					PkpType:  mustDecodeB64(eet.PkpType("R6Q9JR65KiQA3C5a5NNxVT/vzUV1w3DJJ49QbUgsTsCmnSQHoXFL9bOr9C4c1rQO//fI5OdsZsuvHiwu9aY8rroyb63YMTK4aq77k+9KS8gLdkUk1V3h1DdaV03qeZIeNSmQZZ0NRqFTfVvqcbmAO3bLQOLAS6cEyfWc80egQntBmVE/eOMsnDk5zSjK1K/srS7jDX8zeZYW+ZJSCIy2t2VMxF5PNABXWcs09at7Wa0l+tpLTp8kjAJdAQQLwExrbymT0osaMWtqFhSW27bEf+fWXm0FerXTcLSPwaiIqJWjPSyQQdoc3HUkqjchjWcvuLQrnWhVLF97Kb87hWlOwQ==")),
 					Digest:   "SHA256",
 					Cipher:   "RSA2048",
 					Encoding: "base64",
@@ -157,7 +166,7 @@ var trzbaSet = []struct {
 			},
 			KontrolniKody: eet.TrzbaKontrolniKodyType{
 				Pkp: eet.PkpElementType{
-					PkpType:  eet.PkpType("OpFQuM1bRD4kMVLsMIkg8eglTwSMX65w4UJ4RwkbqHhe7IW/MCW//0rlp2b0FRzssM3tmXpinzPRX3wUy+smjeek1wPZ2fDypPG2nf5WSDXpPOg4wjbMI97e906A9uZCvJY7XY9z67fjxHsUr5GnI5Lj2kc1Qiv7x7J6MxKkF0Z3mwOJTxL9qKtnEz/ZIMgovj/aMbb0c3Lg2VZQFSL5ZSnEGj6flT2v3//swEwSLF7xVsyimKKzVE1B/QuIAxZ9tUYjHoZiDmtOPcScYx4D9YsjsBf4tNmqbDDUSmY7dksGx2JOZkWfQ8YHU/nz0JF/yF7P2RT1IMpPUz6IPMc+Yg=="),
+					PkpType:  mustDecodeB64(eet.PkpType("OpFQuM1bRD4kMVLsMIkg8eglTwSMX65w4UJ4RwkbqHhe7IW/MCW//0rlp2b0FRzssM3tmXpinzPRX3wUy+smjeek1wPZ2fDypPG2nf5WSDXpPOg4wjbMI97e906A9uZCvJY7XY9z67fjxHsUr5GnI5Lj2kc1Qiv7x7J6MxKkF0Z3mwOJTxL9qKtnEz/ZIMgovj/aMbb0c3Lg2VZQFSL5ZSnEGj6flT2v3//swEwSLF7xVsyimKKzVE1B/QuIAxZ9tUYjHoZiDmtOPcScYx4D9YsjsBf4tNmqbDDUSmY7dksGx2JOZkWfQ8YHU/nz0JF/yF7P2RT1IMpPUz6IPMc+Yg==")),
 					Digest:   "SHA256",
 					Cipher:   "RSA2048",
 					Encoding: "base64",
@@ -175,30 +184,36 @@ var trzbaSet = []struct {
 func TestTrzbaType_Etree(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(tc.requestFile, func(t *testing.T) {
+			// expected TrzbaType document
+			src := readFile(t, tc.requestFile)
+			doc := etree.NewDocument()
+			err := doc.ReadFromBytes(src)
+			require.NoError(t, err, "process etree document from the given request file: %w", err)
+			trzbaElem := doc.FindElement("//Trzba")
+			require.NotEmpty(t, trzbaElem, "find element Trzba")
+			doc.SetRoot(trzbaElem)
+			trzbaFromRequest, err := doc.WriteToBytes()
+			require.NoError(t, err, "parse etree to string")
+
+			var expTrzba *eet.TrzbaType
+			err = xml.Unmarshal(trzbaFromRequest, &expTrzba)
+			require.NoError(t, err, "unmarshal xml from sample request")
+
+			expElem, err := expTrzba.Etree()
+			require.NoError(t, err, "etree conversion")
+
+			doc = etree.NewDocument()
+			doc.SetRoot(expElem)
+			expS, err := doc.WriteToString()
+			require.NoError(t, err, "parse etree to string")
+
+			// actual TrzbaType document
 			elem, err := tc.trzba.Etree()
 			require.NoError(t, err, "etree conversion")
 
-			// string representation of the TrzbaType etree element
-			doc := etree.NewDocument()
+			doc = etree.NewDocument()
 			doc.SetRoot(elem)
 			s, err := doc.WriteToString()
-			require.NoError(t, err, "parse etree to string")
-
-			// TrzbaType values from the source file
-			src := readFile(t, tc.requestFile)
-			expTrzba := new(eet.TrzbaType)
-			err = xml.Unmarshal(src, &expTrzba)
-			require.NoError(t, err, "unmarshal xml from sample request")
-
-			// string representation of the TrzbaType etree element with expected values
-			expTrzbaElem, err := expTrzba.Etree()
-			require.NoError(t, err, "etree conversion")
-
-			trzbaElem := expTrzbaElem.FindElement("//Trzba")
-			require.NotEmpty(t, trzbaElem, "find element Trzba")
-			expDoc := etree.NewDocument()
-			expDoc.SetRoot(trzbaElem)
-			expS, err := doc.WriteToString()
 			require.NoError(t, err, "parse etree to string")
 
 			require.EqualValues(t, expS, s, "same source")
@@ -217,46 +232,39 @@ func BenchmarkTrzbaType_Etree(b *testing.B) {
 func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(tc.pfxFile, func(t *testing.T) {
+			// load private key
 			rawKey := readFile(t, tc.pfxFile)
 			roots, err := ca.PlaygroundRoots()
 			require.NoError(t, err, "retrieve playground roots")
 			_, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
 			require.NoError(t, err, "parse taxpayer's private key")
 
-			// invalid private key
 			{
+				// invalid private key
 				invalidPk, err := rsa.GenerateKey(rand.Reader, 16)
 				require.NoError(t, err, "generate rsa Key")
 				err = tc.trzba.SetSecurityCodes(invalidPk)
 				require.Error(t, err, "invalid private key")
 			}
 
-			// set expectations and empty security codes
+			// expected values
 			expPkp := tc.trzba.KontrolniKody.Pkp
 			expBkp := tc.trzba.KontrolniKody.Bkp
+
+			// reset control codes
 			tc.trzba.KontrolniKody.Pkp = eet.PkpElementType{}
 			tc.trzba.KontrolniKody.Bkp = eet.BkpElementType{}
 
-			// actual values
+			// set security codes
 			err = tc.trzba.SetSecurityCodes(pk)
 			require.NoError(t, err, "set valid Trzba's security codes")
+
+			// actual values
 			pkp := tc.trzba.KontrolniKody.Pkp
 			bkp := tc.trzba.KontrolniKody.Bkp
 
-			require.Equal(t, expPkp.Encoding, pkp.Encoding, "no changes were made to other attributes, should be equal")
-			require.Equal(t, expBkp.Encoding, bkp.Encoding, "no changes were made to other attributes, should be equal")
-
-			require.Equal(t, expPkp.Digest, pkp.Digest, "no changes were made to other attributes, should be equal")
-			require.Equal(t, expBkp.Digest, bkp.Digest, "no changes were made to other attributes, should be equal")
-
-			require.Equal(t, expPkp.Cipher, pkp.Cipher, "no changes were made to other attributes, should be equal")
-
-			// marshal PkpType to convert its value to base64 encoding
-			pkpVal, err := pkp.PkpType.MarshalText()
-			require.NoError(t, err, "security codes should have been set")
-
-			require.Equal(t, string(expPkp.PkpType), string(pkpVal), "no changes were made to other attributes, should be equal")
-			require.Equal(t, string(expBkp.BkpType), string(bkp.BkpType), "no changes were made to other attributes, should be equal")
+			require.Equal(t, expPkp, pkp, "no changes were made to the attributes, should be equal")
+			require.Equal(t, expBkp, bkp, "same PKPs, digest values should be same")
 		})
 	}
 }
@@ -264,6 +272,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
 	trzbaArg := trzbaSet[0]
 
+	// load private key
 	rawKey := readFile(b, trzbaArg.pfxFile)
 	roots, err := ca.PlaygroundRoots()
 	require.NoError(b, err, "retrieve playground roots")
