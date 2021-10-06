@@ -8,14 +8,12 @@ import (
 
 // ProductionRoots returns CA EET root certificates for production purposes.
 func ProductionRoots() ([]*x509.Certificate, error) {
-	blockCrt, _ := pem.Decode(RootCAEET1Production)
-	crt, err := x509.ParseCertificate(blockCrt.Bytes)
+	crt, err := parseCert(RootCAEET1Production)
 	if err != nil {
 		return nil, fmt.Errorf("parse CA EET 1 Production certificate: %w", err)
 	}
 
-	blockCrt2025, _ := pem.Decode(RootCAEET1Production2025)
-	crt2025, err := x509.ParseCertificate(blockCrt2025.Bytes)
+	crt2025, err := parseCert(RootCAEET1Production2025)
 	if err != nil {
 		return nil, fmt.Errorf("parse CA EET 1 Production 2025 certificate: %w", err)
 	}
@@ -25,17 +23,25 @@ func ProductionRoots() ([]*x509.Certificate, error) {
 
 // PlaygroundRoots returns CA EET root certificates for development purposes.
 func PlaygroundRoots() ([]*x509.Certificate, error) {
-	blockCrt, _ := pem.Decode(RootCAEET1Playground)
-	crt, err := x509.ParseCertificate(blockCrt.Bytes)
+	crt, err := parseCert(RootCAEET1Playground)
 	if err != nil {
 		return nil, fmt.Errorf("parse CA EET 1 Playground certificate: %w", err)
 	}
 
-	blockCrt2025, _ := pem.Decode(RootCAEET1Playground2025)
-	crt2025, err := x509.ParseCertificate(blockCrt2025.Bytes)
+	crt2025, err := parseCert(RootCAEET1Playground2025)
 	if err != nil {
 		return nil, fmt.Errorf("parse CA EET 1 Playground 2025 certificate: %w", err)
 	}
 
 	return []*x509.Certificate{crt, crt2025}, nil
+}
+
+func parseCert(rawPEM []byte) (*x509.Certificate, error) {
+	block, _ := pem.Decode(rawPEM)
+	crt, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("parse certificate: %w", err)
+	}
+
+	return crt, nil
 }

@@ -4,11 +4,17 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 
-	"github.com/chutommy/eetgateway/pkg/mfcr"
 	"golang.org/x/crypto/pkcs12"
 )
+
+// ErrNotCACertificate is returned if a non-CA's certificate is provided when CA's certificate is being expected.
+var ErrNotCACertificate = errors.New("not a certificate authority's certificate")
+
+// ErrInvalidKeyPair is returned if a private/public keypair is invalid.
+var ErrInvalidKeyPair = errors.New("invalid private/public keypair")
 
 // ParseTaxpayerCertificate takes a raw data of a PFX file and decodes it into PEM blocks.
 // Blocks are expected to be in this order: taxpayer's certificate, certificate authority's certificate
@@ -48,7 +54,7 @@ func checkCACert(roots []*x509.Certificate, caCrt *x509.Certificate) error {
 	}
 
 	if !ok {
-		return fmt.Errorf("certificate not found in a pool of valid CA's certificates: %w", mfcr.ErrNotCACertificate)
+		return fmt.Errorf("certificate not found in a pool of valid CA's certificates: %w", ErrNotCACertificate)
 	}
 
 	return nil
@@ -56,7 +62,7 @@ func checkCACert(roots []*x509.Certificate, caCrt *x509.Certificate) error {
 
 func verifyKeys(caCrt *x509.Certificate, crt *x509.Certificate, pk *rsa.PrivateKey) error {
 	if isCa := caCrt.IsCA; !isCa {
-		return fmt.Errorf("expected CA's certificate: %w", mfcr.ErrNotCACertificate)
+		return fmt.Errorf("expected CA's certificate: %w", ErrNotCACertificate)
 	}
 
 	if err := crt.CheckSignatureFrom(caCrt); err != nil {
@@ -64,7 +70,7 @@ func verifyKeys(caCrt *x509.Certificate, crt *x509.Certificate, pk *rsa.PrivateK
 	}
 
 	if !pk.PublicKey.Equal(crt.PublicKey) {
-		return fmt.Errorf("the keypair of the taxpayer's private key and the certificate is not valid: %w", mfcr.ErrInvalidKeyPair)
+		return fmt.Errorf("the keypair of the taxpayer's private key and the certificate is not valid: %w", ErrInvalidKeyPair)
 	}
 
 	return nil

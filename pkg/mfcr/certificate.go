@@ -6,9 +6,12 @@ import (
 	"fmt"
 )
 
+// ErrInvalidOrganizationName is returned if the organization name is invalid.
 var ErrInvalidOrganizationName = errors.New("invalid organization name")
-var ErrNotCACertificate = errors.New("not a certificate authority's certificate")
-var ErrInvalidKeyPair = errors.New("invalid private/public keypair")
+
+// ErrInsecureCertificate is returned if a certificate is signed by an unknown authority and
+// can't be verified.
+var ErrInsecureCertificate = errors.New("certificate signed by an unknown authority")
 
 // OrganizationName is the legal name that the organization is registered with authority at the national level.
 const OrganizationName = "Česká republika - Generální finanční ředitelství"
@@ -32,11 +35,11 @@ func (c *caService) Verify(crt *x509.Certificate) error {
 	}
 
 	if n := crt.Subject.Organization[0]; n != OrganizationName {
-		return fmt.Errorf("%s: %w", n, ErrInvalidOrganizationName)
+		return fmt.Errorf("unexpected organization name (%s): %w", n, ErrInvalidOrganizationName)
 	}
 
 	if _, err := crt.Verify(opts); err != nil {
-		return fmt.Errorf("verify certificate: %w", err)
+		return fmt.Errorf("verify certificate: %v: %w", err, ErrInsecureCertificate)
 	}
 
 	return nil
