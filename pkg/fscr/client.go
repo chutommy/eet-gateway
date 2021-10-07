@@ -1,4 +1,4 @@
-package mfcr
+package fscr
 
 import (
 	"bytes"

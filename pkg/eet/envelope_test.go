@@ -10,7 +10,7 @@ import (
 	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
-	"github.com/chutommy/eetgateway/pkg/mfcr"
+	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/stretchr/testify/require"
 )
 
@@ -111,7 +111,7 @@ func TestParseAndVerifyResponse(t *testing.T) {
 	pool, err := x509.SystemCertPool()
 	require.NoError(t, err, "system certificate pool")
 	require.True(t, pool.AppendCertsFromPEM(ca.ICACertificate), "valid PEM SSL certificate")
-	caSvc := mfcr.NewCAService(pool)
+	caSvc := fscr.NewCAService(pool)
 
 	for _, tc := range parseAndVerifyResponseTests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -171,7 +171,7 @@ func BenchmarkVerifyResponse(b *testing.B) {
 	pool, err := x509.SystemCertPool()
 	require.NoError(b, err, "retrieve system certificate pool")
 	require.True(b, pool.AppendCertsFromPEM(ca.ICACertificate), "valid SSL certificate")
-	caSvc := mfcr.NewCAService(pool)
+	caSvc := fscr.NewCAService(pool)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

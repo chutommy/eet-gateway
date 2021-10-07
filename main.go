@@ -13,8 +13,8 @@ import (
 
 	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
+	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
-	"github.com/chutommy/eetgateway/pkg/mfcr"
 	"github.com/chutommy/eetgateway/pkg/server"
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
@@ -40,7 +40,7 @@ func main() {
 		},
 	}
 
-	client := mfcr.NewClient(c, mfcr.PlaygroundURL)
+	client := fscr.NewClient(c, fscr.PlaygroundURL)
 	errCheck(err)
 
 	pool, err := x509.SystemCertPool()
@@ -48,7 +48,7 @@ func main() {
 	if ok := pool.AppendCertsFromPEM(ca.ICACertificate); !ok {
 		panic("failed to parse root certificate")
 	}
-	caSvc := mfcr.NewCAService(pool)
+	caSvc := fscr.NewCAService(pool)
 
 	ks := &ks{
 		key: pk,

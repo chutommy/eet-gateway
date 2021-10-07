@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
-	"github.com/chutommy/eetgateway/pkg/mfcr"
 )
 
 // ErrCertificateRetrieval is returned if a certificate with the given ID couldn't be fetched.
@@ -31,12 +31,12 @@ type GatewayService interface {
 }
 
 type gatewayService struct {
-	mfcrClient mfcr.Client
-	caSvc      mfcr.CAService
+	fscrClient fscr.Client
+	caSvc      fscr.CAService
 	keyStore   keystore.Service
 }
 
-// Send sends TrzbaType using mfcr.Client, validate and verifies response and returns OdpovedType.
+// Send sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
 func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaType) (*OdpovedType, error) {
 	kp, err := g.keyStore.Get(certID)
 	if err != nil {
@@ -48,7 +48,7 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 		return nil, fmt.Errorf("build a new soap request envelope: %v: %w", err, ErrRequestConstruction)
 	}
 
-	respEnv, err := g.mfcrClient.Do(ctx, reqEnv)
+	respEnv, err := g.fscrClient.Do(ctx, reqEnv)
 	if err != nil {
 		return nil, fmt.Errorf("make soap request to MFCR server: %v: %w", err, ErrMFCRConnection)
 	}
@@ -68,7 +68,7 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 
 // Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
 func (g *gatewayService) Ping() error {
-	if err := g.mfcrClient.Ping(); err != nil {
+	if err := g.fscrClient.Ping(); err != nil {
 		return fmt.Errorf("ping MFCR server: %v: %w", err, ErrMFCRConnection)
 	}
 
@@ -76,9 +76,9 @@ func (g *gatewayService) Ping() error {
 }
 
 // NewGatewayService returns GatewayService implementation.
-func NewGatewayService(mfcrClient mfcr.Client, caSvc mfcr.CAService, keyStore keystore.Service) GatewayService {
+func NewGatewayService(fscrClient fscr.Client, caSvc fscr.CAService, keyStore keystore.Service) GatewayService {
 	return &gatewayService{
-		mfcrClient: mfcrClient,
+		fscrClient: fscrClient,
 		caSvc:      caSvc,
 		keyStore:   keyStore,
 	}
