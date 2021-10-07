@@ -34,7 +34,6 @@ type gatewayService struct {
 	mfcrClient mfcr.Client
 	caSvc      mfcr.CAService
 	keyStore   keystore.Service
-	// TODO zap logger
 }
 
 // Send sends TrzbaType using mfcr.Client, validate and verifies response and returns OdpovedType.

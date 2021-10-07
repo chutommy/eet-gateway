@@ -34,9 +34,6 @@ func NewHandler(gatewaySvc eet.GatewayService) Handler {
 func (h *handler) ginEngine() *gin.Engine {
 	r := gin.New()
 
-	// TODO logging middleware
-	// TODO recover middleware
-
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/ping", h.ping)

@@ -15,5 +15,3 @@ type KeyPair struct {
 type Service interface {
 	Get(id string) (*KeyPair, error)
 }
-
-// TODO in memory certificate database implementation
