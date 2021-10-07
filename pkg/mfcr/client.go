@@ -3,7 +3,6 @@ package mfcr
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -96,7 +95,7 @@ func (c *client) Ping() error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(http.StatusText(resp.StatusCode))
+		return fmt.Errorf("status code not OK (200): %s", http.StatusText(resp.StatusCode))
 	}
 
 	return nil

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,8 +28,8 @@ func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 	go func() {
 		// non blocking server
 		err = s.server.ListenAndServe()
-		if !errors.Is(err, http.ErrServerClosed) {
-			// TODO log error out
+		if errors.Is(err, http.ErrServerClosed) {
+			err = nil
 		}
 	}()
 
@@ -42,8 +43,7 @@ func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 	defer cancel()
 
 	if err := s.server.Shutdown(ctx); err != nil {
-		// TODO log error out
-		return err
+		return fmt.Errorf("server is shutting down: %w", err)
 	}
 
 	return nil

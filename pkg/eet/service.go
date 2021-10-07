@@ -10,19 +10,19 @@ import (
 )
 
 // ErrCertificateRetrieval is returned if a certificate with the given ID couldn't be fetched.
-var ErrCertificateRetrieval = errors.New("certificate couldn't be retrieved")
+var ErrCertificateRetrieval = errors.New("EET certificate couldn't be retrieved")
 
 // ErrRequestConstruction is returned if a SOAP request envelope couldn't be built.
-var ErrRequestConstruction = errors.New("request couldn't be constructed")
+var ErrRequestConstruction = errors.New("request to EET couldn't be constructed")
 
 // ErrMFCRConnection is returned if an error occurs during the communication with the MFCR server.
 var ErrMFCRConnection = errors.New("MFCR connection error")
 
 // ErrMFCRResponseParse is returned if an error occurs during the MFCR SOAP response parsing.
-var ErrMFCRResponseParse = errors.New("SOAP response parse error")
+var ErrMFCRResponseParse = errors.New("MFCR response parse error")
 
 // ErrMFCRResponseVerification is returned if the response doesn't pass security checks and verifications.
-var ErrMFCRResponseVerification = errors.New("SOAP response couldn't be successfully verified")
+var ErrMFCRResponseVerification = errors.New("MFCR response couldn't be successfully verified")
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
