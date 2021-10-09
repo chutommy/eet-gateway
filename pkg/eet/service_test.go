@@ -82,6 +82,7 @@ func TestGatewayService_Ping(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			// define dependencies of the GatewayService
 			c := &http.Client{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{
@@ -93,8 +94,11 @@ func TestGatewayService_Ping(t *testing.T) {
 			}
 
 			client := fscr.NewClient(c, tc.url)
+
+			// construct the service
 			gSvc := eet.NewGatewayService(client, nil, nil)
 
+			// run
 			err := gSvc.Ping()
 			if tc.ok {
 				require.NoError(t, err, "FSCR's servers should be available non-stop")
@@ -106,11 +110,13 @@ func TestGatewayService_Ping(t *testing.T) {
 }
 
 func TestGatewayService_Send(t *testing.T) {
-	p12File, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.p12")
-	require.NoError(t, err, "file exists")
-
+	// CA root certificate
 	roots, err := ca.PlaygroundRoots()
 	require.NoError(t, err, "playground roots should be accessiable")
+
+	// taxpayer's certificate/private key
+	p12File, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.p12")
+	require.NoError(t, err, "file exists")
 
 	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
 	require.NoError(t, err, "valid taxpayer's PKCS12 file")
@@ -118,6 +124,7 @@ func TestGatewayService_Send(t *testing.T) {
 	invalidPK, err := rsa.GenerateKey(rand.Reader, 16)
 	require.NoError(t, err, "generate random private key")
 
+	// certificate pool for the HTTPS
 	systemCertPool, err := x509.SystemCertPool()
 	require.NoError(t, err, "system root certificate pool should be accessible")
 
@@ -381,8 +388,10 @@ func TestGatewayService_Send(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		t.Run(tc.name, func(t *testing.T) {
+			// construct a service
 			gSvc := eet.NewGatewayService(tc.client, tc.ca, tc.ks)
 
+			// run
 			odp, err := gSvc.Send(context.Background(), tc.certID, tc.trzba)
 			if tc.expErr == nil {
 				require.NoError(t, err, "sale should be successfully stored")
