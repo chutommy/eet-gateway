@@ -99,8 +99,7 @@ func TestParseAndVerifyResponse(t *testing.T) {
 		},
 	}
 
-	pool, err := x509.SystemCertPool()
-	require.NoError(t, err, "system certificate pool")
+	pool := x509.NewCertPool()
 	require.True(t, pool.AppendCertsFromPEM(ca.ICACertificate), "valid PEM SSL certificate")
 	eetCASvc := fscr.NewEETCAService(pool)
 

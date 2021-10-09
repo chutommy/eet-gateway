@@ -128,8 +128,7 @@ func TestGatewayService_Send(t *testing.T) {
 	systemCertPool, err := x509.SystemCertPool()
 	require.NoError(t, err, "system root certificate pool should be accessible")
 
-	icaCertPool, err := x509.SystemCertPool()
-	require.NoError(t, err, "system root certificate pool should be accessible")
+	icaCertPool := x509.NewCertPool()
 	ok := icaCertPool.AppendCertsFromPEM(ca.ICACertificate)
 	require.True(t, ok, "ICA certificate is valid")
 

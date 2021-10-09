@@ -43,8 +43,7 @@ func main() {
 	client := fscr.NewClient(c, fscr.PlaygroundURL)
 	errCheck(err)
 
-	pool, err := x509.SystemCertPool()
-	errCheck(err)
+	pool := x509.NewCertPool()
 	if ok := pool.AppendCertsFromPEM(ca.ICACertificate); !ok {
 		panic("failed to parse root certificate")
 	}
