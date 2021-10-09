@@ -102,7 +102,7 @@ func TestParseAndVerifyResponse(t *testing.T) {
 	pool, err := x509.SystemCertPool()
 	require.NoError(t, err, "system certificate pool")
 	require.True(t, pool.AppendCertsFromPEM(ca.ICACertificate), "valid PEM SSL certificate")
-	caSvc := fscr.NewCAService(pool)
+	eetCASvc := fscr.NewEETCAService(pool)
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -122,7 +122,7 @@ func TestParseAndVerifyResponse(t *testing.T) {
 					},
 				}
 
-				err = eet.VerifyResponse(trzba, resp, odp, caSvc.Verify)
+				err = eet.VerifyResponse(trzba, resp, odp, eetCASvc.Verify)
 			}
 
 			if tc.valid {

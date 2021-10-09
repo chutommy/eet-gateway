@@ -48,14 +48,14 @@ func main() {
 	if ok := pool.AppendCertsFromPEM(ca.ICACertificate); !ok {
 		panic("failed to parse root certificate")
 	}
-	caSvc := fscr.NewCAService(pool)
+	eetCASvc := fscr.NewEETCAService(pool)
 
 	ks := &ks{
 		key: pk,
 		crt: crt,
 	}
 
-	gSvc := eet.NewGatewayService(client, caSvc, ks)
+	gSvc := eet.NewGatewayService(client, eetCASvc, ks)
 
 	// server
 	h := server.NewHandler(gSvc)

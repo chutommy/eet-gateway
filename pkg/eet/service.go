@@ -32,7 +32,7 @@ type GatewayService interface {
 
 type gatewayService struct {
 	fscrClient fscr.Client
-	caSvc      fscr.CAService
+	caSvc      fscr.EETCAService
 	keyStore   keystore.Service
 }
 
@@ -76,10 +76,10 @@ func (g *gatewayService) Ping() error {
 }
 
 // NewGatewayService returns GatewayService implementation.
-func NewGatewayService(fscrClient fscr.Client, caSvc fscr.CAService, keyStore keystore.Service) GatewayService {
+func NewGatewayService(fscrClient fscr.Client, eetCASvc fscr.EETCAService, keyStore keystore.Service) GatewayService {
 	return &gatewayService{
 		fscrClient: fscrClient,
-		caSvc:      caSvc,
+		caSvc:      eetCASvc,
 		keyStore:   keyStore,
 	}
 }

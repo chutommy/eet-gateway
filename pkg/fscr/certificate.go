@@ -16,17 +16,17 @@ var ErrInsecureCertificate = errors.New("certificate signed by an unknown author
 // OrganizationName is the legal name that the organization is registered with authority at the national level.
 const OrganizationName = "Česká republika - Generální finanční ředitelství"
 
-// CAService verifies certificates signed off by the CA.
-type CAService interface {
+// EETCAService verifies certificates signed off by the CA.
+type EETCAService interface {
 	Verify(crt *x509.Certificate) error
 }
 
-type caService struct {
+type eetCAService struct {
 	pool *x509.CertPool
 }
 
 // Verify verifies crt certificate.
-func (c *caService) Verify(crt *x509.Certificate) error {
+func (c *eetCAService) Verify(crt *x509.Certificate) error {
 	opts := x509.VerifyOptions{
 		Roots: c.pool,
 		KeyUsages: []x509.ExtKeyUsage{
@@ -45,9 +45,9 @@ func (c *caService) Verify(crt *x509.Certificate) error {
 	return nil
 }
 
-// NewCAService returns a CAService implementation with the given certification pool.
-func NewCAService(pool *x509.CertPool) CAService {
-	return &caService{
+// NewEETCAService returns a EETCAService implementation with the given certification pool.
+func NewEETCAService(pool *x509.CertPool) EETCAService {
+	return &eetCAService{
 		pool: pool,
 	}
 }

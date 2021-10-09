@@ -138,7 +138,7 @@ func TestGatewayService_Send(t *testing.T) {
 		certID string
 		trzba  *eet.TrzbaType
 		client fscr.Client
-		ca     fscr.CAService
+		eetCA  fscr.EETCAService
 		ks     keystore.Service
 		expErr error
 	}{
@@ -175,7 +175,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			ca: fscr.NewCAService(icaCertPool),
+			eetCA: fscr.NewEETCAService(icaCertPool),
 			ks: &ks{
 				crt: crt,
 				key: pk,
@@ -215,7 +215,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			ca: fscr.NewCAService(icaCertPool),
+			eetCA: fscr.NewEETCAService(icaCertPool),
 			ks: &ks{
 				crt: crt,
 				key: pk,
@@ -255,7 +255,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			ca: fscr.NewCAService(icaCertPool),
+			eetCA: fscr.NewEETCAService(icaCertPool),
 			ks: &ks{
 				crt: crt,
 				key: invalidPK,
@@ -295,7 +295,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, "invalid_url"),
-			ca: fscr.NewCAService(icaCertPool),
+			eetCA: fscr.NewEETCAService(icaCertPool),
 			ks: &ks{
 				crt: crt,
 				key: pk,
@@ -335,7 +335,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			ca: fscr.NewCAService(icaCertPool),
+			eetCA: fscr.NewEETCAService(icaCertPool),
 			ks: &ks{
 				crt: crt,
 				key: pk,
@@ -375,7 +375,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			ca: fscr.NewCAService(x509.NewCertPool()),
+			eetCA: fscr.NewEETCAService(x509.NewCertPool()),
 			ks: &ks{
 				crt: crt,
 				key: pk,
@@ -389,7 +389,7 @@ func TestGatewayService_Send(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			// construct a service
-			gSvc := eet.NewGatewayService(tc.client, tc.ca, tc.ks)
+			gSvc := eet.NewGatewayService(tc.client, tc.eetCA, tc.ks)
 
 			// run
 			odp, err := gSvc.Send(context.Background(), tc.certID, tc.trzba)
