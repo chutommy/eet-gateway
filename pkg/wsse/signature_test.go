@@ -30,26 +30,26 @@ func parseTaxpayerCertificate(t require.TestingT, pfxFile string) (*x509.Certifi
 	return crt, pk
 }
 
-var calcTests = []struct {
-	xmlFile string
-	pfxFile string
-}{
-	{
-		xmlFile: "testdata/CZ00000019.v3.valid.v3.1.1.xml",
-		pfxFile: "testdata/EET_CA1_Playground-CZ00000019.p12",
-	},
-	{
-		xmlFile: "testdata/CZ683555118.v3.valid.v3.1.1.xml",
-		pfxFile: "testdata/EET_CA1_Playground-CZ683555118.p12",
-	},
-	{
-		xmlFile: "testdata/CZ1212121218.v3.valid.v3.1.1.xml",
-		pfxFile: "testdata/EET_CA1_Playground-CZ1212121218.p12",
-	},
-}
-
 func TestCalc(t *testing.T) {
-	for _, tc := range calcTests {
+	tests := []struct {
+		xmlFile string
+		pfxFile string
+	}{
+		{
+			xmlFile: "testdata/CZ00000019.v3.valid.v3.1.1.xml",
+			pfxFile: "testdata/EET_CA1_Playground-CZ00000019.p12",
+		},
+		{
+			xmlFile: "testdata/CZ683555118.v3.valid.v3.1.1.xml",
+			pfxFile: "testdata/EET_CA1_Playground-CZ683555118.p12",
+		},
+		{
+			xmlFile: "testdata/CZ1212121218.v3.valid.v3.1.1.xml",
+			pfxFile: "testdata/EET_CA1_Playground-CZ1212121218.p12",
+		},
+	}
+
+	for _, tc := range tests {
 		t.Run(tc.xmlFile, func(t *testing.T) {
 			xml := readFile(t, tc.xmlFile)
 			_, pk := parseTaxpayerCertificate(t, tc.pfxFile)

@@ -48,7 +48,7 @@ func mustParseCertPool(f func() (*x509.CertPool, error)) *x509.CertPool {
 }
 
 func TestGatewayService_Ping(t *testing.T) {
-	pingTests := []struct {
+	tests := []struct {
 		name    string
 		url     string
 		crtPool *x509.CertPool
@@ -80,7 +80,7 @@ func TestGatewayService_Ping(t *testing.T) {
 		},
 	}
 
-	for _, tc := range pingTests {
+	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			c := &http.Client{
 				Transport: &http.Transport{
@@ -126,7 +126,7 @@ func TestGatewayService_Send(t *testing.T) {
 	ok := icaCertPool.AppendCertsFromPEM(ca.ICACertificate)
 	require.True(t, ok, "ICA certificate is valid")
 
-	sendTests := []struct {
+	tests := []struct {
 		name   string
 		certID string
 		trzba  *eet.TrzbaType
@@ -377,11 +377,10 @@ func TestGatewayService_Send(t *testing.T) {
 		},
 	}
 
-	for _, tc := range sendTests {
+	for _, tc := range tests {
 		time.Sleep(1 * time.Second)
 
 		t.Run(tc.name, func(t *testing.T) {
-
 			gSvc := eet.NewGatewayService(tc.client, tc.ca, tc.ks)
 
 			odp, err := gSvc.Send(context.Background(), tc.certID, tc.trzba)

@@ -19,45 +19,45 @@ func mustParseRoots(rootsFunc func() ([]*x509.Certificate, error)) []*x509.Certi
 	return roots
 }
 
-var taxpayerCertificatesTests = []struct {
-	name     string
-	file     string
-	password string
-	roots    []*x509.Certificate
-	ok       bool
-}{
-	{
-		name:     "ok CZ00000019",
-		file:     "testdata/EET_CA1_Playground-CZ00000019.p12",
-		password: "eet",
-		roots:    mustParseRoots(ca.PlaygroundRoots),
-		ok:       true,
-	},
-	{
-		name:     "ok CZ683555118",
-		file:     "testdata/EET_CA1_Playground-CZ683555118.p12",
-		password: "eet",
-		roots:    mustParseRoots(ca.PlaygroundRoots),
-		ok:       true,
-	},
-	{
-		name:     "ok CZ1212121218",
-		file:     "testdata/EET_CA1_Playground-CZ1212121218.p12",
-		password: "eet",
-		roots:    mustParseRoots(ca.PlaygroundRoots),
-		ok:       true,
-	},
-	{
-		name:     "invalid CA's certificate",
-		file:     "testdata/invalid_CA.p12",
-		password: "eet",
-		roots:    mustParseRoots(ca.PlaygroundRoots),
-		ok:       false,
-	},
-}
-
 func TestParseTaxpayerCertificate(t *testing.T) {
-	for _, tc := range taxpayerCertificatesTests {
+	tests := []struct {
+		name     string
+		file     string
+		password string
+		roots    []*x509.Certificate
+		ok       bool
+	}{
+		{
+			name:     "ok CZ00000019",
+			file:     "testdata/EET_CA1_Playground-CZ00000019.p12",
+			password: "eet",
+			roots:    mustParseRoots(ca.PlaygroundRoots),
+			ok:       true,
+		},
+		{
+			name:     "ok CZ683555118",
+			file:     "testdata/EET_CA1_Playground-CZ683555118.p12",
+			password: "eet",
+			roots:    mustParseRoots(ca.PlaygroundRoots),
+			ok:       true,
+		},
+		{
+			name:     "ok CZ1212121218",
+			file:     "testdata/EET_CA1_Playground-CZ1212121218.p12",
+			password: "eet",
+			roots:    mustParseRoots(ca.PlaygroundRoots),
+			ok:       true,
+		},
+		{
+			name:     "invalid CA's certificate",
+			file:     "testdata/invalid_CA.p12",
+			password: "eet",
+			roots:    mustParseRoots(ca.PlaygroundRoots),
+			ok:       false,
+		},
+	}
+
+	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			data, err := ioutil.ReadFile(tc.file)
 			require.NoError(t, err, "file exists")

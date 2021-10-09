@@ -9,26 +9,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var certFiles = []struct {
-	file     string
-	password string
-}{
-	{
-		file:     "testdata/EET_CA1_Playground-CZ00000019.p12",
-		password: "eet",
-	},
-	{
-		file:     "testdata/EET_CA1_Playground-CZ683555118.p12",
-		password: "eet",
-	},
-	{
-		file:     "testdata/EET_CA1_Playground-CZ1212121218.p12",
-		password: "eet",
-	},
-}
-
 func TestPlaygroundRoots(t *testing.T) {
-	for _, tc := range certFiles {
+	tests := []struct {
+		file     string
+		password string
+	}{
+		{
+			file:     "testdata/EET_CA1_Playground-CZ00000019.p12",
+			password: "eet",
+		},
+		{
+			file:     "testdata/EET_CA1_Playground-CZ683555118.p12",
+			password: "eet",
+		},
+		{
+			file:     "testdata/EET_CA1_Playground-CZ1212121218.p12",
+			password: "eet",
+		},
+	}
+
+	for _, tc := range tests {
 		t.Run(tc.file, func(t *testing.T) {
 			roots, err := ca.PlaygroundRoots()
 			require.NoError(t, err, "should be able to retrieve system root certificates")
