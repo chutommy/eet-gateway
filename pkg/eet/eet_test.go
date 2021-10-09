@@ -232,14 +232,6 @@ func TestTrzbaType_Etree(t *testing.T) {
 	}
 }
 
-func BenchmarkTrzbaType_Etree(b *testing.B) {
-	t := trzbaSet[0].trzba
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = t.Etree()
-	}
-}
-
 func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(tc.pfxFile, func(t *testing.T) {
@@ -272,14 +264,5 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 			require.Equal(t, expPkp, pkp, "no changes were made to the attributes, should be equal")
 			require.Equal(t, expBkp, bkp, "same PKPs, digest values should be same")
 		})
-	}
-}
-
-func BenchmarkTrzbaType_SetSecurityCodes(b *testing.B) {
-	trzbaArg := trzbaSet[0]
-	_, pk := parseTaxpayerCertificate(b, trzbaArg.pfxFile)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = trzbaArg.trzba.SetSecurityCodes(pk)
 	}
 }

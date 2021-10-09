@@ -44,15 +44,6 @@ func TestNewSoapEnvelope(t *testing.T) {
 	}
 }
 
-func BenchmarkNewSoapEnvelope(b *testing.B) {
-	tc := trzbaSet[0]
-	crt, pk := parseTaxpayerCertificate(b, tc.pfxFile)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = eet.NewRequestEnvelope(tc.trzba, crt, pk)
-	}
-}
-
 var parseAndVerifyResponseTests = []struct {
 	name     string
 	respFile string
@@ -141,40 +132,5 @@ func TestParseAndVerifyResponse(t *testing.T) {
 				require.ErrorIs(t, err, tc.expErr, "invalid test case")
 			}
 		})
-	}
-}
-
-func BenchmarkParseResponseEnvelope(b *testing.B) {
-	respFile := "testdata/response_1.xml"
-	resp := readFile(b, respFile)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = eet.ParseResponseEnvelope(resp)
-	}
-}
-
-func BenchmarkVerifyResponse(b *testing.B) {
-	respFile := "testdata/response_1.xml"
-	trzba := &eet.TrzbaType{
-		KontrolniKody: eet.TrzbaKontrolniKodyType{
-			Bkp: eet.BkpElementType{
-				BkpType: "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
-			},
-		},
-	}
-
-	resp := readFile(b, respFile)
-	odpoved, err := eet.ParseResponseEnvelope(resp)
-	require.NoError(b, err, "parse valid response envelope")
-
-	pool, err := x509.SystemCertPool()
-	require.NoError(b, err, "retrieve system certificate pool")
-	require.True(b, pool.AppendCertsFromPEM(ca.ICACertificate), "valid SSL certificate")
-	caSvc := fscr.NewCAService(pool)
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = eet.VerifyResponse(trzba, resp, odpoved, caSvc.Verify)
 	}
 }

@@ -45,15 +45,6 @@ func TestPkp(t *testing.T) {
 	}
 }
 
-func BenchmarkPkp(b *testing.B) {
-	tc := pkpTestSet[0]
-	_, pk := parseTaxpayerCertificate(b, tc.pfxFile)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = eet.Pkp(tc.plaintext, pk)
-	}
-}
-
 func TestBkp(t *testing.T) {
 	tests := []struct {
 		pkp    []byte
@@ -85,17 +76,6 @@ func TestBkp(t *testing.T) {
 	}
 }
 
-func BenchmarkBkp(b *testing.B) {
-	pkp := []byte("OpFQuM1bRD4kMVLsMIkg8eglTwSMX65w4UJ4RwkbqHhe7IW/MCW//0rlp2b0FRzssM3tmXpinzPRX3wUy+smjeek1wPZ2fDypPG2nf5WSDXpPOg4wjbMI97e906A9uZCvJY7XY9z67fjxHsUr5GnI5Lj2kc1Qiv7x7J6MxKkF0Z3mwOJTxL9qKtnEz/ZIMgovj/aMbb0c3Lg2VZQFSL5ZSnEGj6flT2v3//swEwSLF7xVsyimKKzVE1B/QuIAxZ9tUYjHoZiDmtOPcScYx4D9YsjsBf4tNmqbDDUSmY7dksGx2JOZkWfQ8YHU/nz0JF/yF7P2RT1IMpPUz6IPMc+Yg==")
-	rawBkp, err := base64.StdEncoding.DecodeString(string(pkp))
-	require.NoError(b, err, "decode pkp")
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = eet.Bkp(rawBkp)
-	}
-}
-
 func TestSetDelimiters(t *testing.T) {
 	tests := []struct {
 		bkpB64 []byte
@@ -120,14 +100,5 @@ func TestSetDelimiters(t *testing.T) {
 			bkp := eet.SetDelimiters(tc.bkpB64)
 			require.Equal(t, string(tc.expBkp), string(bkp), "set delimiters")
 		})
-	}
-}
-
-func BenchmarkSetDelimiters(b *testing.B) {
-	bkp := []byte("F6C463E7030BB690D0B3950161B65E1A672AA563")
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = eet.SetDelimiters(bkp)
 	}
 }
