@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -27,10 +26,7 @@ type httpService struct {
 func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 	go func() {
 		// non blocking server
-		err = s.server.ListenAndServe()
-		if errors.Is(err, http.ErrServerClosed) {
-			err = nil
-		}
+		s.server.ListenAndServe()
 	}()
 
 	quit := make(chan os.Signal, 1)
