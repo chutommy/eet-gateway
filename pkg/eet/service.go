@@ -60,7 +60,7 @@ func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaTy
 
 	err = verifyResponse(trzba, respEnv, odpoved, g.caSvc.Verify)
 	if err != nil {
-		return odpoved, fmt.Errorf("verify response: %v: %w", err, ErrMFCRResponseVerification)
+		return nil, fmt.Errorf("verify response: %v: %w", err, ErrMFCRResponseVerification)
 	}
 
 	return odpoved, nil
