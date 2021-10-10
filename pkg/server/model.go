@@ -1,12 +1,14 @@
 package server
 
 import (
+	"fmt"
+
 	"github.com/chutommy/eetgateway/pkg/eet"
+	"github.com/google/uuid"
 )
 
 // HTTPRequest represents a binding structure for HTTP requests.
 type HTTPRequest struct {
-	Uuidzpravy      eet.UUIDType   `json:"uuid_zpravy,omitempty"`
 	Datodesl        eet.DateTime   `json:"dat_odesl,omitempty"`
 	Prvnizaslani    bool           `json:"prvni_zaslani,omitempty"`
 	Overeni         bool           `json:"overeni,omitempty"`
@@ -34,9 +36,14 @@ type HTTPRequest struct {
 }
 
 func encodeRequest(req *HTTPRequest) *eet.TrzbaType {
+	uuid, err := uuid.New().MarshalText()
+	if err != nil {
+		panic(fmt.Errorf("marshal a freshly generated UUID: %w", err))
+	}
+
 	return &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
-			Uuidzpravy:   req.Uuidzpravy,
+			Uuidzpravy:   eet.UUIDType(uuid),
 			Datodesl:     req.Datodesl,
 			Prvnizaslani: req.Prvnizaslani,
 			Overeni:      req.Overeni,
@@ -69,30 +76,29 @@ func encodeRequest(req *HTTPRequest) *eet.TrzbaType {
 
 // HTTPResponse represents a binding structure for HTTP responses.
 type HTTPResponse struct {
-	Uuidzpravy eet.UUIDType              `json:"uuid_zpravy,omitempty"`
-	Bkp        eet.BkpType               `json:"bkp,omitempty"`
-	Datcas     eet.DateTime              `json:"datCas,omitempty"`
-	Fik        eet.FikType               `json:"fik,omitempty"`
-	Zprava     string                    `json:"zprava,omitempty"`
-	Kod        int                       `json:"kod,omitempty"`
-	Test       bool                      `json:"test,omitempty"`
-	Varovani   []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
+	Bkp      eet.BkpType               `json:"bkp,omitempty"`
+	Dat      eet.DateTime              `json:"dat,omitempty"`
+	Fik      eet.FikType               `json:"fik,omitempty"`
+	Zprava   string                    `json:"zprava,omitempty"`
+	Kod      int                       `json:"kod,omitempty"`
+	Test     bool                      `json:"test,omitempty"`
+	Varovani []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
 }
 
 func decodeResponse(odpoved *eet.OdpovedType) *HTTPResponse {
+	// select the non-empty date/time
 	cas := odpoved.Hlavicka.Datprij
 	if (cas == eet.DateTime{}) {
 		cas = odpoved.Hlavicka.Datodmit
 	}
 
 	return &HTTPResponse{
-		Uuidzpravy: odpoved.Hlavicka.Uuidzpravy,
-		Bkp:        odpoved.Hlavicka.Bkp,
-		Datcas:     cas,
-		Fik:        odpoved.Potvrzeni.Fik,
-		Zprava:     odpoved.Chyba.Zprava,
-		Kod:        odpoved.Chyba.Kod,
-		Test:       odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
-		Varovani:   odpoved.Varovani,
+		Bkp:      odpoved.Hlavicka.Bkp,
+		Dat:      cas,
+		Fik:      odpoved.Potvrzeni.Fik,
+		Zprava:   odpoved.Chyba.Zprava,
+		Kod:      odpoved.Chyba.Kod,
+		Test:     odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
+		Varovani: odpoved.Varovani,
 	}
 }

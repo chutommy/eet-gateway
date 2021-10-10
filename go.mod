@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/beevik/etree v1.1.0
 	github.com/gin-gonic/gin v1.7.4
+	github.com/google/uuid v1.3.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )
