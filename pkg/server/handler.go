@@ -40,8 +40,8 @@ func (h *handler) ginEngine() *gin.Engine {
 
 	v1 := r.Group("/v1")
 	{
-		v1.GET("/ping", h.ping)
-		v1.POST("/eet/:certID", h.eet)
+		v1.GET("/eet", h.ping)
+		v1.POST("/eet", h.eet)
 	}
 
 	return r
@@ -62,8 +62,6 @@ func (h *handler) ping(c *gin.Context) {
 }
 
 func (h *handler) eet(c *gin.Context) {
-	certID := c.Param("certID")
-
 	// default request
 	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
 	req := &HTTPRequest{
@@ -81,7 +79,7 @@ func (h *handler) eet(c *gin.Context) {
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.Send(c, certID, encodeRequest(req))
+	odpoved, err := h.gatewaySvc.Send(c, req.CertID, encodeRequest(req))
 	if err != nil {
 		if errors.Is(err, eet.ErrCertificateRetrieval) {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"error": eet.ErrCertificateRetrieval.Error()})
