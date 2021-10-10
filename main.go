@@ -17,9 +17,13 @@ import (
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/server"
 	"github.com/chutommy/eetgateway/pkg/wsse"
+	"github.com/rs/zerolog"
 )
 
 func main() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+	zerolog.SetGlobalLevel(zerolog.DebugLevel) // lowest => log everything
+
 	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
 	errCheck(err)
 	roots, err := ca.PlaygroundRoots()
