@@ -13,7 +13,7 @@ func must(err error) {
 	}
 }
 
-func setValidator() {
+func setValidators() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		must(v.RegisterValidation("uuid_zpravy", uuidZpravyValidator))
 		must(v.RegisterValidation("dic", dicValidator))
@@ -25,36 +25,36 @@ func setValidator() {
 	}
 }
 
-var uuidZpravyValidator validator.Func = func(fl validator.FieldLevel) bool {
+func uuidZpravyValidator(fl validator.FieldLevel) bool {
 	s := fl.Field().String()
 	return match("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fAF]{3}-[0-9a-fA-F]{12}$", s)
 }
 
-var dicValidator validator.Func = func(fl validator.FieldLevel) bool {
+func dicValidator(fl validator.FieldLevel) bool {
 	s := fl.Field().String()
 	return match("^CZ[0-9]{8,10}$", s)
 }
 
-var idProvozValidator validator.Func = func(fl validator.FieldLevel) bool {
+func idProvozValidator(fl validator.FieldLevel) bool {
 	i := fl.Field().Int()
-	if i < 1 && i > 999999 {
+	if i < 1 || i > 999999 {
 		return false
 	}
 
 	return true
 }
 
-var idPoklValidator validator.Func = func(fl validator.FieldLevel) bool {
+func idPoklValidator(fl validator.FieldLevel) bool {
 	s := fl.Field().String()
 	return match("^[0-9a-zA-Z\\.,:;/#\\-_ ]{1,20}$", s)
 }
 
-var poradCisValidator validator.Func = func(fl validator.FieldLevel) bool {
+func poradCisValidator(fl validator.FieldLevel) bool {
 	s := fl.Field().String()
 	return match("^[0-9a-zA-Z\\.,:;/#\\-_ ]{1,25}$", s)
 }
 
-var finPolozValidator validator.Func = func(fl validator.FieldLevel) bool {
+func finPolozValidator(fl validator.FieldLevel) bool {
 	f := fl.Field().Float()
 	if f >= 0 {
 		// positive
@@ -71,7 +71,7 @@ var finPolozValidator validator.Func = func(fl validator.FieldLevel) bool {
 	return true
 }
 
-var rezimValidator validator.Func = func(fl validator.FieldLevel) bool {
+func rezimValidator(fl validator.FieldLevel) bool {
 	i := fl.Field().Int()
 	if i != 0 && i != 1 {
 		return false

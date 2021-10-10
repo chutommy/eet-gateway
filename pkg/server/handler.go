@@ -36,7 +36,7 @@ func NewHandler(gatewaySvc eet.GatewayService) Handler {
 func (h *handler) ginEngine() *gin.Engine {
 	r := gin.New()
 
-	setValidator()
+	setValidators()
 
 	v1 := r.Group("/v1")
 	{
