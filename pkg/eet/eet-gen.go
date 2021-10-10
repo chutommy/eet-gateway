@@ -19,9 +19,9 @@ import (
 type BkpDigestType string
 
 type BkpElementType struct {
-	BkpType  BkpType         `xml:",chardata" json:"bkpType,omitempty"`
-	Digest   BkpDigestType   `xml:"digest,attr" json:"digest,omitempty"`
-	Encoding BkpEncodingType `xml:"encoding,attr" json:"encoding,omitempty"`
+	BkpType  BkpType         `xml:",chardata"`
+	Digest   BkpDigestType   `xml:"digest,attr"`
+	Encoding BkpEncodingType `xml:"encoding,attr"`
 }
 
 // May be one of base16
@@ -49,32 +49,32 @@ func (t DateTime) MarshalText() ([]byte, error) {
 type FikType string
 
 type OdpovedChybaType struct {
-	Zprava string `xml:",chardata" json:"zprava,omitempty"`
-	Kod    int    `xml:"kod,attr" json:"kod,omitempty"`
-	Test   bool   `xml:"test,attr,omitempty" json:"test,omitempty"`
+	Zprava string `xml:",chardata"`
+	Kod    int    `xml:"kod,attr"`
+	Test   bool   `xml:"test,attr,omitempty"`
 }
 
 type OdpovedHlavickaType struct {
-	Uuidzpravy UUIDType `xml:"uuid_zpravy,attr,omitempty" json:"uuidzpravy,omitempty"`
-	Bkp        BkpType  `xml:"bkp,attr,omitempty" json:"bkp,omitempty"`
-	Datprij    DateTime `xml:"dat_prij,attr,omitempty" json:"datprij,omitempty"`
-	Datodmit   DateTime `xml:"dat_odmit,attr,omitempty" json:"datodmit,omitempty"`
+	Uuidzpravy UUIDType `xml:"uuid_zpravy,attr,omitempty"`
+	Bkp        BkpType  `xml:"bkp,attr,omitempty"`
+	Datprij    DateTime `xml:"dat_prij,attr,omitempty"`
+	Datodmit   DateTime `xml:"dat_odmit,attr,omitempty"`
 }
 
 type OdpovedPotvrzeniType struct {
-	Fik  FikType `xml:"fik,attr" json:"fik,omitempty"`
-	Test bool    `xml:"test,attr,omitempty" json:"test,omitempty"`
+	Fik  FikType `xml:"fik,attr"`
+	Test bool    `xml:"test,attr,omitempty"`
 }
 
 type OdpovedType struct {
-	Hlavicka  OdpovedHlavickaType   `xml:"Hlavicka,omitempty" json:"hlavicka,omitempty"`
-	Potvrzeni OdpovedPotvrzeniType  `xml:"Potvrzeni,omitempty" json:"potvrzeni,omitempty"`
-	Chyba     OdpovedChybaType      `xml:"Chyba,omitempty" json:"chyba,omitempty"`
-	Varovani  []OdpovedVarovaniType `xml:"Varovani,omitempty" json:"varovani,omitempty"`
+	Hlavicka  OdpovedHlavickaType   `xml:"Hlavicka,omitempty"`
+	Potvrzeni OdpovedPotvrzeniType  `xml:"Potvrzeni,omitempty"`
+	Chyba     OdpovedChybaType      `xml:"Chyba,omitempty"`
+	Varovani  []OdpovedVarovaniType `xml:"Varovani,omitempty"`
 }
 
 type OdpovedVarovaniType struct {
-	Kodvarov int `xml:"kod_varov,attr" json:"kodvarov,omitempty"`
+	Kodvarov int `xml:"kod_varov,attr"`
 }
 
 // May be one of RSA2048
@@ -84,10 +84,10 @@ type PkpCipherType string
 type PkpDigestType string
 
 type PkpElementType struct {
-	PkpType  PkpType         `xml:",chardata" json:"pkpType,omitempty"`
-	Digest   PkpDigestType   `xml:"digest,attr" json:"digest,omitempty"`
-	Cipher   PkpCipherType   `xml:"cipher,attr" json:"cipher,omitempty"`
-	Encoding PkpEncodingType `xml:"encoding,attr" json:"encoding,omitempty"`
+	PkpType  PkpType         `xml:",chardata"`
+	Digest   PkpDigestType   `xml:"digest,attr"`
+	Cipher   PkpCipherType   `xml:"cipher,attr"`
+	Encoding PkpEncodingType `xml:"encoding,attr"`
 }
 
 // May be one of base64
@@ -112,45 +112,45 @@ type String20 string
 type String25 string
 
 type TrzbaDataType struct {
-	Dicpopl         CZDICType  `xml:"dic_popl,attr" json:"dicpopl,omitempty"`
-	Dicpoverujiciho CZDICType  `xml:"dic_poverujiciho,attr,omitempty" json:"dicpoverujiciho,omitempty"`
-	Idprovoz        int        `xml:"id_provoz,attr" json:"idprovoz,omitempty"`
-	Idpokl          String20   `xml:"id_pokl,attr" json:"idpokl,omitempty"`
-	Poradcis        String25   `xml:"porad_cis,attr" json:"poradcis,omitempty"`
-	Dattrzby        DateTime   `xml:"dat_trzby,attr" json:"dattrzby,omitempty"`
-	Celktrzba       CastkaType `xml:"celk_trzba,attr" json:"celktrzba,omitempty"`
-	Zaklnepodldph   CastkaType `xml:"zakl_nepodl_dph,attr,omitempty" json:"zaklnepodldph,omitempty"`
-	Zakldan1        CastkaType `xml:"zakl_dan1,attr,omitempty" json:"zakldan1,omitempty"`
-	Dan1            CastkaType `xml:"dan1,attr,omitempty" json:"dan1,omitempty"`
-	Zakldan2        CastkaType `xml:"zakl_dan2,attr,omitempty" json:"zakldan2,omitempty"`
-	Dan2            CastkaType `xml:"dan2,attr,omitempty" json:"dan2,omitempty"`
-	Zakldan3        CastkaType `xml:"zakl_dan3,attr,omitempty" json:"zakldan3,omitempty"`
-	Dan3            CastkaType `xml:"dan3,attr,omitempty" json:"dan3,omitempty"`
-	Cestsluz        CastkaType `xml:"cest_sluz,attr,omitempty" json:"cestsluz,omitempty"`
-	Pouzitzboz1     CastkaType `xml:"pouzit_zboz1,attr,omitempty" json:"pouzitzboz1,omitempty"`
-	Pouzitzboz2     CastkaType `xml:"pouzit_zboz2,attr,omitempty" json:"pouzitzboz2,omitempty"`
-	Pouzitzboz3     CastkaType `xml:"pouzit_zboz3,attr,omitempty" json:"pouzitzboz3,omitempty"`
-	Urcenocerpzuct  CastkaType `xml:"urceno_cerp_zuct,attr,omitempty" json:"urcenocerpzuct,omitempty"`
-	Cerpzuct        CastkaType `xml:"cerp_zuct,attr,omitempty" json:"cerpzuct,omitempty"`
-	Rezim           RezimType  `xml:"rezim,attr" json:"rezim,omitempty"`
+	Dicpopl         CZDICType  `xml:"dic_popl,attr"`
+	Dicpoverujiciho CZDICType  `xml:"dic_poverujiciho,attr,omitempty"`
+	Idprovoz        int        `xml:"id_provoz,attr"`
+	Idpokl          String20   `xml:"id_pokl,attr"`
+	Poradcis        String25   `xml:"porad_cis,attr"`
+	Dattrzby        DateTime   `xml:"dat_trzby,attr"`
+	Celktrzba       CastkaType `xml:"celk_trzba,attr"`
+	Zaklnepodldph   CastkaType `xml:"zakl_nepodl_dph,attr,omitempty"`
+	Zakldan1        CastkaType `xml:"zakl_dan1,attr,omitempty"`
+	Dan1            CastkaType `xml:"dan1,attr,omitempty"`
+	Zakldan2        CastkaType `xml:"zakl_dan2,attr,omitempty"`
+	Dan2            CastkaType `xml:"dan2,attr,omitempty"`
+	Zakldan3        CastkaType `xml:"zakl_dan3,attr,omitempty"`
+	Dan3            CastkaType `xml:"dan3,attr,omitempty"`
+	Cestsluz        CastkaType `xml:"cest_sluz,attr,omitempty"`
+	Pouzitzboz1     CastkaType `xml:"pouzit_zboz1,attr,omitempty"`
+	Pouzitzboz2     CastkaType `xml:"pouzit_zboz2,attr,omitempty"`
+	Pouzitzboz3     CastkaType `xml:"pouzit_zboz3,attr,omitempty"`
+	Urcenocerpzuct  CastkaType `xml:"urceno_cerp_zuct,attr,omitempty"`
+	Cerpzuct        CastkaType `xml:"cerp_zuct,attr,omitempty"`
+	Rezim           RezimType  `xml:"rezim,attr"`
 }
 
 type TrzbaHlavickaType struct {
-	Uuidzpravy   UUIDType `xml:"uuid_zpravy,attr" json:"uuidzpravy,omitempty"`
-	Datodesl     DateTime `xml:"dat_odesl,attr" json:"datodesl,omitempty"`
-	Prvnizaslani bool     `xml:"prvni_zaslani,attr" json:"prvnizaslani,omitempty"`
-	Overeni      bool     `xml:"overeni,attr,omitempty" json:"overeni,omitempty"`
+	Uuidzpravy   UUIDType `xml:"uuid_zpravy,attr"`
+	Datodesl     DateTime `xml:"dat_odesl,attr"`
+	Prvnizaslani bool     `xml:"prvni_zaslani,attr"`
+	Overeni      bool     `xml:"overeni,attr,omitempty"`
 }
 
 type TrzbaKontrolniKodyType struct {
-	Pkp PkpElementType `xml:"pkp" json:"pkp,omitempty"`
-	Bkp BkpElementType `xml:"bkp" json:"bkp,omitempty"`
+	Pkp PkpElementType `xml:"pkp"`
+	Bkp BkpElementType `xml:"bkp"`
 }
 
 type TrzbaType struct {
-	Hlavicka      TrzbaHlavickaType      `xml:"Hlavicka" json:"hlavicka,omitempty"`
-	Data          TrzbaDataType          `xml:"Data" json:"data,omitempty"`
-	KontrolniKody TrzbaKontrolniKodyType `xml:"KontrolniKody" json:"kontrolniKody,omitempty"`
+	Hlavicka      TrzbaHlavickaType      `xml:"Hlavicka"`
+	Data          TrzbaDataType          `xml:"Data"`
+	KontrolniKody TrzbaKontrolniKodyType `xml:"KontrolniKody"`
 }
 
 // Must match the pattern [0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}
@@ -208,21 +208,21 @@ func _marshalTime(t time.Time, format string) ([]byte, error) {
 }
 
 type Client struct {
-	HTTPClient   *http.Client                        `json:"httpClient,omitempty"`
-	ResponseHook func(*http.Response) *http.Response `json:"responseHook,omitempty"`
-	RequestHook  func(*http.Request) *http.Request   `json:"requestHook,omitempty"`
+	HTTPClient   *http.Client
+	ResponseHook func(*http.Response) *http.Response
+	RequestHook  func(*http.Request) *http.Request
 }
 type soapEnvelope struct {
-	XMLName struct{} `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope" json:"xmlName,omitempty"`
-	Header  []byte   `xml:"http://schemas.xmlsoap.org/soap/envelope/ Header" json:"header,omitempty"`
+	XMLName struct{} `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope"`
+	Header  []byte   `xml:"http://schemas.xmlsoap.org/soap/envelope/ Header"`
 	Body    struct {
-		Message interface{} `json:"message,omitempty"`
+		Message interface{}
 		Fault   *struct {
-			String string `xml:"faultstring,omitempty" json:"string,omitempty"`
-			Code   string `xml:"faultcode,omitempty" json:"code,omitempty"`
-			Detail string `xml:"detail,omitempty" json:"detail,omitempty"`
-		} `xml:"http://schemas.xmlsoap.org/soap/envelope/ Fault,omitempty" json:"fault,omitempty"`
-	} `xml:"http://schemas.xmlsoap.org/soap/envelope/ Body" json:"body,omitempty"`
+			String string `xml:"faultstring,omitempty"`
+			Code   string `xml:"faultcode,omitempty"`
+			Detail string `xml:"detail,omitempty"`
+		} `xml:"http://schemas.xmlsoap.org/soap/envelope/ Fault,omitempty"`
+	} `xml:"http://schemas.xmlsoap.org/soap/envelope/ Body"`
 }
 
 func (c *Client) do(ctx context.Context, method, uri, action string, in, out interface{}) error {
