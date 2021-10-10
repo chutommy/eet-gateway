@@ -17,8 +17,18 @@ import (
 	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/wsse"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
+
+func newUUID() eet.UUIDType {
+	uuid, err := uuid.New().MarshalText()
+	if err != nil {
+		panic(err)
+	}
+
+	return eet.UUIDType(uuid)
+}
 
 type ks struct {
 	key *rsa.PrivateKey
@@ -146,7 +156,7 @@ func TestGatewayService_Send(t *testing.T) {
 			certID: okCertID,
 			trzba: &eet.TrzbaType{
 				Hlavicka: eet.TrzbaHlavickaType{
-					Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
+					Uuidzpravy:   newUUID(),
 					Datodesl:     eet.DateTime(time.Now().Truncate(time.Second)),
 					Prvnizaslani: true,
 					Overeni:      false,
@@ -186,7 +196,7 @@ func TestGatewayService_Send(t *testing.T) {
 			certID: "invalid_id",
 			trzba: &eet.TrzbaType{
 				Hlavicka: eet.TrzbaHlavickaType{
-					Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
+					Uuidzpravy:   newUUID(),
 					Datodesl:     eet.DateTime(time.Now().Truncate(time.Second)),
 					Prvnizaslani: true,
 					Overeni:      false,
@@ -226,7 +236,7 @@ func TestGatewayService_Send(t *testing.T) {
 			certID: okCertID,
 			trzba: &eet.TrzbaType{
 				Hlavicka: eet.TrzbaHlavickaType{
-					Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
+					Uuidzpravy:   newUUID(),
 					Datodesl:     eet.DateTime(time.Now().Truncate(time.Second)),
 					Prvnizaslani: true,
 					Overeni:      false,
@@ -266,7 +276,7 @@ func TestGatewayService_Send(t *testing.T) {
 			certID: okCertID,
 			trzba: &eet.TrzbaType{
 				Hlavicka: eet.TrzbaHlavickaType{
-					Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
+					Uuidzpravy:   newUUID(),
 					Datodesl:     eet.DateTime(time.Now().Truncate(time.Second)),
 					Prvnizaslani: true,
 					Overeni:      false,
@@ -306,7 +316,7 @@ func TestGatewayService_Send(t *testing.T) {
 			certID: okCertID,
 			trzba: &eet.TrzbaType{
 				Hlavicka: eet.TrzbaHlavickaType{
-					Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
+					Uuidzpravy:   newUUID(),
 					Datodesl:     eet.DateTime(time.Now().Truncate(time.Second)),
 					Prvnizaslani: true,
 					Overeni:      false,
@@ -346,7 +356,7 @@ func TestGatewayService_Send(t *testing.T) {
 			certID: okCertID,
 			trzba: &eet.TrzbaType{
 				Hlavicka: eet.TrzbaHlavickaType{
-					Uuidzpravy:   "e0e80d09-1a19-45da-91d0-56121088ed49",
+					Uuidzpravy:   newUUID(),
 					Datodesl:     eet.DateTime(time.Now().Truncate(time.Second)),
 					Prvnizaslani: true,
 					Overeni:      false,
@@ -384,8 +394,6 @@ func TestGatewayService_Send(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		time.Sleep(1 * time.Second)
-
 		t.Run(tc.name, func(t *testing.T) {
 			// construct a service
 			gSvc := eet.NewGatewayService(tc.client, tc.eetCA, tc.ks)
