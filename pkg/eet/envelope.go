@@ -20,6 +20,9 @@ var ErrInvalidDigest = errors.New("invalid referenced digest: computed digest di
 // ErrInvalidBKP is returned if the response BKP code is different.
 var ErrInvalidBKP = errors.New("invalid response BKP")
 
+// ErrInvalidUUID is returned if the response UUID is different.
+var ErrInvalidUUID = errors.New("invalid response UUID")
+
 // ErrInvalidSOAPMessage is returned if an invalid or unexpected SOAP message structure is queried.
 var ErrInvalidSOAPMessage = errors.New("SOAP message with unexpected structure")
 
@@ -175,6 +178,10 @@ func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, veri
 
 	// verify only if successful
 	if !trzba.Hlavicka.Overeni && odpoved.Chyba.Kod == 0 {
+		if trzba.Hlavicka.Uuidzpravy != odpoved.Hlavicka.Uuidzpravy {
+			return fmt.Errorf("different uuid: %w", ErrInvalidUUID)
+		}
+
 		if trzba.KontrolniKody.Bkp.BkpType != odpoved.Hlavicka.Bkp {
 			return fmt.Errorf("different bkp: %w", ErrInvalidBKP)
 		}

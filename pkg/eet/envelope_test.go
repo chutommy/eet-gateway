@@ -112,7 +112,8 @@ func TestParseAndVerifyResponse(t *testing.T) {
 				// TrzbaType with required control codes
 				trzba := &eet.TrzbaType{
 					Hlavicka: eet.TrzbaHlavickaType{
-						Overeni: false,
+						Uuidzpravy: odp.Hlavicka.Uuidzpravy,
+						Overeni:    false,
 					},
 					KontrolniKody: eet.TrzbaKontrolniKodyType{
 						Bkp: eet.BkpElementType{
