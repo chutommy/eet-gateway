@@ -3,9 +3,11 @@ package server
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // ErrUnexpectedFailure is returned if no error was expected but some did occur.
@@ -34,6 +36,8 @@ func NewHandler(gatewaySvc eet.GatewayService) Handler {
 func (h *handler) ginEngine() *gin.Engine {
 	r := gin.New()
 
+	setValidator()
+
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/ping", h.ping)
@@ -60,7 +64,18 @@ func (h *handler) ping(c *gin.Context) {
 func (h *handler) eet(c *gin.Context) {
 	certID := c.Param("certID")
 
-	var req *HTTPRequest
+	// default request
+	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
+	req := &HTTPRequest{
+		UUIDZpravy:   eet.UUIDType(uuid.New().String()),
+		DatOdesl:     dateTime,
+		PrvniZaslani: true,
+		Overeni:      false,
+		DatTrzby:     dateTime,
+		Rezim:        0,
+	}
+
+	// bind to default
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
