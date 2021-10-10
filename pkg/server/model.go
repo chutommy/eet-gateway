@@ -8,31 +8,31 @@ import (
 type HTTPRequest struct {
 	CertID string `json:"cert,omitempty" binding:"required"`
 
-	UUIDZpravy      eet.UUIDType   `json:"uuid_zpravy,omitempty" binding:"omitempty,uuid_zpravy"`
-	DatOdesl        eet.DateTime   `json:"dat_odesl,omitempty" binding:""`
-	PrvniZaslani    bool           `json:"prvni_zaslani,omitempty" binding:""`
-	Overeni         bool           `json:"overeni,omitempty" binding:""`
-	DICPopl         eet.CZDICType  `json:"dic_popl,omitempty" binding:"required,dic"`
-	DICPoverujiciho eet.CZDICType  `json:"dic_poverujiciho,omitempty" binding:"omitempty,dic,necsfield=Dicpopl"`
-	IDProvoz        int            `json:"id_provoz,omitempty" binding:"required,id_provoz"`
-	IDPokl          eet.String20   `json:"id_pokl,omitempty" binding:"required,id_pokl"`
-	PoradCis        eet.String25   `json:"porad_cis,omitempty" binding:"required,porad_cis"`
-	DatTrzby        eet.DateTime   `json:"dat_trzby,omitempty" binding:""`
-	CelkTrzba       eet.CastkaType `json:"celk_trzba,omitempty" binding:"required,fin_poloz"`
-	ZaklNepodlDPH   eet.CastkaType `json:"zakl_nepodl_dph,omitempty" binding:"omitempty,fin_poloz"`
-	ZaklDan1        eet.CastkaType `json:"zakl_dan1,omitempty" binding:"omitempty,fin_poloz"`
-	Dan1            eet.CastkaType `json:"dan1,omitempty" binding:"omitempty,fin_poloz"`
-	ZaklDan2        eet.CastkaType `json:"zakl_dan2,omitempty" binding:"omitempty,fin_poloz"`
-	Dan2            eet.CastkaType `json:"dan2,omitempty" binding:"omitempty,fin_poloz"`
-	ZaklDan3        eet.CastkaType `json:"zakl_dan3,omitempty" binding:"omitempty,fin_poloz"`
-	Dan3            eet.CastkaType `json:"dan3,omitempty" binding:"omitempty,fin_poloz"`
-	CestSluz        eet.CastkaType `json:"cest_sluz,omitempty" binding:"omitempty,fin_poloz"`
-	PouzitZboz1     eet.CastkaType `json:"pouzit_zboz1,omitempty" binding:"omitempty,fin_poloz"`
-	PouzitZboz2     eet.CastkaType `json:"pouzit_zboz2,omitempty" binding:"omitempty,fin_poloz"`
-	PouzitZboz3     eet.CastkaType `json:"pouzit_zboz3,omitempty" binding:"omitempty,fin_poloz"`
-	UrcenoCerpzZuct eet.CastkaType `json:"urceno_cerp_zuct,omitempty" binding:"omitempty,fin_poloz"`
-	CerpZuct        eet.CastkaType `json:"cerp_zuct,omitempty" binding:"omitempty,fin_poloz"`
-	Rezim           eet.RezimType  `json:"rezim,omitempty" binding:"omitempty,rezim"`
+	UUIDZpravy      eet.UUIDType   `json:"-" binding:"omitempty,uuid_zpravy"`
+	DatOdesl        eet.DateTime   `json:"-" binding:""`
+	PrvniZaslani    bool           `json:"prvni_zaslani" binding:""`
+	Overeni         bool           `json:"overeni" binding:""`
+	DICPopl         eet.CZDICType  `json:"dic_popl" binding:"required,dic"`
+	DICPoverujiciho eet.CZDICType  `json:"dic_poverujiciho" binding:"omitempty,dic,necsfield=Dicpopl"`
+	IDProvoz        int            `json:"id_provoz" binding:"required,id_provoz"`
+	IDPokl          eet.String20   `json:"id_pokl" binding:"required,id_pokl"`
+	PoradCis        eet.String25   `json:"porad_cis" binding:"required,porad_cis"`
+	DatTrzby        eet.DateTime   `json:"dat_trzby" binding:""`
+	CelkTrzba       eet.CastkaType `json:"celk_trzba" binding:"required,fin_poloz"`
+	ZaklNepodlDPH   eet.CastkaType `json:"zakl_nepodl_dph" binding:"omitempty,fin_poloz"`
+	ZaklDan1        eet.CastkaType `json:"zakl_dan1" binding:"omitempty,fin_poloz"`
+	Dan1            eet.CastkaType `json:"dan1" binding:"omitempty,fin_poloz"`
+	ZaklDan2        eet.CastkaType `json:"zakl_dan2" binding:"omitempty,fin_poloz"`
+	Dan2            eet.CastkaType `json:"dan2" binding:"omitempty,fin_poloz"`
+	ZaklDan3        eet.CastkaType `json:"zakl_dan3" binding:"omitempty,fin_poloz"`
+	Dan3            eet.CastkaType `json:"dan3" binding:"omitempty,fin_poloz"`
+	CestSluz        eet.CastkaType `json:"cest_sluz" binding:"omitempty,fin_poloz"`
+	PouzitZboz1     eet.CastkaType `json:"pouzit_zboz1" binding:"omitempty,fin_poloz"`
+	PouzitZboz2     eet.CastkaType `json:"pouzit_zboz2" binding:"omitempty,fin_poloz"`
+	PouzitZboz3     eet.CastkaType `json:"pouzit_zboz3" binding:"omitempty,fin_poloz"`
+	UrcenoCerpzZuct eet.CastkaType `json:"urceno_cerp_zuct" binding:"omitempty,fin_poloz"`
+	CerpZuct        eet.CastkaType `json:"cerp_zuct" binding:"omitempty,fin_poloz"`
+	Rezim           eet.RezimType  `json:"rezim" binding:"omitempty,rezim"`
 }
 
 func encodeRequest(req *HTTPRequest) *eet.TrzbaType {
