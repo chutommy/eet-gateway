@@ -74,7 +74,8 @@ type OdpovedType struct {
 }
 
 type OdpovedVarovaniType struct {
-	Kodvarov int `xml:"kod_varov,attr"`
+	Zprava   string `xml:",chardata"`
+	Kodvarov int    `xml:"kod_varov,attr"`
 }
 
 // May be one of RSA2048
