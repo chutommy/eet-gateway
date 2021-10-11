@@ -37,7 +37,8 @@ func (h *handler) ginEngine() *gin.Engine {
 	r := gin.New()
 
 	setValidators()
-	r.Use(h.loggingMiddleware)
+	r.Use(loggingMiddleware)
+	r.Use(recoverMiddleware)
 
 	v1 := r.Group("/v1")
 	{
