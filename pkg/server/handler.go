@@ -83,19 +83,20 @@ func (h *handler) eet(c *gin.Context) {
 
 	odpoved, err := h.gatewaySvc.Send(c, req.CertID, encodeRequest(req))
 	if err != nil {
-		if errors.Is(err, eet.ErrCertificateRetrieval) {
+		switch {
+		case errors.Is(err, eet.ErrCertificateRetrieval):
 			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrCertificateRetrieval, nil))
 			return
-		} else if errors.Is(err, eet.ErrRequestConstruction) {
+		case errors.Is(err, eet.ErrRequestConstruction):
 			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrRequestConstruction, nil))
 			return
-		} else if errors.Is(err, eet.ErrMFCRConnection) {
+		case errors.Is(err, eet.ErrMFCRConnection):
 			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrMFCRConnection, nil))
 			return
-		} else if errors.Is(err, eet.ErrMFCRResponseParse) {
+		case errors.Is(err, eet.ErrMFCRResponseParse):
 			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrMFCRResponseParse, nil))
 			return
-		} else if errors.Is(err, eet.ErrMFCRResponseVerification) {
+		case errors.Is(err, eet.ErrMFCRResponseVerification):
 			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrMFCRResponseVerification, nil))
 			return
 		}
