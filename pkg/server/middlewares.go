@@ -15,13 +15,23 @@ import (
 func loggingMiddleware(c *gin.Context) {
 	start := time.Now()
 	c.Next()
-	log.Info().
-		Str("client", c.ClientIP()).
-		Str("method", c.Request.Method).
-		Str("uri", c.Request.URL.Path).
-		Int("status", c.Writer.Status()).
-		TimeDiff("latency", time.Now(), start).
-		Send()
+	if (c.Writer.Status() % 500) < 100 {
+		log.Error().
+			Str("client", c.ClientIP()).
+			Str("method", c.Request.Method).
+			Str("uri", c.Request.URL.Path).
+			Int("status", c.Writer.Status()).
+			TimeDiff("latency", time.Now(), start).
+			Send()
+	} else {
+		log.Info().
+			Str("client", c.ClientIP()).
+			Str("method", c.Request.Method).
+			Str("uri", c.Request.URL.Path).
+			Int("status", c.Writer.Status()).
+			TimeDiff("latency", time.Now(), start).
+			Send()
+	}
 }
 
 func recoverMiddleware(c *gin.Context) {
