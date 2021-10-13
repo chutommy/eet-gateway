@@ -8,8 +8,8 @@ import (
 type HTTPRequest struct {
 	CertID string `json:"cert,omitempty" binding:"required"`
 
-	UUIDZpravy      eet.UUIDType   `json:"-" binding:"omitempty,uuid_zpravy"`
-	DatOdesl        eet.DateTime   `json:"-" binding:""`
+	UUIDZpravy      eet.UUIDType   `json:"uuid_zpravy" binding:"omitempty,uuid_zpravy"`
+	DatOdesl        eet.DateTime   `json:"dat_odesl" binding:""`
 	PrvniZaslani    bool           `json:"prvni_zaslani" binding:""`
 	Overeni         bool           `json:"overeni" binding:""`
 	DICPopl         eet.CZDICType  `json:"dic_popl" binding:"required,dic"`
@@ -71,27 +71,36 @@ func encodeRequest(req *HTTPRequest) *eet.TrzbaType {
 
 // HTTPResponse represents a binding structure for HTTP responses.
 type HTTPResponse struct {
-	Dat      eet.DateTime              `json:"dat"`
-	Fik      eet.FikType               `json:"fik,omitempty"`
-	Zprava   string                    `json:"zprava,omitempty"`
-	Kod      int                       `json:"kod"`
-	Test     bool                      `json:"test,omitempty"`
-	Varovani []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
+	GatewayError string                    `json:"gateway_error,omitempty"`
+	Dat          *eet.DateTime             `json:"dat,omitempty"`
+	Fik          eet.FikType               `json:"fik,omitempty"`
+	Zprava       string                    `json:"zprava,omitempty"`
+	Kod          int                       `json:"kod,omitempty"`
+	Test         bool                      `json:"test,omitempty"`
+	Varovani     []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
 }
 
-func decodeResponse(odpoved *eet.OdpovedType) *HTTPResponse {
-	// select the non-empty date/time
-	cas := odpoved.Hlavicka.Datprij
-	if (cas == eet.DateTime{}) {
-		cas = odpoved.Hlavicka.Datodmit
+func decodeResponse(err error, odpoved *eet.OdpovedType) *HTTPResponse {
+	if err != nil {
+		return &HTTPResponse{
+			GatewayError: err.Error(),
+		}
+	} else if odpoved != nil {
+		// select the non-empty date/time
+		cas := odpoved.Hlavicka.Datprij
+		if (cas == eet.DateTime{}) {
+			cas = odpoved.Hlavicka.Datodmit
+		}
+
+		return &HTTPResponse{
+			Dat:      &cas,
+			Fik:      odpoved.Potvrzeni.Fik,
+			Zprava:   odpoved.Chyba.Zprava,
+			Kod:      odpoved.Chyba.Kod,
+			Test:     odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
+			Varovani: odpoved.Varovani,
+		}
 	}
 
-	return &HTTPResponse{
-		Dat:      cas,
-		Fik:      odpoved.Potvrzeni.Fik,
-		Zprava:   odpoved.Chyba.Zprava,
-		Kod:      odpoved.Chyba.Kod,
-		Test:     odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
-		Varovani: odpoved.Varovani,
-	}
+	return &HTTPResponse{}
 }

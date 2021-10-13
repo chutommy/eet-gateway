@@ -52,15 +52,15 @@ func (h *handler) ginEngine() *gin.Engine {
 func (h *handler) ping(c *gin.Context) {
 	if err := h.gatewaySvc.Ping(); err != nil {
 		if errors.Is(err, eet.ErrMFCRConnection) {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": eet.ErrMFCRConnection.Error()})
+			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrMFCRConnection, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": ErrUnexpectedFailure.Error()})
+		c.JSON(http.StatusInternalServerError, decodeResponse(ErrUnexpectedFailure, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": http.StatusText(http.StatusOK)})
+	c.JSON(http.StatusOK, decodeResponse(nil, nil))
 }
 
 func (h *handler) eet(c *gin.Context) {
@@ -77,32 +77,32 @@ func (h *handler) eet(c *gin.Context) {
 
 	// bind to default
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, decodeResponse(err, nil))
 		return
 	}
 
 	odpoved, err := h.gatewaySvc.Send(c, req.CertID, encodeRequest(req))
 	if err != nil {
 		if errors.Is(err, eet.ErrCertificateRetrieval) {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": eet.ErrCertificateRetrieval.Error()})
+			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrCertificateRetrieval, nil))
 			return
 		} else if errors.Is(err, eet.ErrRequestConstruction) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": eet.ErrRequestConstruction.Error()})
+			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrRequestConstruction, nil))
 			return
 		} else if errors.Is(err, eet.ErrMFCRConnection) {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"error": eet.ErrMFCRConnection.Error()})
+			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrMFCRConnection, nil))
 			return
 		} else if errors.Is(err, eet.ErrMFCRResponseParse) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": eet.ErrMFCRResponseParse.Error()})
+			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrMFCRResponseParse, nil))
 			return
 		} else if errors.Is(err, eet.ErrMFCRResponseVerification) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": eet.ErrMFCRResponseVerification.Error()})
+			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrMFCRResponseVerification, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": ErrUnexpectedFailure.Error()})
+		c.JSON(http.StatusInternalServerError, decodeResponse(ErrUnexpectedFailure, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, decodeResponse(odpoved))
+	c.JSON(http.StatusOK, decodeResponse(nil, odpoved))
 }
