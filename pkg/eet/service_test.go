@@ -37,7 +37,7 @@ type ks struct {
 
 var okCertID = "valid"
 
-func (ks *ks) Get(id string) (*keystore.KeyPair, error) {
+func (ks *ks) Get(id string, _ []byte) (*keystore.KeyPair, error) {
 	if id != okCertID {
 		return nil, errors.New("certificate id not found")
 	}
@@ -399,7 +399,7 @@ func TestGatewayService_Send(t *testing.T) {
 			gSvc := eet.NewGatewayService(tc.client, tc.eetCA, tc.ks)
 
 			// run
-			odp, err := gSvc.Send(context.Background(), tc.certID, tc.trzba)
+			odp, err := gSvc.Send(context.Background(), tc.certID, []byte{}, tc.trzba)
 			if tc.expErr == nil {
 				require.NoError(t, err, "sale should be successfully stored")
 				require.NotNil(t, odp, "no error expected")

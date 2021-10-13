@@ -13,5 +13,5 @@ type KeyPair struct {
 
 // Service represents a keystore abstraction for a KeyPair management.
 type Service interface {
-	Get(id string) (*KeyPair, error)
+	Get(id string, key []byte) (*KeyPair, error)
 }

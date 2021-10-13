@@ -26,7 +26,7 @@ var ErrMFCRResponseVerification = errors.New("MFCR response couldn't be successf
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
-	Send(ctx context.Context, certID string, trzba *TrzbaType) (*OdpovedType, error)
+	Send(ctx context.Context, certID string, certKey []byte, trzba *TrzbaType) (*OdpovedType, error)
 	Ping() error
 }
 
@@ -37,8 +37,8 @@ type gatewayService struct {
 }
 
 // Send sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
-func (g *gatewayService) Send(ctx context.Context, certID string, trzba *TrzbaType) (*OdpovedType, error) {
-	kp, err := g.keyStore.Get(certID)
+func (g *gatewayService) Send(ctx context.Context, certID string, certKey []byte, trzba *TrzbaType) (*OdpovedType, error) {
+	kp, err := g.keyStore.Get(certID, certKey)
 	if err != nil {
 		return nil, fmt.Errorf("keypair from the keystore (id=%s): %v: %w", certID, err, ErrCertificateRetrieval)
 	}

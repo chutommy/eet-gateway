@@ -6,7 +6,8 @@ import (
 
 // HTTPRequest represents a binding structure for HTTP requests.
 type HTTPRequest struct {
-	CertID string `json:"cert,omitempty" binding:"required"`
+	CertID  string `json:"cert_id,omitempty" binding:"required"`
+	CertKey string `json:"cert_key,omitempty" binding:""`
 
 	UUIDZpravy      eet.UUIDType   `json:"uuid_zpravy" binding:"omitempty,uuid_zpravy"`
 	DatOdesl        eet.DateTime   `json:"dat_odesl" binding:""`

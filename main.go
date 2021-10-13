@@ -86,7 +86,7 @@ type ks struct {
 	crt *x509.Certificate
 }
 
-func (ks *ks) Get(string) (*keystore.KeyPair, error) {
+func (ks *ks) Get(string, []byte) (*keystore.KeyPair, error) {
 	return &keystore.KeyPair{
 		Cert: ks.crt,
 		Key:  ks.key,
