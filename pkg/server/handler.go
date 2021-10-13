@@ -81,7 +81,7 @@ func (h *handler) eet(c *gin.Context) {
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.Send(c, req.CertID, []byte(req.CertKey), encodeRequest(req))
+	odpoved, err := h.gatewaySvc.Send(c, req.CertID, []byte(req.CertPassword), encodeRequest(req))
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateRetrieval):
