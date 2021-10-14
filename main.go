@@ -53,10 +53,12 @@ func main() {
 	}
 	eetCASvc := fscr.NewEETCAService(pool)
 
-	ks := &ks{
-		key: pk,
-		crt: crt,
-	}
+	ks := keystore.NewService()
+	err = ks.Store("", []byte("secret"), &keystore.KeyPair{
+		Cert: crt,
+		Key:  pk,
+	})
+	errCheck(err)
 
 	gSvc := eet.NewGatewayService(client, eetCASvc, ks)
 
@@ -86,6 +88,8 @@ type ks struct {
 	crt *x509.Certificate
 }
 
+func (ks ks) Store(id string, password []byte, kp *keystore.KeyPair) error { return nil }
+func (ks ks) Delete(id string, password []byte) error                      { return nil }
 func (ks *ks) Get(string, []byte) (*keystore.KeyPair, error) {
 	return &keystore.KeyPair{
 		Cert: ks.crt,
