@@ -48,6 +48,16 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 		return fmt.Errorf("encrypt a keypair: %w", err)
 	}
 
+	// check if already exists
+	i, err := r.rdb.Exists(ctx, id).Result()
+	if err != nil {
+		return fmt.Errorf("check if id (%s) exists: %w", id, err)
+	}
+
+	if i != 0 {
+		return fmt.Errorf("found record with id %s: %w", id, ErrIDAlreadyExists)
+	}
+
 	// store in database
 	_, err = r.rdb.HSet(ctx, id, map[string]interface{}{
 		certificateField: cert,
