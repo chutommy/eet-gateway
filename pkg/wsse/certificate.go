@@ -13,8 +13,8 @@ import (
 // ErrNotCACertificate is returned if a non-CA's certificate is provided when CA's certificate is being expected.
 var ErrNotCACertificate = errors.New("not a certificate authority's certificate")
 
-// ErrInvalidKeyPair is returned if a private/public keypair is invalid.
-var ErrInvalidKeyPair = errors.New("invalid private/public keypair")
+// ErrInvalidKeyPair is returned if a certificate/private key keypair is invalid.
+var ErrInvalidKeyPair = errors.New("invalid certificate/private key keypair")
 
 // ParseTaxpayerCertificate takes a raw data of a PFX file and decodes it into PEM blocks.
 // Blocks are expected to be in this order: taxpayer's certificate, certificate authority's certificate

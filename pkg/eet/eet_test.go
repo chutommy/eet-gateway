@@ -52,10 +52,10 @@ func parseTime(s string) (time.Time, error) {
 }
 
 func parseTaxpayerCertificate(t require.TestingT, pfxFile string) (*x509.Certificate, *rsa.PrivateKey) {
-	rawKey := readFile(t, pfxFile)
+	rawPK := readFile(t, pfxFile)
 	roots, err := ca.PlaygroundRoots()
 	require.NoError(t, err, "retrieve playground roots")
-	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, rawPK, "eet")
 	require.NoError(t, err, "parse taxpayer's private key")
 
 	return cert, pk
@@ -240,7 +240,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 			{
 				// invalid private key
 				invalidPk, err := rsa.GenerateKey(rand.Reader, 16)
-				require.NoError(t, err, "generate rsa Key")
+				require.NoError(t, err, "generate rsa private key")
 				err = tc.trzba.SetSecurityCodes(invalidPk)
 				require.Error(t, err, "invalid private key")
 			}

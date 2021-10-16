@@ -37,7 +37,7 @@ func TestPlaygroundRoots(t *testing.T) {
 			require.NoError(t, err, "should be able to retrieve system root certificates")
 
 			cert, pk, err := wsse.ParseTaxpayerCertificate(roots, raw, tc.password)
-			require.NotNilf(t, cert, "valid taxpayer's public key")
+			require.NotNilf(t, cert, "valid taxpayer's certificate")
 			require.NotNilf(t, pk, "valid taxpayer's private key")
 			require.NoError(t, err, "valid taxpayer's p12 file")
 		})
