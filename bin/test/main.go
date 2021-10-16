@@ -15,6 +15,7 @@ import (
 )
 
 var id = "crt123"
+var newid = "crt456"
 
 func main() {
 	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
@@ -57,13 +58,16 @@ func run(ks keystore.Service, cert *x509.Certificate, pk *rsa.PrivateKey) *keyst
 	err = ks.ChangePassword(context.Background(), id, []byte("ahoj"), []byte("nazdar"))
 	errCheck(err)
 
-	kp, err := ks.Get(context.Background(), id, []byte("nazdar"))
+	err = ks.ChangeID(context.Background(), id, newid)
+	errCheck(err)
+
+	kp, err := ks.Get(context.Background(), newid, []byte("nazdar"))
 	errCheck(err)
 	return kp
 }
 
 func run2(ks keystore.Service) {
-	err := ks.Delete(context.Background(), id)
+	err := ks.Delete(context.Background(), newid)
 	errCheck(err)
 }
 

@@ -13,12 +13,16 @@ import (
 // ErrRecordNotFound is returned if the searched record can't be found.
 var ErrRecordNotFound = errors.New("record not found")
 
+// ErrIDAlreadyExists is returned if an ID conflict occurs.
+var ErrIDAlreadyExists = errors.New("record with the ID already exists")
+
 // Service represents a keystore abstraction for a KeyPair management.
 type Service interface {
 	Store(ctx context.Context, id string, password []byte, kp *KeyPair) error
 	Get(ctx context.Context, id string, password []byte) (*KeyPair, error)
 	Delete(ctx context.Context, id string) error
 	ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
+	ChangeID(ctx context.Context, oldID, newID string) error
 }
 
 type redisService struct {
@@ -112,6 +116,20 @@ func (r *redisService) ChangePassword(ctx context.Context, id string, oldPasswor
 	err = r.Store(ctx, id, newPassword, kp)
 	if err != nil {
 		return fmt.Errorf("store keypair with new password: %w", err)
+	}
+
+	return nil
+}
+
+// ChangeID changes ID of the record.
+func (r *redisService) ChangeID(ctx context.Context, oldID, newID string) error {
+	ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
+	if err != nil {
+		return fmt.Errorf("rename %s to %s: %w", oldID, newID, err)
+	}
+
+	if !ok {
+		return fmt.Errorf("failed to rename results: %w", ErrIDAlreadyExists)
 	}
 
 	return nil

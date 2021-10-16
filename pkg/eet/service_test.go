@@ -66,7 +66,11 @@ func (k *ks) Get(ctx context.Context, id string, password []byte) (*keystore.Key
 
 func (k *ks) ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	k.password = newPassword
+	return nil
+}
 
+func (k *ks) ChangeID(ctx context.Context, oldID, newID string) error {
+	k.id = newID
 	return nil
 }
 
