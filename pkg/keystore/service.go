@@ -18,6 +18,7 @@ type Service interface {
 	Store(ctx context.Context, id string, password []byte, kp *KeyPair) error
 	Get(ctx context.Context, id string, password []byte) (*KeyPair, error)
 	Delete(ctx context.Context, id string) error
+	ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
 }
 
 type redisService struct {
@@ -91,6 +92,26 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 	// check number of deleted records
 	if i == 0 {
 		return fmt.Errorf("delete record with ID: %s: %w", id, ErrRecordNotFound)
+	}
+
+	return nil
+}
+
+// ChangePassword changes password for encryption/decryption of the record content.
+func (r *redisService) ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
+	kp, err := r.Get(ctx, id, oldPassword)
+	if err != nil {
+		return fmt.Errorf("retrieve keypair with old password: %w", err)
+	}
+
+	err = r.Delete(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete keypair with old password: %w", err)
+	}
+
+	err = r.Store(ctx, id, newPassword, kp)
+	if err != nil {
+		return fmt.Errorf("store keypair with new password: %w", err)
 	}
 
 	return nil
