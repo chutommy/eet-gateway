@@ -30,6 +30,7 @@ var (
 	saltField        = "salt"
 )
 
+// Store stores the given Keypair kp in the database encrypted with the password.
 func (r *redisService) Store(ctx context.Context, id string, password []byte, kp *KeyPair) error {
 	// generate random salt for each reacord
 	salt := make([]byte, 256)
@@ -55,6 +56,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 	return nil
 }
 
+// Get retrieves a Keypair by the id.
 func (r *redisService) Get(ctx context.Context, id string, password []byte) (*KeyPair, error) {
 	// read from database
 	m, err := r.rdb.HGetAll(ctx, id).Result()
@@ -79,6 +81,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 	return kp, nil
 }
 
+// Delete removes the Keypair by the id.
 func (r *redisService) Delete(ctx context.Context, id string) error {
 	i, err := r.rdb.Del(ctx, id).Result()
 	if err != nil {
