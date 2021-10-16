@@ -3,7 +3,7 @@ package main
 // WARNING: This file consists of dev snippets.
 
 import (
-	"crypto/rsa"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -17,6 +17,7 @@ import (
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/server"
 	"github.com/chutommy/eetgateway/pkg/wsse"
+	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
 )
 
@@ -53,8 +54,21 @@ func main() {
 	}
 	eetCASvc := fscr.NewEETCAService(pool)
 
-	ks := keystore.NewService()
-	err = ks.Store("", []byte("secret"), &keystore.KeyPair{
+	rdb := redis.NewClient(&redis.Options{
+		Network:      "tcp",
+		Addr:         "localhost:6379",
+		Username:     "",
+		Password:     "",
+		DB:           0,
+		MinIdleConns: 2,
+		TLSConfig:    nil,
+	})
+
+	_, err = rdb.Ping(context.Background()).Result()
+	errCheck(err)
+
+	ks := keystore.NewRedisService(rdb)
+	err = ks.Store(context.Background(), "crt-test", []byte("secret"), &keystore.KeyPair{
 		Cert: crt,
 		Key:  pk,
 	})
@@ -65,9 +79,9 @@ func main() {
 	// server
 	h := server.NewHandler(gSvc)
 	srv := server.NewService(&http.Server{
-		Addr:    ":8080",
-		Handler: h.HTTPHandler(),
-		// TLSConfig:         nil,
+		Addr:              ":8080",
+		Handler:           h.HTTPHandler(),
+		TLSConfig:         nil,
 		ReadTimeout:       time.Second * 10,
 		ReadHeaderTimeout: time.Second * 2,
 		WriteTimeout:      time.Second * 10,
@@ -81,18 +95,4 @@ func errCheck(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-type ks struct {
-	key *rsa.PrivateKey
-	crt *x509.Certificate
-}
-
-func (ks ks) Store(id string, password []byte, kp *keystore.KeyPair) error { return nil }
-func (ks ks) Delete(id string, password []byte) error                      { return nil }
-func (ks *ks) Get(string, []byte) (*keystore.KeyPair, error) {
-	return &keystore.KeyPair{
-		Cert: ks.crt,
-		Key:  ks.key,
-	}, nil
 }
