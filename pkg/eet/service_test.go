@@ -34,7 +34,7 @@ func newUUID() eet.UUIDType {
 type ks struct {
 	id       string
 	password []byte
-	crt      *x509.Certificate
+	cert     *x509.Certificate
 	key      *rsa.PrivateKey
 }
 
@@ -43,7 +43,7 @@ var okCertID = "valid"
 func (k *ks) Store(ctx context.Context, id string, password []byte, kp *keystore.KeyPair) error {
 	k.id = id
 	k.password = password
-	k.crt = kp.Cert
+	k.cert = kp.Cert
 	k.key = kp.Key
 	return nil
 }
@@ -59,16 +59,16 @@ func (k *ks) Get(ctx context.Context, id string, password []byte) (*keystore.Key
 	}
 
 	return &keystore.KeyPair{
-		Cert: k.crt,
+		Cert: k.cert,
 		Key:  k.key,
 	}, nil
 }
 
-func newKS(id string, password []byte, crt *x509.Certificate, key *rsa.PrivateKey) *ks {
+func newKS(id string, password []byte, cert *x509.Certificate, key *rsa.PrivateKey) *ks {
 	return &ks{
 		id:       id,
 		password: password,
-		crt:      crt,
+		cert:     cert,
 		key:      key,
 	}
 }
@@ -84,34 +84,34 @@ func mustParseCertPool(f func() (*x509.CertPool, error)) *x509.CertPool {
 
 func TestGatewayService_Ping(t *testing.T) {
 	tests := []struct {
-		name    string
-		url     string
-		crtPool *x509.CertPool
-		ok      bool
+		name     string
+		url      string
+		certPool *x509.CertPool
+		ok       bool
 	}{
 		{
-			name:    "playground url",
-			url:     fscr.PlaygroundURL,
-			crtPool: mustParseCertPool(x509.SystemCertPool),
-			ok:      true,
+			name:     "playground url",
+			url:      fscr.PlaygroundURL,
+			certPool: mustParseCertPool(x509.SystemCertPool),
+			ok:       true,
 		},
 		{
-			name:    "production url",
-			url:     fscr.ProductionURL,
-			crtPool: mustParseCertPool(x509.SystemCertPool),
-			ok:      true,
+			name:     "production url",
+			url:      fscr.ProductionURL,
+			certPool: mustParseCertPool(x509.SystemCertPool),
+			ok:       true,
 		},
 		{
-			name:    "invalid url",
-			url:     "invalid_url",
-			crtPool: mustParseCertPool(x509.SystemCertPool),
-			ok:      false,
+			name:     "invalid url",
+			url:      "invalid_url",
+			certPool: mustParseCertPool(x509.SystemCertPool),
+			ok:       false,
 		},
 		{
-			name:    "invalid certificate",
-			url:     fscr.PlaygroundURL,
-			crtPool: x509.NewCertPool(),
-			ok:      false,
+			name:     "invalid certificate",
+			url:      fscr.PlaygroundURL,
+			certPool: x509.NewCertPool(),
+			ok:       false,
 		},
 	}
 
@@ -121,7 +121,7 @@ func TestGatewayService_Ping(t *testing.T) {
 			c := &http.Client{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{
-						RootCAs:            tc.crtPool,
+						RootCAs:            tc.certPool,
 						InsecureSkipVerify: false,
 						MinVersion:         tls.VersionTLS13,
 					},
@@ -153,7 +153,7 @@ func TestGatewayService_Send(t *testing.T) {
 	p12File, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.p12")
 	require.NoError(t, err, "file exists")
 
-	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
+	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
 	require.NoError(t, err, "valid taxpayer's PKCS12 file")
 
 	invalidPK, err := rsa.GenerateKey(rand.Reader, 16)
@@ -210,7 +210,7 @@ func TestGatewayService_Send(t *testing.T) {
 				},
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewEETCAService(icaCertPool),
-			ks:     newKS(okCertID, []byte{}, crt, pk),
+			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: nil,
 		},
 		{
@@ -247,7 +247,7 @@ func TestGatewayService_Send(t *testing.T) {
 				},
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewEETCAService(icaCertPool),
-			ks:     newKS(okCertID, []byte{}, crt, pk),
+			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrCertificateRetrieval,
 		},
 		{
@@ -284,7 +284,7 @@ func TestGatewayService_Send(t *testing.T) {
 				},
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewEETCAService(icaCertPool),
-			ks:     newKS(okCertID, []byte{}, crt, invalidPK),
+			ks:     newKS(okCertID, []byte{}, cert, invalidPK),
 			expErr: eet.ErrRequestConstruction,
 		},
 		{
@@ -321,7 +321,7 @@ func TestGatewayService_Send(t *testing.T) {
 				},
 			}, "invalid_url"),
 			eetCA:  fscr.NewEETCAService(icaCertPool),
-			ks:     newKS(okCertID, []byte{}, crt, pk),
+			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrMFCRConnection,
 		},
 		{
@@ -358,7 +358,7 @@ func TestGatewayService_Send(t *testing.T) {
 				},
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewEETCAService(icaCertPool),
-			ks:     newKS(okCertID, []byte{}, crt, pk),
+			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrMFCRConnection,
 		},
 		{
@@ -395,7 +395,7 @@ func TestGatewayService_Send(t *testing.T) {
 				},
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewEETCAService(x509.NewCertPool()),
-			ks:     newKS(okCertID, []byte{}, crt, pk),
+			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrMFCRResponseVerification,
 		},
 	}

@@ -27,7 +27,7 @@ var ErrInvalidUUID = errors.New("invalid response UUID")
 var ErrInvalidSOAPMessage = errors.New("SOAP message with unexpected structure")
 
 // newRequestEnvelope returns a populated and signed SOAP request envelope.
-func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+func newRequestEnvelope(t *TrzbaType, cert *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
 	if err := t.setSecurityCodes(pk); err != nil {
 		return nil, fmt.Errorf("setting security codes: %w", err)
 	}
@@ -37,7 +37,7 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 		return nil, fmt.Errorf("marshal trzba to etree element: %w", err)
 	}
 
-	binCrt, err := crtToB64(crt)
+	binCert, err := certToB64(cert)
 	if err != nil {
 		return nil, fmt.Errorf("convert certificate to base64: %w", err)
 	}
@@ -59,7 +59,7 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 		return nil, err
 	}
 
-	tokenElem.SetText(string(binCrt))
+	tokenElem.SetText(string(binCert))
 
 	// set signature
 	signature, err := findElement(env.Root(), "./Header/Security/Signature")
@@ -83,10 +83,10 @@ func newRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey)
 	return signedEnv, nil
 }
 
-func crtToB64(crt *x509.Certificate) ([]byte, error) {
+func certToB64(cert *x509.Certificate) ([]byte, error) {
 	binary := new(bytes.Buffer)
 	encoder := base64.NewEncoder(base64.StdEncoding, binary)
-	if _, err := encoder.Write(crt.Raw); err != nil {
+	if _, err := encoder.Write(cert.Raw); err != nil {
 		return nil, fmt.Errorf("encode bytes to binary: %w", err)
 	}
 
@@ -169,7 +169,7 @@ func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
 	return &odpoved.Odpoved, nil
 }
 
-func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, verifyCrt func(*x509.Certificate) error) error {
+func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, verifyCert func(*x509.Certificate) error) error {
 	envelope := etree.NewDocument()
 	err := envelope.ReadFromBytes(respEnv)
 	if err != nil {
@@ -190,7 +190,7 @@ func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, veri
 			return fmt.Errorf("check digital signature: %w", err)
 		}
 
-		if err := verifyCertificate(envelope, verifyCrt); err != nil {
+		if err := verifyCertificate(envelope, verifyCert); err != nil {
 			return fmt.Errorf("check certificate: %w", err)
 		}
 	}
@@ -198,24 +198,24 @@ func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, veri
 	return nil
 }
 
-func verifyCertificate(envelope *etree.Document, verifyCrt func(*x509.Certificate) error) error {
+func verifyCertificate(envelope *etree.Document, verifyCert func(*x509.Certificate) error) error {
 	tokenElem, err := findElement(envelope.Root(), "./Header/Security/BinarySecurityToken")
 	if err != nil {
 		return err
 	}
 
 	tokenB64 := tokenElem.Text()
-	rawCrt, err := base64.StdEncoding.DecodeString(tokenB64)
+	rawCert, err := base64.StdEncoding.DecodeString(tokenB64)
 	if err != nil {
 		return fmt.Errorf("decode binary security token from base64 encoding: %w", err)
 	}
 
-	crt, err := x509.ParseCertificate(rawCrt)
+	cert, err := x509.ParseCertificate(rawCert)
 	if err != nil {
 		return fmt.Errorf("parse raw certificate: %w", err)
 	}
 
-	if err = verifyCrt(crt); err != nil {
+	if err = verifyCert(cert); err != nil {
 		return fmt.Errorf("verify security token: %w", err)
 	}
 
@@ -235,7 +235,7 @@ func checkDigSig(envelope *etree.Document) error {
 }
 
 func verifySignature(envelope *etree.Document) error {
-	crt, err := getCertFromToken(envelope)
+	cert, err := getCertFromToken(envelope)
 	if err != nil {
 		return fmt.Errorf("retrieve certificate from the binary security token: %w", err)
 	}
@@ -245,7 +245,7 @@ func verifySignature(envelope *etree.Document) error {
 		return fmt.Errorf("retrieve signature value and digest: %w", err)
 	}
 
-	err = rsa.VerifyPKCS1v15(crt.PublicKey.(*rsa.PublicKey), crypto.SHA256, digest, sigVal)
+	err = rsa.VerifyPKCS1v15(cert.PublicKey.(*rsa.PublicKey), crypto.SHA256, digest, sigVal)
 	if err != nil {
 		return fmt.Errorf("verify PKCS1v15 signature: %w", err)
 	}
@@ -299,13 +299,13 @@ func getCertFromToken(envelope *etree.Document) (*x509.Certificate, error) {
 	}
 
 	token := tokenElem.Text()
-	rawCrt, _ := base64.StdEncoding.DecodeString(token)
-	crt, err := x509.ParseCertificate(rawCrt)
+	rawCert, _ := base64.StdEncoding.DecodeString(token)
+	cert, err := x509.ParseCertificate(rawCert)
 	if err != nil {
 		return nil, fmt.Errorf("parse x509 certificate: %w", err)
 	}
 
-	return crt, nil
+	return cert, nil
 }
 
 func validateDigestValue(envelope *etree.Document) error {

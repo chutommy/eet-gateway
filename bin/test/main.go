@@ -21,7 +21,7 @@ func main() {
 	errCheck(err)
 	roots, err := ca.PlaygroundRoots()
 	errCheck(err)
-	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
+	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
 	errCheck(err)
 
 	rdb := redis.NewClient(&redis.Options{
@@ -40,16 +40,16 @@ func main() {
 	ks := keystore.NewRedisService(rdb)
 
 	start := time.Now()
-	kp := run(ks, crt, pk)
+	kp := run(ks, cert, pk)
 	fmt.Println(time.Since(start))
 	fmt.Println(kp.Cert.Issuer.Names)
-	_, _ = crt, pk
+	_, _ = cert, pk
 	run2(ks)
 }
 
-func run(ks keystore.Service, crt *x509.Certificate, pk *rsa.PrivateKey) *keystore.KeyPair {
+func run(ks keystore.Service, cert *x509.Certificate, pk *rsa.PrivateKey) *keystore.KeyPair {
 	err := ks.Store(context.Background(), id, []byte("ahoj"), &keystore.KeyPair{
-		Cert: crt,
+		Cert: cert,
 		Key:  pk,
 	})
 	errCheck(err)

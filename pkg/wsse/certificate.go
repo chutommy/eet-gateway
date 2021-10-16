@@ -26,28 +26,28 @@ func ParseTaxpayerCertificate(roots []*x509.Certificate, data []byte, password s
 		return nil, nil, fmt.Errorf("convert PFX data to PEM blocks: %w", err)
 	}
 
-	crt, caCrt, pk, err := parsePEMBlocks(blocks)
+	cert, caCert, pk, err := parsePEMBlocks(blocks)
 	if err != nil {
 		return nil, nil, fmt.Errorf("parse PEM blocks: %w", err)
 	}
 
-	if err = checkCACert(roots, caCrt); err != nil {
+	if err = checkCACert(roots, caCert); err != nil {
 		return nil, nil, fmt.Errorf("check certificate authority's certificate: %w", err)
 	}
 
-	err = verifyKeys(caCrt, crt, pk)
+	err = verifyKeys(caCert, cert, pk)
 	if err != nil {
 		return nil, nil, fmt.Errorf("verify keys: %w", err)
 	}
 
-	return crt, pk, nil
+	return cert, pk, nil
 }
 
-func checkCACert(roots []*x509.Certificate, caCrt *x509.Certificate) error {
+func checkCACert(roots []*x509.Certificate, caCert *x509.Certificate) error {
 	var ok bool
 	// iterate over stored CA's root certificates
 	for _, root := range roots {
-		if caCrt.Equal(root) {
+		if caCert.Equal(root) {
 			ok = true
 			break
 		}
@@ -60,29 +60,29 @@ func checkCACert(roots []*x509.Certificate, caCrt *x509.Certificate) error {
 	return nil
 }
 
-func verifyKeys(caCrt *x509.Certificate, crt *x509.Certificate, pk *rsa.PrivateKey) error {
-	if isCa := caCrt.IsCA; !isCa {
+func verifyKeys(caCert *x509.Certificate, cert *x509.Certificate, pk *rsa.PrivateKey) error {
+	if isCa := caCert.IsCA; !isCa {
 		return fmt.Errorf("expected CA's certificate: %w", ErrNotCACertificate)
 	}
 
-	if err := crt.CheckSignatureFrom(caCrt); err != nil {
+	if err := cert.CheckSignatureFrom(caCert); err != nil {
 		return fmt.Errorf("taxpayer's certificate not signed off by the CA's certificate: %w", err)
 	}
 
-	if !pk.PublicKey.Equal(crt.PublicKey) {
+	if !pk.PublicKey.Equal(cert.PublicKey) {
 		return fmt.Errorf("the keypair of the taxpayer's private key and the certificate is not valid: %w", ErrInvalidKeyPair)
 	}
 
 	return nil
 }
 
-func parsePEMBlocks(blocks []*pem.Block) (crt *x509.Certificate, caCrt *x509.Certificate, pk *rsa.PrivateKey, err error) {
-	crt, err = x509.ParseCertificate(blocks[0].Bytes)
+func parsePEMBlocks(blocks []*pem.Block) (cert *x509.Certificate, caCert *x509.Certificate, pk *rsa.PrivateKey, err error) {
+	cert, err = x509.ParseCertificate(blocks[0].Bytes)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("parse taxpayer's certificate: %w", err)
 	}
 
-	caCrt, err = x509.ParseCertificate(blocks[1].Bytes)
+	caCert, err = x509.ParseCertificate(blocks[1].Bytes)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("parse certificate authority's certificate: %w", err)
 	}
@@ -92,5 +92,5 @@ func parsePEMBlocks(blocks []*pem.Block) (crt *x509.Certificate, caCrt *x509.Cer
 		return nil, nil, nil, fmt.Errorf("parse taxpayer's private key: %w", err)
 	}
 
-	return crt, caCrt, pk, nil
+	return cert, caCert, pk, nil
 }

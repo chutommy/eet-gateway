@@ -18,15 +18,15 @@ const OrganizationName = "Česká republika - Generální finanční ředitelstv
 
 // EETCAService verifies certificates signed off by the CA.
 type EETCAService interface {
-	Verify(crt *x509.Certificate) error
+	Verify(cert *x509.Certificate) error
 }
 
 type eetCAService struct {
 	pool *x509.CertPool
 }
 
-// Verify verifies crt certificate.
-func (c *eetCAService) Verify(crt *x509.Certificate) error {
+// Verify verifies cert certificate.
+func (c *eetCAService) Verify(cert *x509.Certificate) error {
 	opts := x509.VerifyOptions{
 		Roots: c.pool,
 		KeyUsages: []x509.ExtKeyUsage{
@@ -34,11 +34,11 @@ func (c *eetCAService) Verify(crt *x509.Certificate) error {
 		},
 	}
 
-	if n := crt.Subject.Organization[0]; n != OrganizationName {
+	if n := cert.Subject.Organization[0]; n != OrganizationName {
 		return fmt.Errorf("unexpected organization name (%s): %w", n, ErrInvalidOrganizationName)
 	}
 
-	if _, err := crt.Verify(opts); err != nil {
+	if _, err := cert.Verify(opts); err != nil {
 		return fmt.Errorf("verify certificate: %v: %w", err, ErrInsecureCertificate)
 	}
 

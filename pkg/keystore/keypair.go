@@ -22,7 +22,7 @@ type KeyPair struct {
 	Key  *rsa.PrivateKey
 }
 
-func (kp *KeyPair) encrypt(password, salt []byte) (crt []byte, key []byte, err error) {
+func (kp *KeyPair) encrypt(password, salt []byte) (cert []byte, key []byte, err error) {
 	gcm, err := gcmCipher(salt, password)
 	if err != nil {
 		return nil, nil, fmt.Errorf("generate GCM: %w", err)
@@ -30,7 +30,7 @@ func (kp *KeyPair) encrypt(password, salt []byte) (crt []byte, key []byte, err e
 
 	// encrypt public key
 	derPubKey := kp.Cert.Raw
-	crt, err = encryptPEMWithGCM(gcm, "CERTIFICATE", derPubKey)
+	cert, err = encryptPEMWithGCM(gcm, "CERTIFICATE", derPubKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("encrypt public key with GCM: %w", err)
 	}
@@ -42,7 +42,7 @@ func (kp *KeyPair) encrypt(password, salt []byte) (crt []byte, key []byte, err e
 		return nil, nil, fmt.Errorf("encrypt private key with GCM: %w", err)
 	}
 
-	return crt, key, nil
+	return cert, key, nil
 }
 
 func encryptPEMWithGCM(gcm cipher.AEAD, pemType string, data []byte) ([]byte, error) {
@@ -60,19 +60,19 @@ func encryptPEMWithGCM(gcm cipher.AEAD, pemType string, data []byte) ([]byte, er
 	return gcm.Seal(nonce, nonce, pemData, nil), nil
 }
 
-func (kp *KeyPair) decrypt(password, salt, crt, key []byte) error {
+func (kp *KeyPair) decrypt(password, salt, cert, key []byte) error {
 	gcm, err := gcmCipher(salt, password)
 	if err != nil {
 		return fmt.Errorf("generate GCM cipher: %w", err)
 	}
 
 	// certificate
-	crtPem, err := decryptPemWithGCM(gcm, crt)
+	certPem, err := decryptPemWithGCM(gcm, cert)
 	if err != nil {
 		return fmt.Errorf("decrypt public key: %w", err)
 	}
 
-	kp.Cert, err = x509.ParseCertificate(crtPem)
+	kp.Cert, err = x509.ParseCertificate(certPem)
 	if err != nil {
 		return fmt.Errorf("parse public key: %w", err)
 	}

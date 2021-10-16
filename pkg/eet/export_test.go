@@ -27,14 +27,14 @@ func SetDelimiters(bkpB16B []byte) []byte {
 	return setDelimiters(bkpB16B)
 }
 
-func NewRequestEnvelope(t *TrzbaType, crt *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
-	return newRequestEnvelope(t, crt, pk)
+func NewRequestEnvelope(t *TrzbaType, cert *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+	return newRequestEnvelope(t, cert, pk)
 }
 
 func ParseResponseEnvelope(env []byte) (*OdpovedType, error) {
 	return parseResponseEnvelope(env)
 }
 
-func VerifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, verifyCrt func(*x509.Certificate) error) error {
-	return verifyResponse(trzba, respEnv, odpoved, verifyCrt)
+func VerifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, verifyCert func(*x509.Certificate) error) error {
+	return verifyResponse(trzba, respEnv, odpoved, verifyCert)
 }
