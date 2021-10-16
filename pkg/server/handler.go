@@ -42,7 +42,7 @@ func (h *handler) ginEngine() *gin.Engine {
 
 	v1 := r.Group("/v1")
 	{
-		v1.GET("/eet", h.ping)
+		v1.GET("/ping", h.ping)
 		v1.POST("/eet", h.eet)
 	}
 
@@ -52,21 +52,21 @@ func (h *handler) ginEngine() *gin.Engine {
 func (h *handler) ping(c *gin.Context) {
 	if err := h.gatewaySvc.Ping(); err != nil {
 		if errors.Is(err, eet.ErrMFCRConnection) {
-			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrMFCRConnection, nil))
+			c.JSON(http.StatusServiceUnavailable, decodePingResponse(eet.ErrMFCRConnection.Error()))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, decodeResponse(ErrUnexpectedFailure, nil))
+		c.JSON(http.StatusInternalServerError, decodePingResponse(ErrUnexpectedFailure.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, decodeResponse(nil, nil))
+	c.JSON(http.StatusOK, decodePingResponse("online"))
 }
 
 func (h *handler) eet(c *gin.Context) {
 	// default request
 	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
-	req := &HTTPRequest{
+	req := &HTTPEETRequest{
 		UUIDZpravy:   eet.UUIDType(uuid.New().String()),
 		DatOdesl:     dateTime,
 		PrvniZaslani: true,
@@ -77,33 +77,33 @@ func (h *handler) eet(c *gin.Context) {
 
 	// bind to default
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, decodeResponse(err, nil))
+		c.JSON(http.StatusBadRequest, decodeEETResponse(err, nil))
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.Send(c, req.CertID, []byte(req.CertPassword), encodeRequest(req))
+	odpoved, err := h.gatewaySvc.Send(c, req.CertID, []byte(req.CertPassword), encodeEETRequest(req))
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateRetrieval):
-			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrCertificateRetrieval, nil))
+			c.JSON(http.StatusServiceUnavailable, decodeEETResponse(eet.ErrCertificateRetrieval, nil))
 			return
 		case errors.Is(err, eet.ErrRequestConstruction):
-			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrRequestConstruction, nil))
+			c.JSON(http.StatusInternalServerError, decodeEETResponse(eet.ErrRequestConstruction, nil))
 			return
 		case errors.Is(err, eet.ErrMFCRConnection):
-			c.JSON(http.StatusServiceUnavailable, decodeResponse(eet.ErrMFCRConnection, nil))
+			c.JSON(http.StatusServiceUnavailable, decodeEETResponse(eet.ErrMFCRConnection, nil))
 			return
 		case errors.Is(err, eet.ErrMFCRResponseParse):
-			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrMFCRResponseParse, nil))
+			c.JSON(http.StatusInternalServerError, decodeEETResponse(eet.ErrMFCRResponseParse, nil))
 			return
 		case errors.Is(err, eet.ErrMFCRResponseVerification):
-			c.JSON(http.StatusInternalServerError, decodeResponse(eet.ErrMFCRResponseVerification, nil))
+			c.JSON(http.StatusInternalServerError, decodeEETResponse(eet.ErrMFCRResponseVerification, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, decodeResponse(ErrUnexpectedFailure, nil))
+		c.JSON(http.StatusInternalServerError, decodeEETResponse(ErrUnexpectedFailure, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, decodeResponse(nil, odpoved))
+	c.JSON(http.StatusOK, decodeEETResponse(nil, odpoved))
 }

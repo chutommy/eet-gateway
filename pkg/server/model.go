@@ -4,8 +4,21 @@ import (
 	"github.com/chutommy/eetgateway/pkg/eet"
 )
 
-// HTTPRequest represents a binding structure for HTTP requests.
-type HTTPRequest struct {
+// HTTPPingResponse represents a response structure of HTTP responses for pings.
+type HTTPPingResponse struct {
+	EETGatewayStatus string `json:"eet_gateway"`
+	TaxAdminStatus   string `json:"tax_admin"`
+}
+
+func decodePingResponse(taxAdmin string) *HTTPPingResponse {
+	return &HTTPPingResponse{
+		EETGatewayStatus: "online", // is able to response
+		TaxAdminStatus:   taxAdmin,
+	}
+}
+
+// HTTPEETRequest represents a binding structure to HTTP requests for sending sales.
+type HTTPEETRequest struct {
 	CertID       string `json:"cert_id,omitempty" binding:"required"`
 	CertPassword string `json:"cert_password,omitempty" binding:""`
 
@@ -36,7 +49,7 @@ type HTTPRequest struct {
 	Rezim           eet.RezimType  `json:"rezim" binding:"omitempty,rezim"`
 }
 
-func encodeRequest(req *HTTPRequest) *eet.TrzbaType {
+func encodeEETRequest(req *HTTPEETRequest) *eet.TrzbaType {
 	return &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   req.UUIDZpravy,
@@ -70,8 +83,8 @@ func encodeRequest(req *HTTPRequest) *eet.TrzbaType {
 	}
 }
 
-// HTTPResponse represents a binding structure for HTTP responses.
-type HTTPResponse struct {
+// HTTPEETResponse represents a reponse structure to HTTP sale requests.
+type HTTPEETResponse struct {
 	GatewayError string                    `json:"gateway_error,omitempty"`
 	Dat          *eet.DateTime             `json:"dat,omitempty"`
 	Fik          eet.FikType               `json:"fik,omitempty"`
@@ -81,9 +94,9 @@ type HTTPResponse struct {
 	Varovani     []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
 }
 
-func decodeResponse(err error, odpoved *eet.OdpovedType) *HTTPResponse {
+func decodeEETResponse(err error, odpoved *eet.OdpovedType) *HTTPEETResponse {
 	if err != nil {
-		return &HTTPResponse{
+		return &HTTPEETResponse{
 			GatewayError: err.Error(),
 		}
 	} else if odpoved != nil {
@@ -93,7 +106,7 @@ func decodeResponse(err error, odpoved *eet.OdpovedType) *HTTPResponse {
 			cas = odpoved.Hlavicka.Datodmit
 		}
 
-		return &HTTPResponse{
+		return &HTTPEETResponse{
 			Dat:      &cas,
 			Fik:      odpoved.Potvrzeni.Fik,
 			Zprava:   odpoved.Chyba.Zprava,
@@ -103,5 +116,5 @@ func decodeResponse(err error, odpoved *eet.OdpovedType) *HTTPResponse {
 		}
 	}
 
-	return &HTTPResponse{}
+	return &HTTPEETResponse{}
 }
