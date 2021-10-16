@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
@@ -31,25 +32,45 @@ func newUUID() eet.UUIDType {
 }
 
 type ks struct {
-	key *rsa.PrivateKey
-	crt *x509.Certificate
+	id       string
+	password []byte
+	crt      *x509.Certificate
+	key      *rsa.PrivateKey
 }
 
 var okCertID = "valid"
 
-func (ks ks) Store(ctx context.Context, id string, password []byte, kp *keystore.KeyPair) error {
+func (k *ks) Store(ctx context.Context, id string, password []byte, kp *keystore.KeyPair) error {
+	k.id = id
+	k.password = password
+	k.crt = kp.Cert
+	k.key = kp.Key
 	return nil
 }
-func (ks ks) Delete(ctx context.Context, id string) error { return nil }
-func (ks *ks) Get(ctx context.Context, id string, _ []byte) (*keystore.KeyPair, error) {
-	if id != okCertID {
-		return nil, errors.New("certificate id not found")
+
+func (k *ks) Delete(ctx context.Context, id string) error {
+	k = &ks{}
+	return nil
+}
+
+func (k *ks) Get(ctx context.Context, id string, password []byte) (*keystore.KeyPair, error) {
+	if id != k.id || reflect.DeepEqual(password, &k) {
+		return nil, errors.New("invalid verification (id/password)")
 	}
 
 	return &keystore.KeyPair{
-		Cert: ks.crt,
-		Key:  ks.key,
+		Cert: k.crt,
+		Key:  k.key,
 	}, nil
+}
+
+func newKS(id string, password []byte, crt *x509.Certificate, key *rsa.PrivateKey) *ks {
+	return &ks{
+		id:       id,
+		password: password,
+		crt:      crt,
+		key:      key,
+	}
 }
 
 func mustParseCertPool(f func() (*x509.CertPool, error)) *x509.CertPool {
@@ -188,11 +209,8 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA: fscr.NewEETCAService(icaCertPool),
-			ks: &ks{
-				crt: crt,
-				key: pk,
-			},
+			eetCA:  fscr.NewEETCAService(icaCertPool),
+			ks:     newKS(okCertID, []byte{}, crt, pk),
 			expErr: nil,
 		},
 		{
@@ -228,11 +246,8 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA: fscr.NewEETCAService(icaCertPool),
-			ks: &ks{
-				crt: crt,
-				key: pk,
-			},
+			eetCA:  fscr.NewEETCAService(icaCertPool),
+			ks:     newKS(okCertID, []byte{}, crt, pk),
 			expErr: eet.ErrCertificateRetrieval,
 		},
 		{
@@ -268,11 +283,8 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA: fscr.NewEETCAService(icaCertPool),
-			ks: &ks{
-				crt: crt,
-				key: invalidPK,
-			},
+			eetCA:  fscr.NewEETCAService(icaCertPool),
+			ks:     newKS(okCertID, []byte{}, crt, invalidPK),
 			expErr: eet.ErrRequestConstruction,
 		},
 		{
@@ -308,11 +320,8 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, "invalid_url"),
-			eetCA: fscr.NewEETCAService(icaCertPool),
-			ks: &ks{
-				crt: crt,
-				key: pk,
-			},
+			eetCA:  fscr.NewEETCAService(icaCertPool),
+			ks:     newKS(okCertID, []byte{}, crt, pk),
 			expErr: eet.ErrMFCRConnection,
 		},
 		{
@@ -348,11 +357,8 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA: fscr.NewEETCAService(icaCertPool),
-			ks: &ks{
-				crt: crt,
-				key: pk,
-			},
+			eetCA:  fscr.NewEETCAService(icaCertPool),
+			ks:     newKS(okCertID, []byte{}, crt, pk),
 			expErr: eet.ErrMFCRConnection,
 		},
 		{
@@ -388,11 +394,8 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA: fscr.NewEETCAService(x509.NewCertPool()),
-			ks: &ks{
-				crt: crt,
-				key: pk,
-			},
+			eetCA:  fscr.NewEETCAService(x509.NewCertPool()),
+			ks:     newKS(okCertID, []byte{}, crt, pk),
 			expErr: eet.ErrMFCRResponseVerification,
 		},
 	}
