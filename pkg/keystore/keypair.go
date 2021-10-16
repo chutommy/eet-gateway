@@ -16,33 +16,33 @@ import (
 // ErrInvalidNonceSize is returned if then nonce is longer than the encrypted text.
 var ErrInvalidNonceSize = errors.New("invalid nonce size")
 
-// KeyPair represents a key pair combination of a private and public key.
+// KeyPair represents a key pair combination of a certificate and a private key.
 type KeyPair struct {
 	Cert *x509.Certificate
-	Key  *rsa.PrivateKey
+	PK   *rsa.PrivateKey
 }
 
-func (kp *KeyPair) encrypt(password, salt []byte) (cert []byte, key []byte, err error) {
+func (kp *KeyPair) encrypt(password, salt []byte) (cert []byte, pk []byte, err error) {
 	gcm, err := gcmCipher(salt, password)
 	if err != nil {
 		return nil, nil, fmt.Errorf("generate GCM: %w", err)
 	}
 
-	// encrypt public key
-	derPubKey := kp.Cert.Raw
-	cert, err = encryptPEMWithGCM(gcm, "CERTIFICATE", derPubKey)
+	// encrypt certificate
+	derCert := kp.Cert.Raw
+	cert, err = encryptPEMWithGCM(gcm, "CERTIFICATE", derCert)
 	if err != nil {
-		return nil, nil, fmt.Errorf("encrypt public key with GCM: %w", err)
+		return nil, nil, fmt.Errorf("encrypt certificate with GCM: %w", err)
 	}
 
 	// encrypt private key
-	derPrivKey := x509.MarshalPKCS1PrivateKey(kp.Key)
-	key, err = encryptPEMWithGCM(gcm, "RSA PRIVATE KEY", derPrivKey)
+	derPK := x509.MarshalPKCS1PrivateKey(kp.PK)
+	pk, err = encryptPEMWithGCM(gcm, "RSA PRIVATE KEY", derPK)
 	if err != nil {
 		return nil, nil, fmt.Errorf("encrypt private key with GCM: %w", err)
 	}
 
-	return cert, key, nil
+	return cert, pk, nil
 }
 
 func encryptPEMWithGCM(gcm cipher.AEAD, pemType string, data []byte) ([]byte, error) {
@@ -60,7 +60,7 @@ func encryptPEMWithGCM(gcm cipher.AEAD, pemType string, data []byte) ([]byte, er
 	return gcm.Seal(nonce, nonce, pemData, nil), nil
 }
 
-func (kp *KeyPair) decrypt(password, salt, cert, key []byte) error {
+func (kp *KeyPair) decrypt(password, salt, cert, pk []byte) error {
 	gcm, err := gcmCipher(salt, password)
 	if err != nil {
 		return fmt.Errorf("generate GCM cipher: %w", err)
@@ -69,21 +69,21 @@ func (kp *KeyPair) decrypt(password, salt, cert, key []byte) error {
 	// certificate
 	certPem, err := decryptPemWithGCM(gcm, cert)
 	if err != nil {
-		return fmt.Errorf("decrypt public key: %w", err)
+		return fmt.Errorf("decrypt certificate: %w", err)
 	}
 
 	kp.Cert, err = x509.ParseCertificate(certPem)
 	if err != nil {
-		return fmt.Errorf("parse public key: %w", err)
+		return fmt.Errorf("parse certificate: %w", err)
 	}
 
 	// private key
-	pkPem, err := decryptPemWithGCM(gcm, key)
+	pkPem, err := decryptPemWithGCM(gcm, pk)
 	if err != nil {
 		return fmt.Errorf("decrypt private key: %w", err)
 	}
 
-	kp.Key, err = x509.ParsePKCS1PrivateKey(pkPem)
+	kp.PK, err = x509.ParsePKCS1PrivateKey(pkPem)
 	if err != nil {
 		return fmt.Errorf("parse private key: %w", err)
 	}

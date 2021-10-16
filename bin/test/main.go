@@ -50,7 +50,7 @@ func main() {
 func run(ks keystore.Service, cert *x509.Certificate, pk *rsa.PrivateKey) *keystore.KeyPair {
 	err := ks.Store(context.Background(), id, []byte("ahoj"), &keystore.KeyPair{
 		Cert: cert,
-		Key:  pk,
+		PK:   pk,
 	})
 	errCheck(err)
 

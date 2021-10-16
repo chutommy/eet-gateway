@@ -35,7 +35,7 @@ type ks struct {
 	id       string
 	password []byte
 	cert     *x509.Certificate
-	key      *rsa.PrivateKey
+	pk       *rsa.PrivateKey
 }
 
 var okCertID = "valid"
@@ -44,7 +44,7 @@ func (k *ks) Store(ctx context.Context, id string, password []byte, kp *keystore
 	k.id = id
 	k.password = password
 	k.cert = kp.Cert
-	k.key = kp.Key
+	k.pk = kp.PK
 	return nil
 }
 
@@ -60,16 +60,16 @@ func (k *ks) Get(ctx context.Context, id string, password []byte) (*keystore.Key
 
 	return &keystore.KeyPair{
 		Cert: k.cert,
-		Key:  k.key,
+		PK:   k.pk,
 	}, nil
 }
 
-func newKS(id string, password []byte, cert *x509.Certificate, key *rsa.PrivateKey) *ks {
+func newKS(id string, password []byte, cert *x509.Certificate, pk *rsa.PrivateKey) *ks {
 	return &ks{
 		id:       id,
 		password: password,
 		cert:     cert,
-		key:      key,
+		pk:       pk,
 	}
 }
 

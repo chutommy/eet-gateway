@@ -70,7 +70,7 @@ func main() {
 	ks := keystore.NewRedisService(rdb)
 	err = ks.Store(context.Background(), "crt-test", []byte("secret"), &keystore.KeyPair{
 		Cert: cert,
-		Key:  pk,
+		PK:   pk,
 	})
 	errCheck(err)
 
