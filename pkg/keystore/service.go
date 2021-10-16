@@ -48,24 +48,37 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 		return fmt.Errorf("encrypt a keypair: %w", err)
 	}
 
-	// check if already exists
-	i, err := r.rdb.Exists(ctx, id).Result()
-	if err != nil {
-		return fmt.Errorf("check if id (%s) exists: %w", id, err)
-	}
+	for k := 0; k < 3; k++ {
+		err = r.rdb.Watch(ctx, func(tx *redis.Tx) error {
+			// check if already exists
+			i, err := tx.Exists(ctx, id).Result()
+			if err != nil {
+				return fmt.Errorf("check if id (%s) exists: %w", id, err)
+			}
 
-	if i != 0 {
-		return fmt.Errorf("found record with id %s: %w", id, ErrIDAlreadyExists)
-	}
+			if i != 0 {
+				return fmt.Errorf("found record with id %s: %w", id, ErrIDAlreadyExists)
+			}
 
-	// store in database
-	_, err = r.rdb.HSet(ctx, id, map[string]interface{}{
-		certificateField: cert,
-		privateKeyField:  pk,
-		saltField:        salt,
-	}).Result()
-	if err != nil {
-		return fmt.Errorf("store certificate in database: %w", err)
+			// store in database
+			_, err = tx.HSet(ctx, id, map[string]interface{}{
+				certificateField: cert,
+				privateKeyField:  pk,
+				saltField:        salt,
+			}).Result()
+			if err != nil {
+				return fmt.Errorf("store certificate in database: %w", err)
+			}
+
+			return nil
+		}, id)
+		if errors.Is(err, redis.TxFailedErr) {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("transaction failed: %w", err)
+		}
+
+		break
 	}
 
 	return nil
@@ -73,22 +86,42 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 
 // Get retrieves a Keypair by the id.
 func (r *redisService) Get(ctx context.Context, id string, password []byte) (*KeyPair, error) {
-	// read from database
-	m, err := r.rdb.HGetAll(ctx, id).Result()
-	if err != nil {
-		return nil, fmt.Errorf("retrieve stored certificate from database: %w", err)
+	m := make(map[string]string)
+	for k := 0; k < 3; k++ {
+		err := r.rdb.Watch(ctx, func(tx *redis.Tx) error {
+			// check if exists
+			i, err := tx.Exists(ctx, id).Result()
+			if err != nil {
+				return fmt.Errorf("check if id (%s) exists: %w", id, err)
+			}
+
+			if i == 0 {
+				return fmt.Errorf("not found record with id %s: %w", id, ErrRecordNotFound)
+			}
+
+			// read from database
+			m, err = tx.HGetAll(ctx, id).Result()
+			if err != nil {
+				return fmt.Errorf("retrieve stored certificate from database: %w", err)
+			}
+
+			return nil
+		}, id)
+		if errors.Is(err, redis.TxFailedErr) {
+			continue
+		} else if err != nil {
+			return nil, fmt.Errorf("transaction failed: %w", err)
+		}
+
+		break
 	}
 
-	// check fields exist
-	cert, ok1 := m[certificateField]
-	pk, ok2 := m[privateKeyField]
-	salt, ok3 := m[saltField]
-	if !(ok1 && ok2 && ok3) {
-		return nil, fmt.Errorf("empty certificate field: %w", ErrRecordNotFound)
-	}
+	salt := []byte(m[saltField])
+	cert := []byte(m[certificateField])
+	pk := []byte(m[privateKeyField])
 
 	kp := new(KeyPair)
-	err = kp.decrypt(password, []byte(salt), []byte(cert), []byte(pk))
+	err := kp.decrypt(password, salt, cert, pk)
 	if err != nil {
 		return nil, fmt.Errorf("decrypt a keypair: %w", err)
 	}
@@ -113,19 +146,59 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 
 // ChangePassword changes password for encryption/decryption of the record content.
 func (r *redisService) ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
-	kp, err := r.Get(ctx, id, oldPassword)
-	if err != nil {
-		return fmt.Errorf("retrieve keypair with old password: %w", err)
-	}
+	for k := 0; k < 3; k++ {
+		err := r.rdb.Watch(ctx, func(tx *redis.Tx) error {
+			// check if exists
+			i, err := tx.Exists(ctx, id).Result()
+			if err != nil {
+				return fmt.Errorf("check if id (%s) exists: %w", id, err)
+			}
 
-	err = r.Delete(ctx, id)
-	if err != nil {
-		return fmt.Errorf("delete keypair with old password: %w", err)
-	}
+			if i == 0 {
+				return fmt.Errorf("not found record with id %s: %w", id, ErrRecordNotFound)
+			}
 
-	err = r.Store(ctx, id, newPassword, kp)
-	if err != nil {
-		return fmt.Errorf("store keypair with new password: %w", err)
+			// read from database
+			m, err := tx.HGetAll(ctx, id).Result()
+			if err != nil {
+				return fmt.Errorf("retrieve stored certificate from database: %w", err)
+			}
+
+			// decrypt KeyPair with the old password
+			salt := []byte(m[saltField])
+			cert := []byte(m[certificateField])
+			pk := []byte(m[privateKeyField])
+
+			kp := new(KeyPair)
+			err = kp.decrypt(oldPassword, salt, cert, pk)
+			if err != nil {
+				return fmt.Errorf("decrypt a keypair: %w", err)
+			}
+
+			// encrypt Keypair with the new password
+			cert, pk, err = kp.encrypt(newPassword, salt)
+			if err != nil {
+				return fmt.Errorf("encrypt a keypair: %w", err)
+			}
+
+			// overwrite in database
+			_, err = tx.HSet(ctx, id, map[string]interface{}{
+				certificateField: cert,
+				privateKeyField:  pk,
+			}).Result()
+			if err != nil {
+				return fmt.Errorf("store certificate in database: %w", err)
+			}
+
+			return nil
+		}, id)
+		if errors.Is(err, redis.TxFailedErr) {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("transaction failed: %w", err)
+		}
+
+		break
 	}
 
 	return nil
