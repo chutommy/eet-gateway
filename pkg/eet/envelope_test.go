@@ -17,9 +17,9 @@ import (
 func TestNewSoapEnvelope(t *testing.T) {
 	for _, tc := range trzbaSet {
 		t.Run(fmt.Sprintf("build soap envelope %s", tc.requestFile), func(t *testing.T) {
-			crt, pk := parseTaxpayerCertificate(t, tc.pfxFile)
+			cert, pk := parseTaxpayerCertificate(t, tc.pfxFile)
 
-			envelope, err := eet.NewRequestEnvelope(tc.trzba, crt, pk)
+			envelope, err := eet.NewRequestEnvelope(tc.trzba, cert, pk)
 			require.NoError(t, err, "build a new valid SOAP envelope")
 			require.NotEmpty(t, envelope, "valid TrzbaType and cert/pk key pair")
 

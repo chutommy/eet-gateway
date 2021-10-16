@@ -29,7 +29,7 @@ func main() {
 	errCheck(err)
 	roots, err := ca.PlaygroundRoots()
 	errCheck(err)
-	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
+	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
 	errCheck(err)
 
 	// dep services
@@ -69,7 +69,7 @@ func main() {
 
 	ks := keystore.NewRedisService(rdb)
 	err = ks.Store(context.Background(), "crt-test", []byte("secret"), &keystore.KeyPair{
-		Cert: crt,
+		Cert: cert,
 		Key:  pk,
 	})
 	errCheck(err)

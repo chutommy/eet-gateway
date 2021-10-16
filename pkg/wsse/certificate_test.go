@@ -62,9 +62,9 @@ func TestParseTaxpayerCertificate(t *testing.T) {
 			data, err := ioutil.ReadFile(tc.file)
 			require.NoError(t, err, "file exists")
 
-			crt, pk, err := wsse.ParseTaxpayerCertificate(tc.roots, data, tc.password)
+			cert, pk, err := wsse.ParseTaxpayerCertificate(tc.roots, data, tc.password)
 			if tc.ok {
-				require.NotNilf(t, crt, "valid taxpayer's public key (certificate)")
+				require.NotNilf(t, cert, "valid taxpayer's public key (certificate)")
 				require.NotNilf(t, pk, "valid taxpayer's private key")
 				require.NoError(t, err, "valid taxpayer's PKCS 12 file")
 			} else {

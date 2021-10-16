@@ -24,10 +24,10 @@ func parseTaxpayerCertificate(t require.TestingT, pfxFile string) (*x509.Certifi
 	rawKey := readFile(t, pfxFile)
 	roots, err := ca.PlaygroundRoots()
 	require.NoError(t, err, "retrieve playground roots")
-	crt, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
+	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, rawKey, "eet")
 	require.NoError(t, err, "parse taxpayer's private key")
 
-	return crt, pk
+	return cert, pk
 }
 
 func TestCalc(t *testing.T) {

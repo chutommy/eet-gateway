@@ -38,14 +38,14 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 		return fmt.Errorf("generate a random salt value: %w", err)
 	}
 
-	crt, key, err := kp.encrypt(password, salt)
+	cert, key, err := kp.encrypt(password, salt)
 	if err != nil {
 		return fmt.Errorf("encrypt a keypair: %w", err)
 	}
 
 	// store in database
 	_, err = r.rdb.HSet(ctx, id, map[string]interface{}{
-		certificateField: crt,
+		certificateField: cert,
 		privateKeyField:  key,
 		saltField:        salt,
 	}).Result()
@@ -65,7 +65,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 	}
 
 	// check fields exist
-	crt, ok1 := m[certificateField]
+	cert, ok1 := m[certificateField]
 	key, ok2 := m[privateKeyField]
 	salt, ok3 := m[saltField]
 	if !(ok1 && ok2 && ok3) {
@@ -73,7 +73,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 	}
 
 	kp := new(KeyPair)
-	err = kp.decrypt(password, []byte(salt), []byte(crt), []byte(key))
+	err = kp.decrypt(password, []byte(salt), []byte(cert), []byte(key))
 	if err != nil {
 		return nil, fmt.Errorf("decrypt a keypair: %w", err)
 	}

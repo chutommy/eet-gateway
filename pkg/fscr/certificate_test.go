@@ -57,14 +57,14 @@ func TestEETCAService(t *testing.T) {
 
 			// parse to certificate
 			tokenB64 := strings.TrimSpace(token.Text())
-			crtRaw, err := base64.StdEncoding.DecodeString(tokenB64)
+			certRaw, err := base64.StdEncoding.DecodeString(tokenB64)
 			require.NoError(t, err, "binary security token's value is encoded base64")
 
-			crt, err := x509.ParseCertificate(crtRaw)
+			cert, err := x509.ParseCertificate(certRaw)
 			require.NoError(t, err, "binary security token's value should be a valid x509 certificate")
 
 			// check
-			err = eetCASvc.Verify(crt)
+			err = eetCASvc.Verify(cert)
 			if tc.expErr == nil {
 				require.NoError(t, err, "certificate is trusted")
 			} else {
