@@ -38,7 +38,7 @@ type gatewayService struct {
 
 // Send sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
 func (g *gatewayService) Send(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
-	kp, err := g.keyStore.Get(certID, certPassword)
+	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
 		return nil, fmt.Errorf("keypair from the keystore (id=%s): %v: %w", certID, err, ErrCertificateRetrieval)
 	}

@@ -37,9 +37,11 @@ type ks struct {
 
 var okCertID = "valid"
 
-func (ks ks) Store(id string, password []byte, kp *keystore.KeyPair) error { return nil }
-func (ks ks) Delete(id string, password []byte) error                      { return nil }
-func (ks *ks) Get(id string, _ []byte) (*keystore.KeyPair, error) {
+func (ks ks) Store(ctx context.Context, id string, password []byte, kp *keystore.KeyPair) error {
+	return nil
+}
+func (ks ks) Delete(ctx context.Context, id string, password []byte) error { return nil }
+func (ks *ks) Get(ctx context.Context, id string, _ []byte) (*keystore.KeyPair, error) {
 	if id != okCertID {
 		return nil, errors.New("certificate id not found")
 	}
