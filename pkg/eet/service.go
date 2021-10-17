@@ -29,6 +29,7 @@ var ErrMFCRResponseVerification = errors.New("MFCR response couldn't be successf
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
 	Send(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
+	ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error)
 	Ping() error
 }
 
@@ -66,6 +67,11 @@ func (g *gatewayService) Send(ctx context.Context, certID string, certPassword [
 	}
 
 	return odpoved, nil
+}
+
+// ParseTaxpayerCertificate parses raw PKCS12 data into verified x509 certificate and private key.
+func (g *gatewayService) ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
+	return g.caSvc.ParseTaxpayerCertificate(data, password)
 }
 
 // Ping checks whether the MFCR server is online. It returns nil if the response status is OK.

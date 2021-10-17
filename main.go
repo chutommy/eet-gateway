@@ -33,11 +33,6 @@ func main() {
 	}
 	caSvc := fscr.NewCAService(eetCARoots, dsigPool)
 
-	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
-	errCheck(err)
-	cert, pk, err := caSvc.ParseTaxpayerCertificate(p12File, "eet")
-	errCheck(err)
-
 	// dep services
 	certPool, err := x509.SystemCertPool()
 	errCheck(err)
@@ -68,13 +63,18 @@ func main() {
 	errCheck(err)
 
 	ks := keystore.NewRedisService(rdb)
+	gSvc := eet.NewGatewayService(client, caSvc, ks)
+
+	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
+	errCheck(err)
+	cert, pk, err := gSvc.ParseTaxpayerCertificate(p12File, "eet")
+	errCheck(err)
+
 	err = ks.Store(context.Background(), "crt-test", []byte("secret"), &keystore.KeyPair{
 		Cert: cert,
 		PK:   pk,
 	})
 	errCheck(err)
-
-	gSvc := eet.NewGatewayService(client, caSvc, ks)
 
 	// server
 	h := server.NewHandler(gSvc)
