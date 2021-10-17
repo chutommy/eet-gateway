@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/chutommy/eetgateway/pkg/ca"
-	"github.com/chutommy/eetgateway/pkg/wsse"
+	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,7 +36,8 @@ func TestPlaygroundRoots(t *testing.T) {
 			roots, err := ca.PlaygroundRoots()
 			require.NoError(t, err, "should be able to retrieve system root certificates")
 
-			cert, pk, err := wsse.ParseTaxpayerCertificate(roots, raw, tc.password)
+			caSvc := fscr.NewCAService(roots, nil)
+			cert, pk, err := caSvc.ParseTaxpayerCertificate(raw, tc.password)
 			require.NotNilf(t, cert, "valid taxpayer's certificate")
 			require.NotNilf(t, pk, "valid taxpayer's private key")
 			require.NoError(t, err, "valid taxpayer's p12 file")

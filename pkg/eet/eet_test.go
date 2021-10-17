@@ -14,7 +14,7 @@ import (
 	"github.com/beevik/etree"
 	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/eet"
-	"github.com/chutommy/eetgateway/pkg/wsse"
+	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,7 +55,8 @@ func parseTaxpayerCertificate(t require.TestingT, pfxFile string) (*x509.Certifi
 	rawPK := readFile(t, pfxFile)
 	roots, err := ca.PlaygroundRoots()
 	require.NoError(t, err, "retrieve playground roots")
-	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, rawPK, "eet")
+	caSvc := fscr.NewCAService(roots, nil)
+	cert, pk, err := caSvc.ParseTaxpayerCertificate(rawPK, "eet")
 	require.NoError(t, err, "parse taxpayer's private key")
 
 	return cert, pk

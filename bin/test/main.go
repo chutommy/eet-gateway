@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/ca"
+	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
-	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -22,7 +22,8 @@ func main() {
 	errCheck(err)
 	roots, err := ca.PlaygroundRoots()
 	errCheck(err)
-	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
+	caSvc := fscr.NewCAService(roots, nil)
+	cert, pk, err := caSvc.ParseTaxpayerCertificate(p12File, "eet")
 	errCheck(err)
 
 	rdb := redis.NewClient(&redis.Options{

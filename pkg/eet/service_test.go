@@ -17,7 +17,6 @@ import (
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
-	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -163,7 +162,8 @@ func TestGatewayService_Send(t *testing.T) {
 	p12File, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.p12")
 	require.NoError(t, err, "file exists")
 
-	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
+	caSvc := fscr.NewCAService(roots, nil)
+	cert, pk, err := caSvc.ParseTaxpayerCertificate(p12File, "eet")
 	require.NoError(t, err, "valid taxpayer's PKCS12 file")
 
 	invalidPK, err := rsa.GenerateKey(rand.Reader, 16)
@@ -182,7 +182,7 @@ func TestGatewayService_Send(t *testing.T) {
 		certID string
 		trzba  *eet.TrzbaType
 		client fscr.Client
-		eetCA  fscr.EETCAService
+		eetCA  fscr.CAService
 		ks     keystore.Service
 		expErr error
 	}{
@@ -219,7 +219,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA:  fscr.NewEETCAService(icaCertPool),
+			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: nil,
 		},
@@ -256,7 +256,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA:  fscr.NewEETCAService(icaCertPool),
+			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrCertificateRetrieval,
 		},
@@ -293,7 +293,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA:  fscr.NewEETCAService(icaCertPool),
+			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, invalidPK),
 			expErr: eet.ErrRequestConstruction,
 		},
@@ -330,7 +330,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, "invalid_url"),
-			eetCA:  fscr.NewEETCAService(icaCertPool),
+			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrMFCRConnection,
 		},
@@ -367,7 +367,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA:  fscr.NewEETCAService(icaCertPool),
+			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrMFCRConnection,
 		},
@@ -404,7 +404,7 @@ func TestGatewayService_Send(t *testing.T) {
 					},
 				},
 			}, fscr.PlaygroundURL),
-			eetCA:  fscr.NewEETCAService(x509.NewCertPool()),
+			eetCA:  fscr.NewCAService(nil, x509.NewCertPool()),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
 			expErr: eet.ErrMFCRResponseVerification,
 		},

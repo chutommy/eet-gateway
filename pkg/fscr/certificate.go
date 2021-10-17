@@ -1,34 +1,74 @@
 package fscr
 
 import (
+	"crypto/rsa"
 	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
+
+	"golang.org/x/crypto/pkcs12"
 )
 
 // ErrInvalidOrganizationName is returned if the organization name is invalid.
 var ErrInvalidOrganizationName = errors.New("invalid organization name")
 
-// ErrInsecureCertificate is returned if a certificate is signed by an unknown authority and
-// can't be verified.
-var ErrInsecureCertificate = errors.New("certificate signed by an unknown authority")
+// ErrNotCACertificate is returned if a non-CA's certificate is provided when CA's certificate is being expected.
+var ErrNotCACertificate = errors.New("not a certificate authority's certificate")
+
+// ErrInvalidKeyPair is returned if a certificate/private key keypair is invalid.
+var ErrInvalidKeyPair = errors.New("invalid certificate/private key keypair")
+
+// ErrInsecureCertificate is returned if a certificate is issued or signed by an unknown authority
+// and can't be verified.
+var ErrInsecureCertificate = errors.New("certificate issued or signed by an unknown authority")
 
 // OrganizationName is the legal name that the organization is registered with authority at the national level.
 const OrganizationName = "Česká republika - Generální finanční ředitelství"
 
-// EETCAService verifies certificates signed off by the CA.
-type EETCAService interface {
-	Verify(cert *x509.Certificate) error
+// CAService verifies certificates signed off by the CA.
+type CAService interface {
+	VerifyDSig(cert *x509.Certificate) error
+	VerifyEETCA(cert *x509.Certificate) error
+	ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error)
 }
 
-type eetCAService struct {
-	pool *x509.CertPool
+type caService struct {
+	eetCARoots []*x509.Certificate
+	dsigPool   *x509.CertPool
 }
 
-// Verify verifies cert certificate.
-func (c *eetCAService) Verify(cert *x509.Certificate) error {
+// NewCAService returns a CAService implementation with the given certificate pools for
+// verifying both issued taxpayers' certificates and digital signatures.
+func NewCAService(eetRoots []*x509.Certificate, dsigPool *x509.CertPool) CAService {
+	return &caService{
+		eetCARoots: eetRoots,
+		dsigPool:   dsigPool,
+	}
+}
+
+// VerifyEETCA verifies certificate used for issuing certificates of taxpayers.
+func (c *caService) VerifyEETCA(caCert *x509.Certificate) error {
+	var ok bool
+	// iterate over stored CA's root certificates
+	for _, root := range c.eetCARoots {
+		if caCert.Equal(root) {
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		return fmt.Errorf("certificate not found in a pool of valid EET CA certificates: %w", ErrInsecureCertificate)
+	}
+
+	return nil
+}
+
+// VerifyDSig verifies certificate used for the digital signature.
+func (c *caService) VerifyDSig(cert *x509.Certificate) error {
 	opts := x509.VerifyOptions{
-		Roots: c.pool,
+		Roots: c.dsigPool,
 		KeyUsages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageAny,
 		},
@@ -45,9 +85,64 @@ func (c *eetCAService) Verify(cert *x509.Certificate) error {
 	return nil
 }
 
-// NewEETCAService returns a EETCAService implementation with the given certification pool.
-func NewEETCAService(pool *x509.CertPool) EETCAService {
-	return &eetCAService{
-		pool: pool,
+// ParseTaxpayerCertificate takes a raw data of a PFX file and decodes it into PEM blocks.
+// Blocks are expected to be in this order: taxpayer's certificate, certificate authority's certificate
+// and private key. CA's certificate is used to verify taxpayer's certificate. The taxpayer's certificate
+// and the private key must be a valid keypair.
+func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
+	blocks, err := pkcs12.ToPEM(data, password)
+	if err != nil {
+		return nil, nil, fmt.Errorf("convert PFX data to PEM blocks: %w", err)
 	}
+
+	cert, caCert, pk, err := parsePEMBlocks(blocks)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parse PEM blocks: %w", err)
+	}
+
+	if err = c.VerifyEETCA(caCert); err != nil {
+		return nil, nil, fmt.Errorf("check certificate authority's certificate: %w", err)
+	}
+
+	err = verifyKeys(caCert, cert, pk)
+	if err != nil {
+		return nil, nil, fmt.Errorf("verify keys: %w", err)
+	}
+
+	return cert, pk, nil
+}
+
+func verifyKeys(caCert *x509.Certificate, cert *x509.Certificate, pk *rsa.PrivateKey) error {
+	if isCa := caCert.IsCA; !isCa {
+		return fmt.Errorf("expected CA's certificate: %w", ErrNotCACertificate)
+	}
+
+	if err := cert.CheckSignatureFrom(caCert); err != nil {
+		return fmt.Errorf("taxpayer's certificate not signed off by the CA's certificate: %w", err)
+	}
+
+	if !pk.PublicKey.Equal(cert.PublicKey) {
+		return fmt.Errorf("the keypair of the taxpayer's private key and the certificate is not valid: %w", ErrInvalidKeyPair)
+	}
+
+	return nil
+}
+
+func parsePEMBlocks(blocks []*pem.Block) (cert *x509.Certificate, caCert *x509.Certificate, pk *rsa.PrivateKey, err error) {
+	cert, err = x509.ParseCertificate(blocks[0].Bytes)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("parse taxpayer's certificate: %w", err)
+	}
+
+	caCert, err = x509.ParseCertificate(blocks[1].Bytes)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("parse certificate authority's certificate: %w", err)
+	}
+
+	pk, err = x509.ParsePKCS1PrivateKey(blocks[2].Bytes)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("parse taxpayer's private key: %w", err)
+	}
+
+	return cert, caCert, pk, nil
 }

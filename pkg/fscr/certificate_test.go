@@ -38,7 +38,7 @@ func TestEETCAService(t *testing.T) {
 	ok := pool.AppendCertsFromPEM(ca.ICACertificate)
 	require.True(t, ok, "ICA certificate is a valid certificate and should be parsable as a PEM block")
 
-	eetCASvc := fscr.NewEETCAService(pool)
+	eetCASvc := fscr.NewCAService(nil, pool)
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -64,7 +64,7 @@ func TestEETCAService(t *testing.T) {
 			require.NoError(t, err, "binary security token's value should be a valid x509 certificate")
 
 			// check
-			err = eetCASvc.Verify(cert)
+			err = eetCASvc.VerifyDSig(cert)
 			if tc.expErr == nil {
 				require.NoError(t, err, "certificate is trusted")
 			} else {

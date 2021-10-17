@@ -2,6 +2,8 @@ package eet
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
 	"errors"
 	"fmt"
 
@@ -32,7 +34,7 @@ type GatewayService interface {
 
 type gatewayService struct {
 	fscrClient fscr.Client
-	caSvc      fscr.EETCAService
+	caSvc      fscr.CAService
 	keyStore   keystore.Service
 }
 
@@ -58,7 +60,7 @@ func (g *gatewayService) Send(ctx context.Context, certID string, certPassword [
 		return nil, fmt.Errorf("parse response envelope: %v: %w", err, ErrMFCRResponseParse)
 	}
 
-	err = verifyResponse(trzba, respEnv, odpoved, g.caSvc.Verify)
+	err = verifyResponse(trzba, respEnv, odpoved, g.caSvc.VerifyDSig)
 	if err != nil {
 		return nil, fmt.Errorf("verify response: %v: %w", err, ErrMFCRResponseVerification)
 	}
@@ -76,7 +78,7 @@ func (g *gatewayService) Ping() error {
 }
 
 // NewGatewayService returns GatewayService implementation.
-func NewGatewayService(fscrClient fscr.Client, eetCASvc fscr.EETCAService, keyStore keystore.Service) GatewayService {
+func NewGatewayService(fscrClient fscr.Client, eetCASvc fscr.CAService, keyStore keystore.Service) GatewayService {
 	return &gatewayService{
 		fscrClient: fscrClient,
 		caSvc:      eetCASvc,

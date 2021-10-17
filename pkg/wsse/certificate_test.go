@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/chutommy/eetgateway/pkg/ca"
-	"github.com/chutommy/eetgateway/pkg/wsse"
+	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,7 +62,8 @@ func TestParseTaxpayerCertificate(t *testing.T) {
 			data, err := ioutil.ReadFile(tc.file)
 			require.NoError(t, err, "file exists")
 
-			cert, pk, err := wsse.ParseTaxpayerCertificate(tc.roots, data, tc.password)
+			caSvc := fscr.NewCAService(tc.roots, nil)
+			cert, pk, err := caSvc.ParseTaxpayerCertificate(data, tc.password)
 			if tc.ok {
 				require.NotNilf(t, cert, "valid taxpayer's certificate")
 				require.NotNilf(t, pk, "valid taxpayer's private key")

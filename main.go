@@ -16,7 +16,6 @@ import (
 	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/server"
-	"github.com/chutommy/eetgateway/pkg/wsse"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
 )
@@ -25,11 +24,18 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 	zerolog.SetGlobalLevel(zerolog.DebugLevel) // lowest => log everything
 
+	eetCARoots, err := ca.PlaygroundRoots()
+	errCheck(err)
+
+	dsigPool := x509.NewCertPool()
+	if ok := dsigPool.AppendCertsFromPEM(ca.ICACertificate); !ok {
+		panic("failed to parse root certificate")
+	}
+	caSvc := fscr.NewCAService(eetCARoots, dsigPool)
+
 	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
 	errCheck(err)
-	eetRoots, err := ca.PlaygroundRoots()
-	errCheck(err)
-	cert, pk, err := wsse.ParseTaxpayerCertificate(eetRoots, p12File, "eet")
+	cert, pk, err := caSvc.ParseTaxpayerCertificate(p12File, "eet")
 	errCheck(err)
 
 	// dep services
@@ -47,12 +53,6 @@ func main() {
 
 	client := fscr.NewClient(c, fscr.PlaygroundURL)
 	errCheck(err)
-
-	dsigPool := x509.NewCertPool()
-	if ok := dsigPool.AppendCertsFromPEM(ca.ICACertificate); !ok {
-		panic("failed to parse root certificate")
-	}
-	eetCASvc := fscr.NewEETCAService(dsigPool)
 
 	rdb := redis.NewClient(&redis.Options{
 		Network:      "tcp",
@@ -74,7 +74,7 @@ func main() {
 	})
 	errCheck(err)
 
-	gSvc := eet.NewGatewayService(client, eetCASvc, ks)
+	gSvc := eet.NewGatewayService(client, caSvc, ks)
 
 	// server
 	h := server.NewHandler(gSvc)
