@@ -13,4 +13,5 @@ package main
 //go:generate gomodifytags -file pkg/eet/eet-gen.go -struct TrzbaKontrolniKodyType -add-tags xml -transform snakecase -w --quiet
 
 // https://github.com/fatih/gomodifytags
-//!go:generate gomodifytags -file pkg/eet/eet-gen.go -all -add-tags json -add-options json=omitempty -transform camelcase --skip-unexported -w --quiet
+// disabled
+// go:generate gomodifytags -file pkg/eet/eet-gen.go -all -add-tags json -add-options json=omitempty -transform camelcase --skip-unexported -w --quiet

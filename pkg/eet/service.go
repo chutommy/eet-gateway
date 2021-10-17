@@ -40,7 +40,7 @@ var ErrMFCRResponseParse = errors.New("MFCR response parse error")
 var ErrMFCRResponseVerification = errors.New("MFCR response couldn't be successfully verified")
 
 // ErrInvalidTaxpayerCertificate is returned if an invalid certificate is given.
-var ErrInvalidTaxpayerCertiicate = errors.New("invalid taxpayer's certificate")
+var ErrInvalidTaxpayerCertificate = errors.New("invalid taxpayer's certificate")
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
@@ -97,7 +97,7 @@ func (g *gatewayService) Store(ctx context.Context, id string, password []byte, 
 	cert, pk, err := g.caSvc.ParseTaxpayerCertificate(pkcsData, pkcsPassword)
 	if err != nil {
 		if errors.Is(err, fscr.ErrInvalidCertificate) {
-			return fmt.Errorf("taxpayer's certificate: %v: %w", err, ErrInvalidTaxpayerCertiicate)
+			return fmt.Errorf("taxpayer's certificate: %v: %w", err, ErrInvalidTaxpayerCertificate)
 		}
 
 		return fmt.Errorf("parse taxpayer's certificate: %v: %w", err, ErrCertificateParsing)

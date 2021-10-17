@@ -50,7 +50,7 @@ cdzAiTUF92rQUfuVwr0zGuvZLnsoLIIsaWrx+pgHcBnL49PVJQV5w4c=
 -----END CERTIFICATE-----`)
 
 // RootCAEET1Playground is a root certificate of the Certificate Authority EET for development purposes.
-// The certificate is valid from September 29, 2016 to September 29, 2022.
+// The certificate is valid from September 29, 2016, to September 29, 2022.
 // It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
 var RootCAEET1Playground = []byte(`
 -----BEGIN CERTIFICATE-----
@@ -83,7 +83,7 @@ F9OTF6UdKfXkvt+NmW7ayYwd+F4+3pfFr3wvBNdrG6tm/SUZBQ41Tt4OTKWg
 -----END CERTIFICATE-----`)
 
 // RootCAEET1Playground2025 is a root certificate of the Certificate Authority EET for development purposes.
-// The certificate is valid from September 29, 2016 to September 29, 2025.
+// The certificate is valid from September 29, 2016, to September 29, 2025.
 // It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
 var RootCAEET1Playground2025 = []byte(`
 -----BEGIN CERTIFICATE-----
@@ -116,7 +116,7 @@ QZkGDCaEbqi3U+Rcx3B54gPdhZSDuiW4efE6LI8ogUmCvhsrn//L2ULJfPLf
 -----END CERTIFICATE-----`)
 
 // RootCAEET1Production is a root certificate of the Certificate Authority EET for production purposes.
-// The certificate is valid from August 31, 2016 to August 31, 2022.
+// The certificate is valid from August 31, 2016, to August 31, 2022.
 // It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
 var RootCAEET1Production = []byte(`
 -----BEGIN CERTIFICATE-----
@@ -147,7 +147,7 @@ UMIkISGhjf2xjWpz5Jau3aIurVCCQwOz/jw=
 -----END CERTIFICATE-----`)
 
 // RootCAEET1Production2025 is a root certificate of the Certificate Authority EET for production purposes.
-// The certificate is valid from August 31, 2016 to September 29, 2025.
+// The certificate is valid from August 31, 2016, to September 29, 2025.
 // It can be downloaded at https://www.etrzby.cz/cs/certifikacni-autorita-EET.
 var RootCAEET1Production2025 = []byte(`
 -----BEGIN CERTIFICATE-----

@@ -134,8 +134,8 @@ func (h *handler) storeCert(c *gin.Context) {
 	err := h.gatewaySvc.Store(c, req.ID, []byte(req.Password), req.PKCS12Data, req.PKCS12Password)
 	if err != nil {
 		switch {
-		case errors.Is(err, eet.ErrInvalidTaxpayerCertiicate):
-			c.JSON(http.StatusBadRequest, encodeCreateCertResponse(eet.ErrInvalidTaxpayerCertiicate, nil))
+		case errors.Is(err, eet.ErrInvalidTaxpayerCertificate):
+			c.JSON(http.StatusBadRequest, encodeCreateCertResponse(eet.ErrInvalidTaxpayerCertificate, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateParsing):
 			c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(eet.ErrCertificateParsing, nil))

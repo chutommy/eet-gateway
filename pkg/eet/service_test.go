@@ -22,12 +22,12 @@ import (
 )
 
 func newUUID() eet.UUIDType {
-	uuid, err := uuid.New().MarshalText()
+	id, err := uuid.New().MarshalText()
 	if err != nil {
 		panic(err)
 	}
 
-	return eet.UUIDType(uuid)
+	return eet.UUIDType(id)
 }
 
 type ks struct {
@@ -39,7 +39,7 @@ type ks struct {
 
 var okCertID = "valid"
 
-func (k *ks) Store(ctx context.Context, id string, password []byte, kp *keystore.KeyPair) error {
+func (k *ks) Store(_ context.Context, id string, password []byte, kp *keystore.KeyPair) error {
 	k.id = id
 	k.password = password
 	k.cert = kp.Cert
@@ -47,12 +47,12 @@ func (k *ks) Store(ctx context.Context, id string, password []byte, kp *keystore
 	return nil
 }
 
-func (k *ks) Delete(ctx context.Context, id string) error {
-	k = &ks{}
+func (k *ks) Delete(_ context.Context, _ string) error {
+	*k = ks{}
 	return nil
 }
 
-func (k *ks) Get(ctx context.Context, id string, password []byte) (*keystore.KeyPair, error) {
+func (k *ks) Get(_ context.Context, id string, password []byte) (*keystore.KeyPair, error) {
 	if id != k.id || reflect.DeepEqual(password, &k) {
 		return nil, errors.New("invalid verification (id/password)")
 	}
@@ -63,12 +63,12 @@ func (k *ks) Get(ctx context.Context, id string, password []byte) (*keystore.Key
 	}, nil
 }
 
-func (k *ks) ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
+func (k *ks) ChangePassword(_ context.Context, _ string, _, newPassword []byte) error {
 	k.password = newPassword
 	return nil
 }
 
-func (k *ks) ChangeID(ctx context.Context, oldID, newID string) error {
+func (k *ks) ChangeID(_ context.Context, _, newID string) error {
 	k.id = newID
 	return nil
 }
@@ -156,7 +156,7 @@ func TestGatewayService_Ping(t *testing.T) {
 func TestGatewayService_Send(t *testing.T) {
 	// CA root certificate
 	roots, err := ca.PlaygroundRoots()
-	require.NoError(t, err, "playground roots should be accessiable")
+	require.NoError(t, err, "playground roots should be accessible")
 
 	// taxpayer's certificate/private key
 	p12File, err := ioutil.ReadFile("testdata/EET_CA1_Playground-CZ00000019.p12")

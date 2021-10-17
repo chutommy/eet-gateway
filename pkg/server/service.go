@@ -26,7 +26,10 @@ type httpService struct {
 func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 	go func() {
 		// non blocking server
-		s.server.ListenAndServe()
+		err2 := s.server.ListenAndServe()
+		if err != nil {
+			err = err2
+		}
 	}()
 
 	quit := make(chan os.Signal, 1)

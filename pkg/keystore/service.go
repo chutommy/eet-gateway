@@ -40,7 +40,7 @@ var (
 
 // Store stores the given Keypair kp in the database encrypted with the password.
 func (r *redisService) Store(ctx context.Context, id string, password []byte, kp *KeyPair) error {
-	// generate random salt for each reacord
+	// generate random salt for each record
 	salt := make([]byte, 256)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return fmt.Errorf("generate a random salt value: %w", err)
