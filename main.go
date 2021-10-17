@@ -27,9 +27,9 @@ func main() {
 
 	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
 	errCheck(err)
-	roots, err := ca.PlaygroundRoots()
+	eetRoots, err := ca.PlaygroundRoots()
 	errCheck(err)
-	cert, pk, err := wsse.ParseTaxpayerCertificate(roots, p12File, "eet")
+	cert, pk, err := wsse.ParseTaxpayerCertificate(eetRoots, p12File, "eet")
 	errCheck(err)
 
 	// dep services
@@ -48,11 +48,11 @@ func main() {
 	client := fscr.NewClient(c, fscr.PlaygroundURL)
 	errCheck(err)
 
-	pool := x509.NewCertPool()
-	if ok := pool.AppendCertsFromPEM(ca.ICACertificate); !ok {
+	dsigPool := x509.NewCertPool()
+	if ok := dsigPool.AppendCertsFromPEM(ca.ICACertificate); !ok {
 		panic("failed to parse root certificate")
 	}
-	eetCASvc := fscr.NewEETCAService(pool)
+	eetCASvc := fscr.NewEETCAService(dsigPool)
 
 	rdb := redis.NewClient(&redis.Options{
 		Network:      "tcp",

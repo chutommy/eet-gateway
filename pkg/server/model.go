@@ -10,7 +10,7 @@ type HTTPPingResponse struct {
 	TaxAdminStatus   string `json:"tax_admin"`
 }
 
-func decodePingResponse(taxAdmin string) *HTTPPingResponse {
+func encodePingResponse(taxAdmin string) *HTTPPingResponse {
 	return &HTTPPingResponse{
 		EETGatewayStatus: "online", // is able to response
 		TaxAdminStatus:   taxAdmin,
@@ -49,7 +49,7 @@ type HTTPEETRequest struct {
 	Rezim           eet.RezimType  `json:"rezim" binding:"omitempty,rezim"`
 }
 
-func encodeEETRequest(req *HTTPEETRequest) *eet.TrzbaType {
+func decodeEETRequest(req *HTTPEETRequest) *eet.TrzbaType {
 	return &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   req.UUIDZpravy,
@@ -94,7 +94,7 @@ type HTTPEETResponse struct {
 	Varovani     []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
 }
 
-func decodeEETResponse(err error, odpoved *eet.OdpovedType) *HTTPEETResponse {
+func encodeEETResponse(err error, odpoved *eet.OdpovedType) *HTTPEETResponse {
 	if err != nil {
 		return &HTTPEETResponse{
 			GatewayError: err.Error(),
