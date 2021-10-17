@@ -19,6 +19,9 @@ var ErrNotCACertificate = errors.New("not a certificate authority's certificate"
 // ErrInvalidKeyPair is returned if a certificate/private key keypair is invalid.
 var ErrInvalidKeyPair = errors.New("invalid certificate/private key keypair")
 
+// ErrInvalidCertificate is returned if a certificate/private key is invalid.
+var ErrInvalidCertificate = errors.New("invalid certificate/private key")
+
 // ErrInsecureCertificate is returned if a certificate is issued or signed by an unknown authority
 // and can't be verified.
 var ErrInsecureCertificate = errors.New("certificate issued or signed by an unknown authority")
@@ -101,12 +104,12 @@ func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x50
 	}
 
 	if err = c.VerifyEETCA(caCert); err != nil {
-		return nil, nil, fmt.Errorf("check certificate authority's certificate: %w", err)
+		return nil, nil, fmt.Errorf("check certificate authority's certificate: %v: %w", err, ErrInvalidCertificate)
 	}
 
 	err = verifyKeys(caCert, cert, pk)
 	if err != nil {
-		return nil, nil, fmt.Errorf("verify keys: %w", err)
+		return nil, nil, fmt.Errorf("verify keys: %v: %w", err, ErrInvalidCertificate)
 	}
 
 	return cert, pk, nil

@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -64,17 +63,6 @@ func main() {
 
 	ks := keystore.NewRedisService(rdb)
 	gSvc := eet.NewGatewayService(client, caSvc, ks)
-
-	p12File, err := ioutil.ReadFile("data/certificates/playground-certs/EET_CA1_Playground-CZ683555118.p12")
-	errCheck(err)
-	cert, pk, err := gSvc.ParseTaxpayerCertificate(p12File, "eet")
-	errCheck(err)
-
-	err = ks.Store(context.Background(), "crt-test", []byte("secret"), &keystore.KeyPair{
-		Cert: cert,
-		PK:   pk,
-	})
-	errCheck(err)
 
 	// server
 	h := server.NewHandler(gSvc)

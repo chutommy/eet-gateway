@@ -118,3 +118,31 @@ func encodeEETResponse(err error, odpoved *eet.OdpovedType) *HTTPEETResponse {
 
 	return &HTTPEETResponse{}
 }
+
+// HTTPEETRequest represents a binding structure to HTTP requests for storing certificate.
+type HTTPCreateCertRequest struct {
+	ID             string `json:"id" binding:""`
+	Password       string `json:"password" binding:""`
+	PKCS12Data     []byte `json:"pkcs12_data" binding:"required"`
+	PKCS12Password string `json:"pkcs12_password" binding:"required"`
+}
+
+// HTTPEETResponse represents a reponse structure to HTTP request for storing certificate .
+type HTTPCreateCertResponse struct {
+	GatewayError string `json:"gateway_error,omitempty"`
+	ID           string `json:"id,omitempty"`
+}
+
+func encodeCreateCertResponse(err error, id *string) *HTTPCreateCertResponse {
+	if err != nil {
+		return &HTTPCreateCertResponse{
+			GatewayError: err.Error(),
+		}
+	} else if id != nil {
+		return &HTTPCreateCertResponse{
+			ID: *id,
+		}
+	}
+
+	return &HTTPCreateCertResponse{}
+}

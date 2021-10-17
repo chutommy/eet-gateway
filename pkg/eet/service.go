@@ -9,11 +9,20 @@ import (
 	"github.com/chutommy/eetgateway/pkg/keystore"
 )
 
+// ErrCertificateParsing is returned if a certificate couldn't be parsed.
+var ErrCertificateParsing = errors.New("EET certificate/parse key couldn't be parsed")
+
 // ErrCertificateNotFound is returned if a certificate with the given ID couldn't be found.
 var ErrCertificateNotFound = errors.New("EET certificate couldn't be found")
 
+// ErrCertificateAlreadyExists is returned if a certificate with the given ID already exists.
+var ErrCertificateAlreadyExists = errors.New("EET certificate already exists")
+
 // ErrCertificateRetrieval is returned if a certificate with the given ID couldn't be fetched.
 var ErrCertificateRetrieval = errors.New("EET certificate couldn't be retrieved")
+
+// ErrCertificateStore is returned if a certificate couldn't be stored.
+var ErrCertificateStore = errors.New("EET certificate couldn't be stored")
 
 // ErrInvalidCipherKey is returned if the given password can't open sealed certificate/private key.
 var ErrInvalidCipherKey = errors.New("invalid password for cipher decryption")
@@ -36,7 +45,7 @@ var ErrInvalidTaxpayerCertiicate = errors.New("invalid taxpayer's certificate")
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
 	Send(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
-	ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error)
+	Store(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
 	Ping() error
 }
 
@@ -50,9 +59,10 @@ type gatewayService struct {
 func (g *gatewayService) Send(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
-		if errors.Is(err, keystore.ErrRecordNotFound) {
+		switch {
+		case errors.Is(err, keystore.ErrRecordNotFound):
 			return nil, fmt.Errorf("not found (id=%s): %v: %w", certID, err, ErrCertificateNotFound)
-		} else if errors.Is(err, keystore.ErrInvalidCipherKey) {
+		case errors.Is(err, keystore.ErrInvalidCipherKey):
 			return nil, fmt.Errorf("open sealed certificate/private key (id=%s): %v: %w", certID, err, ErrInvalidCipherKey)
 		}
 
@@ -82,9 +92,30 @@ func (g *gatewayService) Send(ctx context.Context, certID string, certPassword [
 	return odpoved, nil
 }
 
-// ParseTaxpayerCertificate parses raw PKCS12 data into verified x509 certificate and private key.
-func (g *gatewayService) ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
-	return g.caSvc.ParseTaxpayerCertificate(data, password)
+// Store verifies and stores the taxpayer's certificate.
+func (g *gatewayService) Store(ctx context.Context, id string, password []byte, pkcsData []byte, pkcsPassword string) error {
+	cert, pk, err := g.caSvc.ParseTaxpayerCertificate(pkcsData, pkcsPassword)
+	if err != nil {
+		if errors.Is(err, fscr.ErrInvalidCertificate) {
+			return fmt.Errorf("taxpayer's certificate: %v: %w", err, ErrInvalidTaxpayerCertiicate)
+		}
+
+		return fmt.Errorf("parse taxpayer's certificate: %v: %w", err, ErrCertificateParsing)
+	}
+
+	err = g.keyStore.Store(ctx, id, password, &keystore.KeyPair{
+		Cert: cert,
+		PK:   pk,
+	})
+	if err != nil {
+		if errors.Is(err, keystore.ErrIDAlreadyExists) {
+			return fmt.Errorf("store certificate: %v: %w", err, ErrCertificateAlreadyExists)
+		}
+
+		return fmt.Errorf("store certificate: %v: %w", err, ErrCertificateStore)
+	}
+
+	return nil
 }
 
 // Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
