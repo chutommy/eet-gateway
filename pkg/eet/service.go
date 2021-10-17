@@ -2,8 +2,6 @@ package eet
 
 import (
 	"context"
-	"crypto/rsa"
-	"crypto/x509"
 	"errors"
 	"fmt"
 
@@ -11,8 +9,14 @@ import (
 	"github.com/chutommy/eetgateway/pkg/keystore"
 )
 
+// ErrCertificateNotFound is returned if a certificate with the given ID couldn't be found.
+var ErrCertificateNotFound = errors.New("EET certificate couldn't be found")
+
 // ErrCertificateRetrieval is returned if a certificate with the given ID couldn't be fetched.
 var ErrCertificateRetrieval = errors.New("EET certificate couldn't be retrieved")
+
+// ErrInvalidCipherKey is returned if the given password can't open sealed certificate/private key.
+var ErrInvalidCipherKey = errors.New("invalid password for cipher decryption")
 
 // ErrRequestConstruction is returned if a SOAP request envelope couldn't be built.
 var ErrRequestConstruction = errors.New("request to EET couldn't be constructed")
@@ -25,6 +29,9 @@ var ErrMFCRResponseParse = errors.New("MFCR response parse error")
 
 // ErrMFCRResponseVerification is returned if the response doesn't pass security checks and verifications.
 var ErrMFCRResponseVerification = errors.New("MFCR response couldn't be successfully verified")
+
+// ErrInvalidTaxpayerCertificate is returned if an invalid certificate is given.
+var ErrInvalidTaxpayerCertiicate = errors.New("invalid taxpayer's certificate")
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
@@ -43,6 +50,12 @@ type gatewayService struct {
 func (g *gatewayService) Send(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
+		if errors.Is(err, keystore.ErrRecordNotFound) {
+			return nil, fmt.Errorf("not found (id=%s): %v: %w", certID, err, ErrCertificateNotFound)
+		} else if errors.Is(err, keystore.ErrInvalidCipherKey) {
+			return nil, fmt.Errorf("open sealed certificate/private key (id=%s): %v: %w", certID, err, ErrInvalidCipherKey)
+		}
+
 		return nil, fmt.Errorf("keypair from the keystore (id=%s): %v: %w", certID, err, ErrCertificateRetrieval)
 	}
 

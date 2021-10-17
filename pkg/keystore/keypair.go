@@ -13,8 +13,8 @@ import (
 	"io"
 )
 
-// ErrInvalidNonceSize is returned if then nonce is longer than the encrypted text.
-var ErrInvalidNonceSize = errors.New("invalid nonce size")
+// ErrInvalidCipherKey is returned if the given password for decryption is invalid and can't be used.
+var ErrInvalidCipherKey = errors.New("invalid cipher key")
 
 // KeyPair represents a key pair combination of a certificate and a private key.
 type KeyPair struct {
@@ -95,7 +95,7 @@ func decryptPemWithGCM(gcm cipher.AEAD, cipherText []byte) ([]byte, error) {
 	nonceSize := gcm.NonceSize()
 	// nonce is part of the cipher text and therefore must be smaller
 	if len(cipherText) < nonceSize {
-		return nil, fmt.Errorf("nonce is longer than cipher text: %w", ErrInvalidNonceSize)
+		return nil, fmt.Errorf("nonce is longer than cipher text: %w", ErrInvalidCipherKey)
 	}
 
 	// split nonce and the cipher
@@ -103,7 +103,7 @@ func decryptPemWithGCM(gcm cipher.AEAD, cipherText []byte) ([]byte, error) {
 	// open sealed cipher
 	pemData, err := gcm.Open(nil, nonce, sealed, nil)
 	if err != nil {
-		return nil, fmt.Errorf("open sealed cipher text: %w", err)
+		return nil, fmt.Errorf("open sealed cipher text: %v: %w", err, ErrInvalidCipherKey)
 	}
 
 	block, _ := pem.Decode(pemData)
