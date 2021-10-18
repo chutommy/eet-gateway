@@ -45,7 +45,7 @@ func (h *handler) ginEngine() *gin.Engine {
 	{
 		v1.GET("/ping", h.pingEET)
 
-		v1.POST("/eet/sale", h.sendSale)
+		v1.POST("/sale", h.sendSale)
 
 		v1.POST("/cert", h.storeCert)
 		v1.PUT("/cert/id", h.updateCertID)
