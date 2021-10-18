@@ -59,21 +59,21 @@ func (h *handler) ginEngine() *gin.Engine {
 func (h *handler) pingEET(c *gin.Context) {
 	if err := h.gatewaySvc.PingEET(); err != nil {
 		if errors.Is(err, eet.ErrFSCRConnection) {
-			c.JSON(http.StatusServiceUnavailable, encodePingResponse(eet.ErrFSCRConnection.Error()))
+			c.JSON(http.StatusServiceUnavailable, encodePingEETResponse(eet.ErrFSCRConnection.Error()))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, encodePingResponse(ErrUnexpectedFailure.Error()))
+		c.JSON(http.StatusInternalServerError, encodePingEETResponse(ErrUnexpectedFailure.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, encodePingResponse("online"))
+	c.JSON(http.StatusOK, encodePingEETResponse("online"))
 }
 
 func (h *handler) sendSale(c *gin.Context) {
 	// default request
 	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
-	req := &HTTPEETRequest{
+	req := &SendSaleRequest{
 		UUIDZpravy:   eet.UUIDType(uuid.New().String()),
 		DatOdesl:     dateTime,
 		PrvniZaslani: true,
@@ -84,51 +84,51 @@ func (h *handler) sendSale(c *gin.Context) {
 
 	// bind to default
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, encodeEETResponse(err, nil, nil))
+		c.JSON(http.StatusBadRequest, encodeSendSaleResponse(err, nil, nil))
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.SendSale(c, req.CertID, []byte(req.CertPassword), decodeEETRequest(req))
+	odpoved, err := h.gatewaySvc.SendSale(c, req.CertID, []byte(req.CertPassword), decodeSendSaleRequest(req))
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
-			c.JSON(http.StatusNotFound, encodeEETResponse(eet.ErrCertificateNotFound, nil, nil))
+			c.JSON(http.StatusNotFound, encodeSendSaleResponse(eet.ErrCertificateNotFound, nil, nil))
 			return
 		case errors.Is(err, eet.ErrInvalidCertificatePassword):
-			c.JSON(http.StatusUnauthorized, encodeEETResponse(eet.ErrInvalidCertificatePassword, nil, nil))
+			c.JSON(http.StatusUnauthorized, encodeSendSaleResponse(eet.ErrInvalidCertificatePassword, nil, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateGet):
-			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrCertificateGet, nil, nil))
+			c.JSON(http.StatusServiceUnavailable, encodeSendSaleResponse(eet.ErrCertificateGet, nil, nil))
 			return
 		case errors.Is(err, eet.ErrRequestBuild):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrRequestBuild, nil, nil))
+			c.JSON(http.StatusInternalServerError, encodeSendSaleResponse(eet.ErrRequestBuild, nil, nil))
 			return
 		case errors.Is(err, eet.ErrFSCRConnection):
-			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrFSCRConnection, nil, nil))
+			c.JSON(http.StatusServiceUnavailable, encodeSendSaleResponse(eet.ErrFSCRConnection, nil, nil))
 			return
 		case errors.Is(err, eet.ErrFSCRResponseParse):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseParse, nil, nil))
+			c.JSON(http.StatusInternalServerError, encodeSendSaleResponse(eet.ErrFSCRResponseParse, nil, nil))
 			return
 		case errors.Is(err, eet.ErrFSCRResponseVerify):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseVerify, nil, nil))
+			c.JSON(http.StatusInternalServerError, encodeSendSaleResponse(eet.ErrFSCRResponseVerify, nil, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, encodeEETResponse(ErrUnexpectedFailure, nil, nil))
+		c.JSON(http.StatusInternalServerError, encodeSendSaleResponse(ErrUnexpectedFailure, nil, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeEETResponse(nil, req, odpoved))
+	c.JSON(http.StatusOK, encodeSendSaleResponse(nil, req, odpoved))
 }
 
 func (h *handler) storeCert(c *gin.Context) {
 	// default request
-	req := &HTTPCreateCertRequest{
+	req := &StoreCertRequest{
 		CertID: uuid.New().String(),
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, encodeCreateCertResponse(err, nil))
+		c.JSON(http.StatusBadRequest, encodeStoreCertResponse(err, nil))
 		return
 	}
 
@@ -136,31 +136,31 @@ func (h *handler) storeCert(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrInvalidTaxpayersCertificate):
-			c.JSON(http.StatusBadRequest, encodeCreateCertResponse(eet.ErrInvalidTaxpayersCertificate, nil))
+			c.JSON(http.StatusBadRequest, encodeStoreCertResponse(eet.ErrInvalidTaxpayersCertificate, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateParse):
-			c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(eet.ErrCertificateParse, nil))
+			c.JSON(http.StatusInternalServerError, encodeStoreCertResponse(eet.ErrCertificateParse, nil))
 			return
 		case errors.Is(err, eet.ErrIDAlreadyExists):
-			c.JSON(http.StatusConflict, encodeCreateCertResponse(eet.ErrIDAlreadyExists, nil))
+			c.JSON(http.StatusConflict, encodeStoreCertResponse(eet.ErrIDAlreadyExists, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateStore):
-			c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(eet.ErrCertificateStore, nil))
+			c.JSON(http.StatusInternalServerError, encodeStoreCertResponse(eet.ErrCertificateStore, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(ErrUnexpectedFailure, nil))
+		c.JSON(http.StatusInternalServerError, encodeStoreCertResponse(ErrUnexpectedFailure, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeCreateCertResponse(nil, &req.CertID))
+	c.JSON(http.StatusOK, encodeStoreCertResponse(nil, &req.CertID))
 }
 
 func (h *handler) UpdateCertPassword(c *gin.Context) {
 	// default request
-	req := &HTTPChangePasswordRequest{}
+	req := &UpdateCertPasswordRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, encodeChangePasswordResponse(err, nil))
+		c.JSON(http.StatusBadRequest, encodeUpdateCertPasswordResponse(err, nil))
 		return
 	}
 
@@ -168,28 +168,28 @@ func (h *handler) UpdateCertPassword(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
-			c.JSON(http.StatusNotFound, encodeChangePasswordResponse(eet.ErrCertificateNotFound, nil))
+			c.JSON(http.StatusNotFound, encodeUpdateCertPasswordResponse(eet.ErrCertificateNotFound, nil))
 			return
 		case errors.Is(err, eet.ErrInvalidCertificatePassword):
-			c.JSON(http.StatusUnauthorized, encodeChangePasswordResponse(eet.ErrInvalidCertificatePassword, nil))
+			c.JSON(http.StatusUnauthorized, encodeUpdateCertPasswordResponse(eet.ErrInvalidCertificatePassword, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateDelete):
-			c.JSON(http.StatusInternalServerError, encodeChangePasswordResponse(eet.ErrCertificateDelete, nil))
+			c.JSON(http.StatusInternalServerError, encodeUpdateCertPasswordResponse(eet.ErrCertificateDelete, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, encodeChangePasswordResponse(ErrUnexpectedFailure, nil))
+		c.JSON(http.StatusInternalServerError, encodeUpdateCertPasswordResponse(ErrUnexpectedFailure, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeChangePasswordResponse(nil, &req.CertID))
+	c.JSON(http.StatusOK, encodeUpdateCertPasswordResponse(nil, &req.CertID))
 }
 
 func (h *handler) updateCertID(c *gin.Context) {
 	// default request
-	req := &HTTPChangeIDRequest{}
+	req := &UpdateCertIDRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, encodeChangeIDResponse(err, nil))
+		c.JSON(http.StatusBadRequest, encodeUpdateCertIDResponse(err, nil))
 		return
 	}
 
@@ -197,26 +197,26 @@ func (h *handler) updateCertID(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
-			c.JSON(http.StatusNotFound, encodeChangeIDResponse(eet.ErrCertificateNotFound, nil))
+			c.JSON(http.StatusNotFound, encodeUpdateCertIDResponse(eet.ErrCertificateNotFound, nil))
 			return
 		case errors.Is(err, eet.ErrIDAlreadyExists):
-			c.JSON(http.StatusConflict, encodeChangeIDResponse(eet.ErrIDAlreadyExists, nil))
+			c.JSON(http.StatusConflict, encodeUpdateCertIDResponse(eet.ErrIDAlreadyExists, nil))
 			return
 		case errors.Is(err, eet.ErrCertificatUpdateID):
-			c.JSON(http.StatusInternalServerError, encodeChangeIDResponse(eet.ErrCertificatUpdateID, nil))
+			c.JSON(http.StatusInternalServerError, encodeUpdateCertIDResponse(eet.ErrCertificatUpdateID, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, encodeChangeIDResponse(ErrUnexpectedFailure, nil))
+		c.JSON(http.StatusInternalServerError, encodeUpdateCertIDResponse(ErrUnexpectedFailure, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeChangeIDResponse(nil, &req.NewID))
+	c.JSON(http.StatusOK, encodeUpdateCertIDResponse(nil, &req.NewID))
 }
 
 func (h *handler) deleteCert(c *gin.Context) {
 	// default request
-	req := &HTTPDeleteCertRequest{}
+	req := &DeleteCertRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, encodeDeleteCertResponse(err, nil))
 		return

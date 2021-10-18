@@ -4,21 +4,21 @@ import (
 	"github.com/chutommy/eetgateway/pkg/eet"
 )
 
-// HTTPPingResponse represents a response structure of HTTP responses for pings.
-type HTTPPingResponse struct {
+// PingEETResponse represents a response structure of HTTP responses for pings.
+type PingEETResponse struct {
 	EETGatewayStatus string `json:"eet_gateway"`
 	TaxAdminStatus   string `json:"tax_admin"`
 }
 
-func encodePingResponse(taxAdmin string) *HTTPPingResponse {
-	return &HTTPPingResponse{
+func encodePingEETResponse(taxAdmin string) *PingEETResponse {
+	return &PingEETResponse{
 		EETGatewayStatus: "online", // is able to response
 		TaxAdminStatus:   taxAdmin,
 	}
 }
 
-// HTTPEETRequest represents a binding structure to HTTP requests for sending sales.
-type HTTPEETRequest struct {
+// SendSaleRequest represents a binding structure to HTTP requests for sending sales.
+type SendSaleRequest struct {
 	CertID       string `json:"cert_id,omitempty" binding:"required"`
 	CertPassword string `json:"cert_password,omitempty" binding:""`
 
@@ -49,7 +49,7 @@ type HTTPEETRequest struct {
 	Rezim           eet.RezimType  `json:"rezim" binding:"omitempty,rezim"`
 }
 
-func decodeEETRequest(req *HTTPEETRequest) *eet.TrzbaType {
+func decodeSendSaleRequest(req *SendSaleRequest) *eet.TrzbaType {
 	return &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   req.UUIDZpravy,
@@ -83,8 +83,8 @@ func decodeEETRequest(req *HTTPEETRequest) *eet.TrzbaType {
 	}
 }
 
-// HTTPEETResponse represents a reponse structure to HTTP sale requests.
-type HTTPEETResponse struct {
+// SendSaleResponse represents a reponse structure to HTTP sale requests.
+type SendSaleResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
 
 	DatOdmit   *eet.DateTime `json:"dat_odmit,omitempty"`
@@ -98,41 +98,41 @@ type HTTPEETResponse struct {
 	Test     bool                      `json:"test,omitempty"`
 	Varovani []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
 
-	Trzba *HTTPEETRequest `json:"trzba,omitempty"`
+	Trzba *SendSaleRequest `json:"trzba,omitempty"`
 }
 
-func encodeEETResponse(err error, req *HTTPEETRequest, odpoved *eet.OdpovedType) *HTTPEETResponse {
+func encodeSendSaleResponse(err error, req *SendSaleRequest, odpoved *eet.OdpovedType) *SendSaleResponse {
 	if err != nil {
-		return &HTTPEETResponse{
+		return &SendSaleResponse{
 			GatewayError: err.Error(),
 		}
 	} else if odpoved != nil {
 		if (odpoved.Hlavicka.Datodmit != eet.DateTime{}) {
-			return &HTTPEETResponse{
+			return &SendSaleResponse{
 				DatOdmit:   &odpoved.Hlavicka.Datodmit,
 				ChybZprava: odpoved.Chyba.Zprava,
 				ChybKod:    odpoved.Chyba.Kod,
 				Test:       odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
 				Varovani:   odpoved.Varovani,
 			}
-		} else {
-			return &HTTPEETResponse{
-				DatPrij:  &odpoved.Hlavicka.Datprij,
-				FIK:      odpoved.Potvrzeni.Fik,
-				BKP:      string(odpoved.Hlavicka.Bkp),
-				Test:     odpoved.Potvrzeni.Test,
-				Varovani: odpoved.Varovani,
+		}
 
-				Trzba: req,
-			}
+		return &SendSaleResponse{
+			DatPrij:  &odpoved.Hlavicka.Datprij,
+			FIK:      odpoved.Potvrzeni.Fik,
+			BKP:      string(odpoved.Hlavicka.Bkp),
+			Test:     odpoved.Potvrzeni.Test,
+			Varovani: odpoved.Varovani,
+
+			Trzba: req,
 		}
 	}
 
-	return &HTTPEETResponse{}
+	return &SendSaleResponse{}
 }
 
-// HTTPCreateCertRequest represents a binding structure to HTTP requests for storing certificate.
-type HTTPCreateCertRequest struct {
+// StoreCertRequest represents a binding structure to HTTP requests for storing certificate.
+type StoreCertRequest struct {
 	CertID       string `json:"cert_id" binding:""`
 	CertPassword string `json:"cert_password" binding:""`
 
@@ -140,104 +140,104 @@ type HTTPCreateCertRequest struct {
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
 
-// HTTPCreateCertResponse represents a response structure to HTTP request for storing certificate .
-type HTTPCreateCertResponse struct {
+// StoreCertResponse represents a response structure to HTTP request for storing certificate .
+type StoreCertResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
 
 	CertID string `json:"cert_id,omitempty"`
 }
 
-func encodeCreateCertResponse(err error, id *string) *HTTPCreateCertResponse {
+func encodeStoreCertResponse(err error, id *string) *StoreCertResponse {
 	if err != nil {
-		return &HTTPCreateCertResponse{
+		return &StoreCertResponse{
 			GatewayError: err.Error(),
 		}
 	} else if id != nil {
-		return &HTTPCreateCertResponse{
+		return &StoreCertResponse{
 			CertID: *id,
 		}
 	}
 
-	return &HTTPCreateCertResponse{}
+	return &StoreCertResponse{}
 }
 
-// HTTPDeleteCertRequest represents a binding structure to HTTP requests for deleting certificate.
-type HTTPDeleteCertRequest struct {
+// DeleteCertRequest represents a binding structure to HTTP requests for deleting certificate.
+type DeleteCertRequest struct {
 	CertID string `json:"cert_id" binding:"required"`
 }
 
-// HTTPDeleteCertResponse represents a reponse structure to HTTP delete requests.
-type HTTPDeleteCertResponse struct {
+// DeleteCertResponse represents a reponse structure to HTTP delete requests.
+type DeleteCertResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
 
 	CertID string `json:"cert_id,omitempty"`
 }
 
-func encodeDeleteCertResponse(err error, id *string) *HTTPDeleteCertResponse {
+func encodeDeleteCertResponse(err error, id *string) *DeleteCertResponse {
 	if err != nil {
-		return &HTTPDeleteCertResponse{
+		return &DeleteCertResponse{
 			GatewayError: err.Error(),
 		}
 	} else if id != nil {
-		return &HTTPDeleteCertResponse{
+		return &DeleteCertResponse{
 			CertID: *id,
 		}
 	}
 
-	return &HTTPDeleteCertResponse{}
+	return &DeleteCertResponse{}
 }
 
-// HTTPChangePasswordRequest represents a binding structure to HTTP requests for password update.
-type HTTPChangePasswordRequest struct {
+// UpdateCertPasswordRequest represents a binding structure to HTTP requests for password update.
+type UpdateCertPasswordRequest struct {
 	CertID       string `json:"cert_id" binding:"required"`
 	CertPassword string `json:"cert_password" binding:"required"`
 	NewPassword  string `json:"new_password" binding:"required"`
 }
 
-// HTTPChangePasswordResponse represents a reponse structure to HTTP password update requests.
-type HTTPChangePasswordResponse struct {
+// UpdateCertPasswordResponse represents a reponse structure to HTTP password update requests.
+type UpdateCertPasswordResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
 
 	CertID string `json:"cert_id,omitempty"`
 }
 
-func encodeChangePasswordResponse(err error, id *string) *HTTPChangePasswordResponse {
+func encodeUpdateCertPasswordResponse(err error, id *string) *UpdateCertPasswordResponse {
 	if err != nil {
-		return &HTTPChangePasswordResponse{
+		return &UpdateCertPasswordResponse{
 			GatewayError: err.Error(),
 		}
 	} else if id != nil {
-		return &HTTPChangePasswordResponse{
+		return &UpdateCertPasswordResponse{
 			CertID: *id,
 		}
 	}
 
-	return &HTTPChangePasswordResponse{}
+	return &UpdateCertPasswordResponse{}
 }
 
-// HTTPChangeIDRequest represents a binding structure to HTTP requests for certificate ID update.
-type HTTPChangeIDRequest struct {
+// UpdateCertIDRequest represents a binding structure to HTTP requests for certificate ID update.
+type UpdateCertIDRequest struct {
 	CertID string `json:"cert_id" binding:"required"`
 	NewID  string `json:"new_id" binding:"required,necsfield=ID"`
 }
 
-// HTTPChangeIDResponse represents a reponse structure to HTTP certificate ID update requests.
-type HTTPChangeIDResponse struct {
+// UpdateCertIDResponse represents a reponse structure to HTTP certificate ID update requests.
+type UpdateCertIDResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
 
 	CertID string `json:"cert_id,omitempty"`
 }
 
-func encodeChangeIDResponse(err error, id *string) *HTTPChangeIDResponse {
+func encodeUpdateCertIDResponse(err error, id *string) *UpdateCertIDResponse {
 	if err != nil {
-		return &HTTPChangeIDResponse{
+		return &UpdateCertIDResponse{
 			GatewayError: err.Error(),
 		}
 	} else if id != nil {
-		return &HTTPChangeIDResponse{
+		return &UpdateCertIDResponse{
 			CertID: *id,
 		}
 	}
 
-	return &HTTPChangeIDResponse{}
+	return &UpdateCertIDResponse{}
 }
