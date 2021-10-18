@@ -133,8 +133,9 @@ func encodeEETResponse(err error, req *HTTPEETRequest, odpoved *eet.OdpovedType)
 
 // HTTPCreateCertRequest represents a binding structure to HTTP requests for storing certificate.
 type HTTPCreateCertRequest struct {
-	ID             string `json:"id" binding:""`
-	Password       string `json:"password" binding:""`
+	CertID       string `json:"cert_id" binding:""`
+	CertPassword string `json:"cert_password" binding:""`
+
 	PKCS12Data     []byte `json:"pkcs12_data" binding:"required"`
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
@@ -142,7 +143,8 @@ type HTTPCreateCertRequest struct {
 // HTTPCreateCertResponse represents a response structure to HTTP request for storing certificate .
 type HTTPCreateCertResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
-	ID           string `json:"id,omitempty"`
+
+	CertID string `json:"cert_id,omitempty"`
 }
 
 func encodeCreateCertResponse(err error, id *string) *HTTPCreateCertResponse {
@@ -152,7 +154,7 @@ func encodeCreateCertResponse(err error, id *string) *HTTPCreateCertResponse {
 		}
 	} else if id != nil {
 		return &HTTPCreateCertResponse{
-			ID: *id,
+			CertID: *id,
 		}
 	}
 
@@ -161,13 +163,14 @@ func encodeCreateCertResponse(err error, id *string) *HTTPCreateCertResponse {
 
 // HTTPDeleteCertRequest represents a binding structure to HTTP requests for deleting certificate.
 type HTTPDeleteCertRequest struct {
-	ID string `json:"id" binding:"required"`
+	CertID string `json:"cert_id" binding:"required"`
 }
 
 // HTTPDeleteCertResponse represents a reponse structure to HTTP delete requests.
 type HTTPDeleteCertResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
-	ID           string `json:"id,omitempty"`
+
+	CertID string `json:"cert_id,omitempty"`
 }
 
 func encodeDeleteCertResponse(err error, id *string) *HTTPDeleteCertResponse {
@@ -177,7 +180,7 @@ func encodeDeleteCertResponse(err error, id *string) *HTTPDeleteCertResponse {
 		}
 	} else if id != nil {
 		return &HTTPDeleteCertResponse{
-			ID: *id,
+			CertID: *id,
 		}
 	}
 
@@ -186,15 +189,16 @@ func encodeDeleteCertResponse(err error, id *string) *HTTPDeleteCertResponse {
 
 // HTTPChangePasswordRequest represents a binding structure to HTTP requests for password update.
 type HTTPChangePasswordRequest struct {
-	ID          string `json:"id" binding:"required"`
-	OldPassword string `json:"old_password" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required"`
+	CertID       string `json:"cert_id" binding:"required"`
+	CertPassword string `json:"cert_password" binding:"required"`
+	NewPassword  string `json:"new_password" binding:"required"`
 }
 
 // HTTPChangePasswordResponse represents a reponse structure to HTTP password update requests.
 type HTTPChangePasswordResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
-	ID           string `json:"id,omitempty"`
+
+	CertID string `json:"cert_id,omitempty"`
 }
 
 func encodeChangePasswordResponse(err error, id *string) *HTTPChangePasswordResponse {
@@ -204,7 +208,7 @@ func encodeChangePasswordResponse(err error, id *string) *HTTPChangePasswordResp
 		}
 	} else if id != nil {
 		return &HTTPChangePasswordResponse{
-			ID: *id,
+			CertID: *id,
 		}
 	}
 
@@ -213,14 +217,15 @@ func encodeChangePasswordResponse(err error, id *string) *HTTPChangePasswordResp
 
 // HTTPChangeIDRequest represents a binding structure to HTTP requests for certificate ID update.
 type HTTPChangeIDRequest struct {
-	ID    string `json:"id" binding:"required"`
-	NewID string `json:"new_id" binding:"required,necsfield=ID"`
+	CertID string `json:"cert_id" binding:"required"`
+	NewID  string `json:"new_id" binding:"required,necsfield=ID"`
 }
 
 // HTTPChangeIDResponse represents a reponse structure to HTTP certificate ID update requests.
 type HTTPChangeIDResponse struct {
 	GatewayError string `json:"gateway_error,omitempty"`
-	ID           string `json:"id,omitempty"`
+
+	CertID string `json:"cert_id,omitempty"`
 }
 
 func encodeChangeIDResponse(err error, id *string) *HTTPChangeIDResponse {
@@ -230,7 +235,7 @@ func encodeChangeIDResponse(err error, id *string) *HTTPChangeIDResponse {
 		}
 	} else if id != nil {
 		return &HTTPChangeIDResponse{
-			ID: *id,
+			CertID: *id,
 		}
 	}
 

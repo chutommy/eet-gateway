@@ -123,7 +123,7 @@ func (h *handler) sendEET(c *gin.Context) {
 func (h *handler) storeCert(c *gin.Context) {
 	// default request
 	req := &HTTPCreateCertRequest{
-		ID: uuid.New().String(),
+		CertID: uuid.New().String(),
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -131,7 +131,7 @@ func (h *handler) storeCert(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.StoreCert(c, req.ID, []byte(req.Password), req.PKCS12Data, req.PKCS12Password)
+	err := h.gatewaySvc.StoreCert(c, req.CertID, []byte(req.CertPassword), req.PKCS12Data, req.PKCS12Password)
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrInvalidTaxpayersCertificate):
@@ -152,7 +152,7 @@ func (h *handler) storeCert(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeCreateCertResponse(nil, &req.ID))
+	c.JSON(http.StatusOK, encodeCreateCertResponse(nil, &req.CertID))
 }
 
 func (h *handler) UpdateCertPassword(c *gin.Context) {
@@ -163,7 +163,7 @@ func (h *handler) UpdateCertPassword(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.UpdateCertPassword(c, req.ID, []byte(req.OldPassword), []byte(req.NewPassword))
+	err := h.gatewaySvc.UpdateCertPassword(c, req.CertID, []byte(req.CertPassword), []byte(req.NewPassword))
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
@@ -181,7 +181,7 @@ func (h *handler) UpdateCertPassword(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeChangePasswordResponse(nil, &req.ID))
+	c.JSON(http.StatusOK, encodeChangePasswordResponse(nil, &req.CertID))
 }
 
 func (h *handler) updateCertID(c *gin.Context) {
@@ -192,7 +192,7 @@ func (h *handler) updateCertID(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.UpdateCertID(c, req.ID, req.NewID)
+	err := h.gatewaySvc.UpdateCertID(c, req.CertID, req.NewID)
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
@@ -221,7 +221,7 @@ func (h *handler) deleteCert(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.DeleteID(c, req.ID)
+	err := h.gatewaySvc.DeleteID(c, req.CertID)
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
@@ -236,5 +236,5 @@ func (h *handler) deleteCert(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeDeleteCertResponse(nil, &req.ID))
+	c.JSON(http.StatusOK, encodeDeleteCertResponse(nil, &req.CertID))
 }
