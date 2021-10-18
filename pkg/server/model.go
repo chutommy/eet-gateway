@@ -171,3 +171,30 @@ func encodeDeleteCertResponse(err error, id *string) *HTTPDeleteCertResponse {
 
 	return &HTTPDeleteCertResponse{}
 }
+
+// HTTPChangePasswordRequest represents a binding structure to HTTP requests for password update.
+type HTTPChangePasswordRequest struct {
+	ID          string `json:"id" binding:"required"`
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+// HTTPChangePasswordResponse represents a reponse structure to HTTP password update requests.
+type HTTPChangePasswordResponse struct {
+	GatewayError string `json:"gateway_error,omitempty"`
+	ID           string `json:"id,omitempty"`
+}
+
+func encodeChangePasswordResponse(err error, id *string) *HTTPDeleteCertResponse {
+	if err != nil {
+		return &HTTPDeleteCertResponse{
+			GatewayError: err.Error(),
+		}
+	} else if id != nil {
+		return &HTTPDeleteCertResponse{
+			ID: *id,
+		}
+	}
+
+	return &HTTPDeleteCertResponse{}
+}

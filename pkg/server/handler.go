@@ -156,7 +156,32 @@ func (h *handler) storeCert(c *gin.Context) {
 }
 
 func (h *handler) changePassword(c *gin.Context) {
-	panic(errors.New("not implemented"))
+	// default request
+	req := &HTTPChangePasswordRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, encodeChangePasswordResponse(err, nil))
+		return
+	}
+
+	err := h.gatewaySvc.ChangePassword(c, req.ID, []byte(req.OldPassword), []byte(req.NewPassword))
+	if err != nil {
+		switch {
+		case errors.Is(err, eet.ErrCertificateNotFound):
+			c.JSON(http.StatusNotFound, encodeChangePasswordResponse(eet.ErrCertificateNotFound, nil))
+			return
+		case errors.Is(err, eet.ErrInvalidCipherKey):
+			c.JSON(http.StatusUnauthorized, encodeChangePasswordResponse(eet.ErrInvalidCipherKey, nil))
+			return
+		case errors.Is(err, eet.ErrCertificateDelete):
+			c.JSON(http.StatusInternalServerError, encodeChangePasswordResponse(eet.ErrCertificateDelete, nil))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, encodeChangePasswordResponse(ErrUnexpectedFailure, nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, encodeChangePasswordResponse(nil, &req.ID))
 }
 
 func (h *handler) changeID(c *gin.Context) {

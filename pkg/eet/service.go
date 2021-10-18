@@ -24,6 +24,9 @@ var ErrCertificateRetrieval = errors.New("EET certificate couldn't be retrieved"
 // ErrCertificateStore is returned if a certificate couldn't be stored.
 var ErrCertificateStore = errors.New("EET certificate couldn't be stored")
 
+// ErrCertificateChangePassword is returned if password of a certificate couldn't be updated.
+var ErrCertificateChangePassword = errors.New("password to a certificate couldn't be updated")
+
 // ErrCertificateDelete is returned if a certificate couldn't be deleted.
 var ErrCertificateDelete = errors.New("EET certificate couldn't be deleted")
 
@@ -49,6 +52,7 @@ var ErrInvalidTaxpayerCertificate = errors.New("invalid taxpayer's certificate")
 type GatewayService interface {
 	Send(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
 	Store(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
+	ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
 	Delete(ctx context.Context, id string) error
 	Ping() error
 }
@@ -117,6 +121,22 @@ func (g *gatewayService) Store(ctx context.Context, id string, password []byte, 
 		}
 
 		return fmt.Errorf("store certificate: %v: %w", err, ErrCertificateStore)
+	}
+
+	return nil
+}
+
+// ChangePassword updates the certificate of given ID with a new password.
+func (g *gatewayService) ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
+	err := g.keyStore.ChangePassword(ctx, id, oldPassword, newPassword)
+	if err != nil {
+		if errors.Is(err, keystore.ErrRecordNotFound) {
+			return fmt.Errorf("find certificate: %w", ErrCertificateNotFound)
+		} else if errors.Is(err, keystore.ErrInvalidCipherKey) {
+			return fmt.Errorf("decrypt certificate with an old key: %w", ErrInvalidCipherKey)
+		}
+
+		return fmt.Errorf("change password to taxpayer's certificate: %v: %w", err, ErrCertificateChangePassword)
 	}
 
 	return nil
