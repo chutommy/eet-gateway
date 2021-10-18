@@ -416,7 +416,7 @@ func TestGatewayService_Send(t *testing.T) {
 			gSvc := eet.NewGatewayService(tc.client, tc.eetCA, tc.ks)
 
 			// run
-			odp, err := gSvc.SendEET(context.Background(), tc.certID, []byte{}, tc.trzba)
+			odp, err := gSvc.SendSale(context.Background(), tc.certID, []byte{}, tc.trzba)
 			if tc.expErr == nil {
 				require.NoError(t, err, "sale should be successfully stored")
 				require.NotNil(t, odp, "no error expected")

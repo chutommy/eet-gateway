@@ -53,8 +53,8 @@ var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate"
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
-	SendEET(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
 	PingEET() error
+	SendSale(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
 	StoreCert(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
 	UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
 	UpdateCertID(ctx context.Context, oldID, newID string) error
@@ -68,7 +68,7 @@ type gatewayService struct {
 }
 
 // Send sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
-func (g *gatewayService) SendEET(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
+func (g *gatewayService) SendSale(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
 		switch {

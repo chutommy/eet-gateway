@@ -44,7 +44,8 @@ func (h *handler) ginEngine() *gin.Engine {
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/ping", h.pingEET)
-		v1.POST("/eet", h.sendEET)
+
+		v1.POST("/eet/sale", h.sendSale)
 
 		v1.POST("/cert", h.storeCert)
 		v1.PUT("/cert/id", h.updateCertID)
@@ -69,7 +70,7 @@ func (h *handler) pingEET(c *gin.Context) {
 	c.JSON(http.StatusOK, encodePingResponse("online"))
 }
 
-func (h *handler) sendEET(c *gin.Context) {
+func (h *handler) sendSale(c *gin.Context) {
 	// default request
 	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
 	req := &HTTPEETRequest{
@@ -87,7 +88,7 @@ func (h *handler) sendEET(c *gin.Context) {
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.SendEET(c, req.CertID, []byte(req.CertPassword), decodeEETRequest(req))
+	odpoved, err := h.gatewaySvc.SendSale(c, req.CertID, []byte(req.CertPassword), decodeEETRequest(req))
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
