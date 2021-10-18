@@ -85,34 +85,46 @@ func decodeEETRequest(req *HTTPEETRequest) *eet.TrzbaType {
 
 // HTTPEETResponse represents a reponse structure to HTTP sale requests.
 type HTTPEETResponse struct {
-	GatewayError string                    `json:"gateway_error,omitempty"`
-	Dat          *eet.DateTime             `json:"dat,omitempty"`
-	Fik          eet.FikType               `json:"fik,omitempty"`
-	Zprava       string                    `json:"zprava,omitempty"`
-	Kod          int                       `json:"kod,omitempty"`
-	Test         bool                      `json:"test,omitempty"`
-	Varovani     []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
+	GatewayError string `json:"gateway_error,omitempty"`
+
+	DatOdmit   *eet.DateTime `json:"dat_odmit,omitempty"`
+	ChybZprava string        `json:"chyb_zprava,omitempty"`
+	ChybKod    int           `json:"chyb_kod,omitempty"`
+
+	DatPrij *eet.DateTime `json:"dat_prij,omitempty"`
+	FIK     eet.FikType   `json:"fik,omitempty"`
+	BKP     string        `json:"bkp,omitempty"`
+
+	Test     bool                      `json:"test,omitempty"`
+	Varovani []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
+
+	Trzba *HTTPEETRequest `json:"trzba,omitempty"`
 }
 
-func encodeEETResponse(err error, odpoved *eet.OdpovedType) *HTTPEETResponse {
+func encodeEETResponse(err error, req *HTTPEETRequest, odpoved *eet.OdpovedType) *HTTPEETResponse {
 	if err != nil {
 		return &HTTPEETResponse{
 			GatewayError: err.Error(),
 		}
 	} else if odpoved != nil {
-		// select the non-empty date/time
-		cas := odpoved.Hlavicka.Datprij
-		if (cas == eet.DateTime{}) {
-			cas = odpoved.Hlavicka.Datodmit
-		}
+		if (odpoved.Hlavicka.Datodmit != eet.DateTime{}) {
+			return &HTTPEETResponse{
+				DatOdmit:   &odpoved.Hlavicka.Datodmit,
+				ChybZprava: odpoved.Chyba.Zprava,
+				ChybKod:    odpoved.Chyba.Kod,
+				Test:       odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
+				Varovani:   odpoved.Varovani,
+			}
+		} else {
+			return &HTTPEETResponse{
+				DatPrij:  &odpoved.Hlavicka.Datprij,
+				FIK:      odpoved.Potvrzeni.Fik,
+				BKP:      string(odpoved.Hlavicka.Bkp),
+				Test:     odpoved.Potvrzeni.Test,
+				Varovani: odpoved.Varovani,
 
-		return &HTTPEETResponse{
-			Dat:      &cas,
-			Fik:      odpoved.Potvrzeni.Fik,
-			Zprava:   odpoved.Chyba.Zprava,
-			Kod:      odpoved.Chyba.Kod,
-			Test:     odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
-			Varovani: odpoved.Varovani,
+				Trzba: req,
+			}
 		}
 	}
 

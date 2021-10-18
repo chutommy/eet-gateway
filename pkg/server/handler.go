@@ -83,7 +83,7 @@ func (h *handler) sendEET(c *gin.Context) {
 
 	// bind to default
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, encodeEETResponse(err, nil))
+		c.JSON(http.StatusBadRequest, encodeEETResponse(err, nil, nil))
 		return
 	}
 
@@ -91,33 +91,33 @@ func (h *handler) sendEET(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
-			c.JSON(http.StatusNotFound, encodeEETResponse(eet.ErrCertificateNotFound, nil))
+			c.JSON(http.StatusNotFound, encodeEETResponse(eet.ErrCertificateNotFound, nil, nil))
 			return
 		case errors.Is(err, eet.ErrInvalidCertificatePassword):
-			c.JSON(http.StatusUnauthorized, encodeEETResponse(eet.ErrInvalidCertificatePassword, nil))
+			c.JSON(http.StatusUnauthorized, encodeEETResponse(eet.ErrInvalidCertificatePassword, nil, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateGet):
-			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrCertificateGet, nil))
+			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrCertificateGet, nil, nil))
 			return
 		case errors.Is(err, eet.ErrRequestBuild):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrRequestBuild, nil))
+			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrRequestBuild, nil, nil))
 			return
 		case errors.Is(err, eet.ErrFSCRConnection):
-			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrFSCRConnection, nil))
+			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrFSCRConnection, nil, nil))
 			return
 		case errors.Is(err, eet.ErrFSCRResponseParse):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseParse, nil))
+			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseParse, nil, nil))
 			return
 		case errors.Is(err, eet.ErrFSCRResponseVerify):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseVerify, nil))
+			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseVerify, nil, nil))
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, encodeEETResponse(ErrUnexpectedFailure, nil))
+		c.JSON(http.StatusInternalServerError, encodeEETResponse(ErrUnexpectedFailure, nil, nil))
 		return
 	}
 
-	c.JSON(http.StatusOK, encodeEETResponse(nil, odpoved))
+	c.JSON(http.StatusOK, encodeEETResponse(nil, req, odpoved))
 }
 
 func (h *handler) storeCert(c *gin.Context) {
