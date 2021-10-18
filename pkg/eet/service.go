@@ -10,34 +10,34 @@ import (
 )
 
 // ErrCertificateNotFound is returned if a certificate with the given ID can't be found.
-var ErrCertificateNotFound = errors.New("taxpayer's certificate can't be found")
+var ErrCertificateNotFound = errors.New("taxpayer's certificate not found")
 
 // ErrIDAlreadyExists is returned if a certificate with the given ID already exists.
 var ErrIDAlreadyExists = errors.New("taxpayer's certificate with the ID already exists")
 
 // ErrCertificateParse is returned if a certificate can't be parsed.
-var ErrCertificateParse = errors.New("taxpayer's certificate can't be parsed")
+var ErrCertificateParse = errors.New("taxpayer's certificate not parsed")
 
 // ErrCertificateGet is returned if a certificate with the given ID can't be fetched.
-var ErrCertificateGet = errors.New("taxpayer's certificate can't be retrieved")
+var ErrCertificateGet = errors.New("taxpayer's certificate not retrieved")
 
 // ErrCertificateStore is returned if a certificate can't be stored.
-var ErrCertificateStore = errors.New("taxpayer's certificate can't be stored")
+var ErrCertificateStore = errors.New("taxpayer's certificate not stored")
 
 // ErrCertificateUpdatePassword is returned if password of a certificate can't be updated.
-var ErrCertificateUpdatePassword = errors.New("password to the taxpayer's certificate can't be updated")
+var ErrCertificateUpdatePassword = errors.New("password to the taxpayer's certificate not updated")
 
 // ErrCertificatUpdateID is returned if id of a certificate can't be updated.
-var ErrCertificatUpdateID = errors.New("id of the taxpayer's certificate can't be updated")
+var ErrCertificatUpdateID = errors.New("id of the taxpayer's certificate not updated")
 
 // ErrCertificateDelete is returned if a certificate can't be deleted.
-var ErrCertificateDelete = errors.New("taxpayer's certificate can't be deleted")
+var ErrCertificateDelete = errors.New("taxpayer's certificate not deleted")
 
 // ErrInvalidCertificatePassword is returned if the given password can't open sealed certificate/private key.
 var ErrInvalidCertificatePassword = errors.New("invalid password for the decryption of the taxpayer's certificate")
 
 // ErrRequestBuild is returned if a SOAP request envelope can't be built.
-var ErrRequestBuild = errors.New("request to FSCR can't be constructed")
+var ErrRequestBuild = errors.New("request to FSCR not constructed")
 
 // ErrFSCRConnection is returned if an error occurs during the communication with the MFCR server.
 var ErrFSCRConnection = errors.New("FSCR connection error")
@@ -46,7 +46,7 @@ var ErrFSCRConnection = errors.New("FSCR connection error")
 var ErrFSCRResponseParse = errors.New("FSCR response parse error")
 
 // ErrFSCRResponseVerify is returned if the response doesn't pass security checks and verifications.
-var ErrFSCRResponseVerify = errors.New("FSCR response can't be successfully verified")
+var ErrFSCRResponseVerify = errors.New("FSCR response not successfully verified")
 
 // ErrInvalidTaxpayersCertificate is returned if an invalid certificate is given.
 var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate")
