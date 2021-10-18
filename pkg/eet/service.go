@@ -24,6 +24,9 @@ var ErrCertificateRetrieval = errors.New("EET certificate couldn't be retrieved"
 // ErrCertificateStore is returned if a certificate couldn't be stored.
 var ErrCertificateStore = errors.New("EET certificate couldn't be stored")
 
+// ErrCertificateDelete is returned if a certificate couldn't be deleted.
+var ErrCertificateDelete = errors.New("EET certificate couldn't be deleted")
+
 // ErrInvalidCipherKey is returned if the given password can't open sealed certificate/private key.
 var ErrInvalidCipherKey = errors.New("invalid password for cipher decryption")
 
@@ -46,6 +49,7 @@ var ErrInvalidTaxpayerCertificate = errors.New("invalid taxpayer's certificate")
 type GatewayService interface {
 	Send(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
 	Store(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
+	Delete(ctx context.Context, id string) error
 	Ping() error
 }
 
@@ -113,6 +117,20 @@ func (g *gatewayService) Store(ctx context.Context, id string, password []byte, 
 		}
 
 		return fmt.Errorf("store certificate: %v: %w", err, ErrCertificateStore)
+	}
+
+	return nil
+}
+
+// Delete removes a certificate with the given ID.
+func (g *gatewayService) Delete(ctx context.Context, id string) error {
+	err := g.keyStore.Delete(ctx, id)
+	if err != nil {
+		if errors.Is(err, keystore.ErrRecordNotFound) {
+			return fmt.Errorf("delete certificate: %v: %w", err, ErrCertificateNotFound)
+		}
+
+		return fmt.Errorf("delete certificate: %v: %w", err, ErrCertificateDelete)
 	}
 
 	return nil

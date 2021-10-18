@@ -146,3 +146,28 @@ func encodeCreateCertResponse(err error, id *string) *HTTPCreateCertResponse {
 
 	return &HTTPCreateCertResponse{}
 }
+
+// HTTPDeleteCertRequest represents a binding structure to HTTP requests for deleting certificate.
+type HTTPDeleteCertRequest struct {
+	ID string `json:"id" binding:"required"`
+}
+
+// HTTPDeleteCertResponse represents a reponse structure to HTTP delete requests.
+type HTTPDeleteCertResponse struct {
+	GatewayError string `json:"gateway_error,omitempty"`
+	ID           string `json:"id,omitempty"`
+}
+
+func encodeDeleteCertResponse(err error, id *string) *HTTPDeleteCertResponse {
+	if err != nil {
+		return &HTTPDeleteCertResponse{
+			GatewayError: err.Error(),
+		}
+	} else if id != nil {
+		return &HTTPDeleteCertResponse{
+			ID: *id,
+		}
+	}
+
+	return &HTTPDeleteCertResponse{}
+}

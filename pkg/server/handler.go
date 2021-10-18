@@ -164,5 +164,27 @@ func (h *handler) changeID(c *gin.Context) {
 }
 
 func (h *handler) deleteCert(c *gin.Context) {
-	panic(errors.New("not implemented"))
+	// default request
+	req := &HTTPDeleteCertRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, encodeDeleteCertResponse(err, nil))
+		return
+	}
+
+	err := h.gatewaySvc.Delete(c, req.ID)
+	if err != nil {
+		switch {
+		case errors.Is(err, eet.ErrCertificateNotFound):
+			c.JSON(http.StatusNotFound, encodeDeleteCertResponse(eet.ErrCertificateNotFound, nil))
+			return
+		case errors.Is(err, eet.ErrCertificateDelete):
+			c.JSON(http.StatusInternalServerError, encodeDeleteCertResponse(eet.ErrCertificateDelete, nil))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, encodeDeleteCertResponse(ErrUnexpectedFailure, nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, encodeDeleteCertResponse(nil, &req.ID))
 }
