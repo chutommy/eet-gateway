@@ -63,12 +63,12 @@ func (k *ks) Get(_ context.Context, id string, password []byte) (*keystore.KeyPa
 	}, nil
 }
 
-func (k *ks) ChangePassword(_ context.Context, _ string, _, newPassword []byte) error {
+func (k *ks) UpdatePassword(_ context.Context, _ string, _, newPassword []byte) error {
 	k.password = newPassword
 	return nil
 }
 
-func (k *ks) ChangeID(_ context.Context, _, newID string) error {
+func (k *ks) UpdateID(_ context.Context, _, newID string) error {
 	k.id = newID
 	return nil
 }
@@ -143,7 +143,7 @@ func TestGatewayService_Ping(t *testing.T) {
 			gSvc := eet.NewGatewayService(client, nil, nil)
 
 			// run
-			err := gSvc.Ping()
+			err := gSvc.PingEET()
 			if tc.ok {
 				require.NoError(t, err, "FSCR's servers should be available non-stop")
 			} else {
@@ -416,7 +416,7 @@ func TestGatewayService_Send(t *testing.T) {
 			gSvc := eet.NewGatewayService(tc.client, tc.eetCA, tc.ks)
 
 			// run
-			odp, err := gSvc.Send(context.Background(), tc.certID, []byte{}, tc.trzba)
+			odp, err := gSvc.SendEET(context.Background(), tc.certID, []byte{}, tc.trzba)
 			if tc.expErr == nil {
 				require.NoError(t, err, "sale should be successfully stored")
 				require.NotNil(t, odp, "no error expected")

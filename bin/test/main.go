@@ -56,10 +56,10 @@ func run(ks keystore.Service, cert *x509.Certificate, pk *rsa.PrivateKey) *keyst
 	})
 	errCheck(err)
 
-	err = ks.ChangePassword(context.Background(), id, []byte("ahoj"), []byte("nazdar"))
+	err = ks.UpdatePassword(context.Background(), id, []byte("ahoj"), []byte("nazdar"))
 	errCheck(err)
 
-	err = ks.ChangeID(context.Background(), id, newid)
+	err = ks.UpdateID(context.Background(), id, newid)
 	errCheck(err)
 
 	kp, err := ks.Get(context.Background(), newid, []byte("nazdar"))

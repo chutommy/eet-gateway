@@ -43,20 +43,20 @@ func (h *handler) ginEngine() *gin.Engine {
 
 	v1 := r.Group("/v1")
 	{
-		v1.GET("/ping", h.ping)
-		v1.POST("/eet", h.eet)
+		v1.GET("/ping", h.pingEET)
+		v1.POST("/eet", h.sendEET)
 
 		v1.POST("/cert", h.storeCert)
-		v1.PUT("/cert/id", h.changeID)
-		v1.PUT("/cert/password", h.changePassword)
+		v1.PUT("/cert/id", h.updateCertID)
+		v1.PUT("/cert/password", h.UpdateCertPassword)
 		v1.DELETE("/cert", h.deleteCert)
 	}
 
 	return r
 }
 
-func (h *handler) ping(c *gin.Context) {
-	if err := h.gatewaySvc.Ping(); err != nil {
+func (h *handler) pingEET(c *gin.Context) {
+	if err := h.gatewaySvc.PingEET(); err != nil {
 		if errors.Is(err, eet.ErrFSCRConnection) {
 			c.JSON(http.StatusServiceUnavailable, encodePingResponse(eet.ErrFSCRConnection.Error()))
 			return
@@ -69,7 +69,7 @@ func (h *handler) ping(c *gin.Context) {
 	c.JSON(http.StatusOK, encodePingResponse("online"))
 }
 
-func (h *handler) eet(c *gin.Context) {
+func (h *handler) sendEET(c *gin.Context) {
 	// default request
 	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
 	req := &HTTPEETRequest{
@@ -87,7 +87,7 @@ func (h *handler) eet(c *gin.Context) {
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.Send(c, req.CertID, []byte(req.CertPassword), decodeEETRequest(req))
+	odpoved, err := h.gatewaySvc.SendEET(c, req.CertID, []byte(req.CertPassword), decodeEETRequest(req))
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
@@ -131,7 +131,7 @@ func (h *handler) storeCert(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.Store(c, req.ID, []byte(req.Password), req.PKCS12Data, req.PKCS12Password)
+	err := h.gatewaySvc.StoreCert(c, req.ID, []byte(req.Password), req.PKCS12Data, req.PKCS12Password)
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrInvalidTaxpayersCertificate):
@@ -155,7 +155,7 @@ func (h *handler) storeCert(c *gin.Context) {
 	c.JSON(http.StatusOK, encodeCreateCertResponse(nil, &req.ID))
 }
 
-func (h *handler) changePassword(c *gin.Context) {
+func (h *handler) UpdateCertPassword(c *gin.Context) {
 	// default request
 	req := &HTTPChangePasswordRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -163,7 +163,7 @@ func (h *handler) changePassword(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.ChangePassword(c, req.ID, []byte(req.OldPassword), []byte(req.NewPassword))
+	err := h.gatewaySvc.UpdateCertPassword(c, req.ID, []byte(req.OldPassword), []byte(req.NewPassword))
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
@@ -184,7 +184,7 @@ func (h *handler) changePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, encodeChangePasswordResponse(nil, &req.ID))
 }
 
-func (h *handler) changeID(c *gin.Context) {
+func (h *handler) updateCertID(c *gin.Context) {
 	// default request
 	req := &HTTPChangeIDRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -192,7 +192,7 @@ func (h *handler) changeID(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.ChangeID(c, req.ID, req.NewID)
+	err := h.gatewaySvc.UpdateCertID(c, req.ID, req.NewID)
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):
@@ -221,7 +221,7 @@ func (h *handler) deleteCert(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.Delete(c, req.ID)
+	err := h.gatewaySvc.DeleteID(c, req.ID)
 	if err != nil {
 		switch {
 		case errors.Is(err, eet.ErrCertificateNotFound):

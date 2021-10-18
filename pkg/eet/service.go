@@ -53,12 +53,12 @@ var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate"
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
-	Send(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
-	Store(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
-	ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
-	ChangeID(ctx context.Context, oldID, newID string) error
-	Delete(ctx context.Context, id string) error
-	Ping() error
+	SendEET(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
+	PingEET() error
+	StoreCert(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
+	UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
+	UpdateCertID(ctx context.Context, oldID, newID string) error
+	DeleteID(ctx context.Context, id string) error
 }
 
 type gatewayService struct {
@@ -68,7 +68,7 @@ type gatewayService struct {
 }
 
 // Send sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
-func (g *gatewayService) Send(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
+func (g *gatewayService) SendEET(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
 		switch {
@@ -105,7 +105,7 @@ func (g *gatewayService) Send(ctx context.Context, certID string, certPassword [
 }
 
 // Store verifies and stores the taxpayer's certificate.
-func (g *gatewayService) Store(ctx context.Context, id string, password []byte, pkcsData []byte, pkcsPassword string) error {
+func (g *gatewayService) StoreCert(ctx context.Context, id string, password []byte, pkcsData []byte, pkcsPassword string) error {
 	cert, pk, err := g.caSvc.ParseTaxpayerCertificate(pkcsData, pkcsPassword)
 	if err != nil {
 		if errors.Is(err, fscr.ErrInvalidCertificate) {
@@ -130,9 +130,9 @@ func (g *gatewayService) Store(ctx context.Context, id string, password []byte, 
 	return nil
 }
 
-// ChangePassword updates the certificate of given ID with a new password.
-func (g *gatewayService) ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
-	err := g.keyStore.ChangePassword(ctx, id, oldPassword, newPassword)
+// UpdatePassword updates the certificate of given ID with a new password.
+func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
+	err := g.keyStore.UpdatePassword(ctx, id, oldPassword, newPassword)
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
 			return fmt.Errorf("find certificate: %w", ErrCertificateNotFound)
@@ -146,9 +146,9 @@ func (g *gatewayService) ChangePassword(ctx context.Context, id string, oldPassw
 	return nil
 }
 
-// ChangeID renames the current certificate ID to a new ID.
-func (g *gatewayService) ChangeID(ctx context.Context, oldID, newID string) error {
-	err := g.keyStore.ChangeID(ctx, oldID, newID)
+// UpdateID renames the current certificate ID to a new ID.
+func (g *gatewayService) UpdateCertID(ctx context.Context, oldID, newID string) error {
+	err := g.keyStore.UpdateID(ctx, oldID, newID)
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
 			return fmt.Errorf("delete certificate: %v: %w", err, ErrCertificateNotFound)
@@ -163,7 +163,7 @@ func (g *gatewayService) ChangeID(ctx context.Context, oldID, newID string) erro
 }
 
 // Delete removes a certificate with the given ID.
-func (g *gatewayService) Delete(ctx context.Context, id string) error {
+func (g *gatewayService) DeleteID(ctx context.Context, id string) error {
 	err := g.keyStore.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
@@ -177,7 +177,7 @@ func (g *gatewayService) Delete(ctx context.Context, id string) error {
 }
 
 // Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
-func (g *gatewayService) Ping() error {
+func (g *gatewayService) PingEET() error {
 	if err := g.fscrClient.Ping(); err != nil {
 		return fmt.Errorf("ping MFCR server: %v: %w", err, ErrFSCRConnection)
 	}

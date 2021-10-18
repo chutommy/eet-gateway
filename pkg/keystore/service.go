@@ -24,8 +24,8 @@ type Service interface {
 	Store(ctx context.Context, id string, password []byte, kp *KeyPair) error
 	Get(ctx context.Context, id string, password []byte) (*KeyPair, error)
 	Delete(ctx context.Context, id string) error
-	ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
-	ChangeID(ctx context.Context, oldID, newID string) error
+	UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
+	UpdateID(ctx context.Context, oldID, newID string) error
 }
 
 type redisService struct {
@@ -155,7 +155,7 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 }
 
 // ChangePassword changes password for encryption/decryption of the record content.
-func (r *redisService) ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
+func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	txf := func(tx *redis.Tx) error {
 		// check if exists
 		i, err := tx.Exists(ctx, id).Result()
@@ -221,7 +221,7 @@ func (r *redisService) ChangePassword(ctx context.Context, id string, oldPasswor
 }
 
 // ChangeID changes ID of the record.
-func (r *redisService) ChangeID(ctx context.Context, oldID, newID string) error {
+func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error {
 	txf := func(tx *redis.Tx) error {
 		// check if exists
 		i, err := tx.Exists(ctx, oldID).Result()
