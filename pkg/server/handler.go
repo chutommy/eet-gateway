@@ -140,8 +140,8 @@ func (h *handler) storeCert(c *gin.Context) {
 		case errors.Is(err, eet.ErrCertificateParsing):
 			c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(eet.ErrCertificateParsing, nil))
 			return
-		case errors.Is(err, eet.ErrCertificateAlreadyExists):
-			c.JSON(http.StatusConflict, encodeCreateCertResponse(eet.ErrCertificateAlreadyExists, nil))
+		case errors.Is(err, eet.ErrIDAlreadyExists):
+			c.JSON(http.StatusConflict, encodeCreateCertResponse(eet.ErrIDAlreadyExists, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateStore):
 			c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(eet.ErrCertificateStore, nil))
@@ -185,7 +185,32 @@ func (h *handler) changePassword(c *gin.Context) {
 }
 
 func (h *handler) changeID(c *gin.Context) {
-	panic(errors.New("not implemented"))
+	// default request
+	req := &HTTPChangeIDRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, encodeChangeIDResponse(err, nil))
+		return
+	}
+
+	err := h.gatewaySvc.ChangeID(c, req.ID, req.NewID)
+	if err != nil {
+		switch {
+		case errors.Is(err, eet.ErrCertificateNotFound):
+			c.JSON(http.StatusNotFound, encodeChangeIDResponse(eet.ErrCertificateNotFound, nil))
+			return
+		case errors.Is(err, eet.ErrIDAlreadyExists):
+			c.JSON(http.StatusConflict, encodeChangeIDResponse(eet.ErrIDAlreadyExists, nil))
+			return
+		case errors.Is(err, eet.ErrCertificateChangeID):
+			c.JSON(http.StatusInternalServerError, encodeChangeIDResponse(eet.ErrCertificateChangeID, nil))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, encodeChangeIDResponse(ErrUnexpectedFailure, nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, encodeChangeIDResponse(nil, &req.NewID))
 }
 
 func (h *handler) deleteCert(c *gin.Context) {

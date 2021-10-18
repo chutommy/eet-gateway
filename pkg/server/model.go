@@ -185,16 +185,42 @@ type HTTPChangePasswordResponse struct {
 	ID           string `json:"id,omitempty"`
 }
 
-func encodeChangePasswordResponse(err error, id *string) *HTTPDeleteCertResponse {
+func encodeChangePasswordResponse(err error, id *string) *HTTPChangePasswordResponse {
 	if err != nil {
-		return &HTTPDeleteCertResponse{
+		return &HTTPChangePasswordResponse{
 			GatewayError: err.Error(),
 		}
 	} else if id != nil {
-		return &HTTPDeleteCertResponse{
+		return &HTTPChangePasswordResponse{
 			ID: *id,
 		}
 	}
 
-	return &HTTPDeleteCertResponse{}
+	return &HTTPChangePasswordResponse{}
+}
+
+// HTTPChangeIDRequest represents a binding structure to HTTP requests for certificate ID update.
+type HTTPChangeIDRequest struct {
+	ID    string `json:"id" binding:"required"`
+	NewID string `json:"new_id" binding:"required,necsfield=ID"`
+}
+
+// HTTPChangeIDResponse represents a reponse structure to HTTP certificate ID update requests.
+type HTTPChangeIDResponse struct {
+	GatewayError string `json:"gateway_error,omitempty"`
+	ID           string `json:"id,omitempty"`
+}
+
+func encodeChangeIDResponse(err error, id *string) *HTTPChangeIDResponse {
+	if err != nil {
+		return &HTTPChangeIDResponse{
+			GatewayError: err.Error(),
+		}
+	} else if id != nil {
+		return &HTTPChangeIDResponse{
+			ID: *id,
+		}
+	}
+
+	return &HTTPChangeIDResponse{}
 }

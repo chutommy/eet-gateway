@@ -222,16 +222,45 @@ func (r *redisService) ChangePassword(ctx context.Context, id string, oldPasswor
 
 // ChangeID changes ID of the record.
 func (r *redisService) ChangeID(ctx context.Context, oldID, newID string) error {
-	ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
-	if err != nil {
-		return fmt.Errorf("rename %s to %s: %w", oldID, newID, err)
+	txf := func(tx *redis.Tx) error {
+		// check if exists
+		i, err := tx.Exists(ctx, oldID).Result()
+		if err != nil {
+			return fmt.Errorf("check if id (%s) exists: %w", oldID, err)
+		}
+
+		if i == 0 {
+			return fmt.Errorf("not found record with id %s: %w", oldID, ErrRecordNotFound)
+		}
+
+		// set
+		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
+			if err != nil {
+				return fmt.Errorf("rename %s to %s: %w", oldID, newID, err)
+			}
+
+			if !ok {
+				return fmt.Errorf("failed to rename results: %w", ErrIDAlreadyExists)
+			}
+
+			return nil
+		})
+		return err
 	}
 
-	if !ok {
-		return fmt.Errorf("failed to rename results: %w", ErrIDAlreadyExists)
+	for k := 0; k < 3; k++ {
+		err := r.rdb.Watch(ctx, txf, oldID)
+		if errors.Is(err, redis.TxFailedErr) {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("transaction failed: %w", err)
+		}
+
+		return nil
 	}
 
-	return nil
+	return ErrReachedMaxRetries
 }
 
 func NewRedisService(rdb *redis.Client) Service {

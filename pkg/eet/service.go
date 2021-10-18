@@ -15,8 +15,8 @@ var ErrCertificateParsing = errors.New("EET certificate/parse key couldn't be pa
 // ErrCertificateNotFound is returned if a certificate with the given ID couldn't be found.
 var ErrCertificateNotFound = errors.New("EET certificate couldn't be found")
 
-// ErrCertificateAlreadyExists is returned if a certificate with the given ID already exists.
-var ErrCertificateAlreadyExists = errors.New("EET certificate already exists")
+// ErrIDAlreadyExists is returned if a certificate with the given ID already exists.
+var ErrIDAlreadyExists = errors.New("EET certificate with this ID already exists")
 
 // ErrCertificateRetrieval is returned if a certificate with the given ID couldn't be fetched.
 var ErrCertificateRetrieval = errors.New("EET certificate couldn't be retrieved")
@@ -26,6 +26,9 @@ var ErrCertificateStore = errors.New("EET certificate couldn't be stored")
 
 // ErrCertificateChangePassword is returned if password of a certificate couldn't be updated.
 var ErrCertificateChangePassword = errors.New("password to a certificate couldn't be updated")
+
+// ErrCertificateChangeID is returned if id of a certificate couldn't be updated.
+var ErrCertificateChangeID = errors.New("id of a certificate couldn't be updated")
 
 // ErrCertificateDelete is returned if a certificate couldn't be deleted.
 var ErrCertificateDelete = errors.New("EET certificate couldn't be deleted")
@@ -53,6 +56,7 @@ type GatewayService interface {
 	Send(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
 	Store(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
 	ChangePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
+	ChangeID(ctx context.Context, oldID, newID string) error
 	Delete(ctx context.Context, id string) error
 	Ping() error
 }
@@ -117,7 +121,7 @@ func (g *gatewayService) Store(ctx context.Context, id string, password []byte, 
 	})
 	if err != nil {
 		if errors.Is(err, keystore.ErrIDAlreadyExists) {
-			return fmt.Errorf("store certificate: %v: %w", err, ErrCertificateAlreadyExists)
+			return fmt.Errorf("store certificate: %v: %w", err, ErrIDAlreadyExists)
 		}
 
 		return fmt.Errorf("store certificate: %v: %w", err, ErrCertificateStore)
@@ -137,6 +141,22 @@ func (g *gatewayService) ChangePassword(ctx context.Context, id string, oldPassw
 		}
 
 		return fmt.Errorf("change password to taxpayer's certificate: %v: %w", err, ErrCertificateChangePassword)
+	}
+
+	return nil
+}
+
+// ChangeID renames the current certificate ID to a new ID.
+func (g *gatewayService) ChangeID(ctx context.Context, oldID, newID string) error {
+	err := g.keyStore.ChangeID(ctx, oldID, newID)
+	if err != nil {
+		if errors.Is(err, keystore.ErrRecordNotFound) {
+			return fmt.Errorf("delete certificate: %v: %w", err, ErrCertificateNotFound)
+		} else if errors.Is(err, keystore.ErrIDAlreadyExists) {
+			return fmt.Errorf("rename certificate id: %v: %w", err, ErrIDAlreadyExists)
+		}
+
+		return fmt.Errorf("rename certificate id: %v: %w", err, ErrCertificateChangeID)
 	}
 
 	return nil
