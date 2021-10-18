@@ -22,9 +22,9 @@ var ErrInvalidKeyPair = errors.New("invalid certificate/private key keypair")
 // ErrInvalidCertificate is returned if a certificate/private key is invalid.
 var ErrInvalidCertificate = errors.New("invalid certificate/private key")
 
-// ErrInsecureCertificate is returned if a certificate is issued or signed by an unknown authority
+// ErrNotTrustedCertificate is returned if a certificate is issued or signed by an unknown authority
 // and can't be verified.
-var ErrInsecureCertificate = errors.New("certificate issued or signed by an unknown authority")
+var ErrNotTrustedCertificate = errors.New("certificate issued or signed by an unknown authority")
 
 // OrganizationName is the legal name that the organization is registered with authority at the national level.
 const OrganizationName = "Česká republika - Generální finanční ředitelství"
@@ -62,7 +62,7 @@ func (c *caService) VerifyEETCA(caCert *x509.Certificate) error {
 	}
 
 	if !ok {
-		return fmt.Errorf("certificate not found in a pool of valid EET CA certificates: %w", ErrInsecureCertificate)
+		return fmt.Errorf("certificate not found in a pool of valid EET CA certificates: %w", ErrNotTrustedCertificate)
 	}
 
 	return nil
@@ -82,7 +82,7 @@ func (c *caService) VerifyDSig(cert *x509.Certificate) error {
 	}
 
 	if _, err := cert.Verify(opts); err != nil {
-		return fmt.Errorf("verify certificate: %v: %w", err, ErrInsecureCertificate)
+		return fmt.Errorf("verify certificate: %v: %w", err, ErrNotTrustedCertificate)
 	}
 
 	return nil

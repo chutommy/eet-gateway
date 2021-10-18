@@ -258,7 +258,7 @@ func TestGatewayService_Send(t *testing.T) {
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
-			expErr: eet.ErrCertificateRetrieval,
+			expErr: eet.ErrCertificateGet,
 		},
 		{
 			name:   "invalid taxpayer's certificate",
@@ -295,7 +295,7 @@ func TestGatewayService_Send(t *testing.T) {
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, invalidPK),
-			expErr: eet.ErrRequestConstruction,
+			expErr: eet.ErrRequestBuild,
 		},
 		{
 			name:   "invalid url",
@@ -332,7 +332,7 @@ func TestGatewayService_Send(t *testing.T) {
 			}, "invalid_url"),
 			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
-			expErr: eet.ErrMFCRConnection,
+			expErr: eet.ErrFSCRConnection,
 		},
 		{
 			name:   "unknown CA for TLS",
@@ -369,7 +369,7 @@ func TestGatewayService_Send(t *testing.T) {
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewCAService(nil, icaCertPool),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
-			expErr: eet.ErrMFCRConnection,
+			expErr: eet.ErrFSCRConnection,
 		},
 		{
 			name:   "unknown EET CA certificate",
@@ -406,7 +406,7 @@ func TestGatewayService_Send(t *testing.T) {
 			}, fscr.PlaygroundURL),
 			eetCA:  fscr.NewCAService(nil, x509.NewCertPool()),
 			ks:     newKS(okCertID, []byte{}, cert, pk),
-			expErr: eet.ErrMFCRResponseVerification,
+			expErr: eet.ErrFSCRResponseVerify,
 		},
 	}
 

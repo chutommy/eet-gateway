@@ -17,7 +17,7 @@ var ErrRecordNotFound = errors.New("record not found")
 var ErrIDAlreadyExists = errors.New("record with the ID already exists")
 
 // ErrReachedMaxRetries is returned if the maximum number of retries of transactions is reached.
-var ErrReachedMaxRetries = errors.New("reached maximum number of retries")
+var ErrReachedMaxRetries = errors.New("maximum number of retries reached")
 
 // Service represents a keystore abstraction for a KeyPair management.
 type Service interface {

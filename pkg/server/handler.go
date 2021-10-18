@@ -57,8 +57,8 @@ func (h *handler) ginEngine() *gin.Engine {
 
 func (h *handler) ping(c *gin.Context) {
 	if err := h.gatewaySvc.Ping(); err != nil {
-		if errors.Is(err, eet.ErrMFCRConnection) {
-			c.JSON(http.StatusServiceUnavailable, encodePingResponse(eet.ErrMFCRConnection.Error()))
+		if errors.Is(err, eet.ErrFSCRConnection) {
+			c.JSON(http.StatusServiceUnavailable, encodePingResponse(eet.ErrFSCRConnection.Error()))
 			return
 		}
 
@@ -93,23 +93,23 @@ func (h *handler) eet(c *gin.Context) {
 		case errors.Is(err, eet.ErrCertificateNotFound):
 			c.JSON(http.StatusNotFound, encodeEETResponse(eet.ErrCertificateNotFound, nil))
 			return
-		case errors.Is(err, eet.ErrInvalidCipherKey):
-			c.JSON(http.StatusUnauthorized, encodeEETResponse(eet.ErrInvalidCipherKey, nil))
+		case errors.Is(err, eet.ErrInvalidCertificatePassword):
+			c.JSON(http.StatusUnauthorized, encodeEETResponse(eet.ErrInvalidCertificatePassword, nil))
 			return
-		case errors.Is(err, eet.ErrCertificateRetrieval):
-			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrCertificateRetrieval, nil))
+		case errors.Is(err, eet.ErrCertificateGet):
+			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrCertificateGet, nil))
 			return
-		case errors.Is(err, eet.ErrRequestConstruction):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrRequestConstruction, nil))
+		case errors.Is(err, eet.ErrRequestBuild):
+			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrRequestBuild, nil))
 			return
-		case errors.Is(err, eet.ErrMFCRConnection):
-			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrMFCRConnection, nil))
+		case errors.Is(err, eet.ErrFSCRConnection):
+			c.JSON(http.StatusServiceUnavailable, encodeEETResponse(eet.ErrFSCRConnection, nil))
 			return
-		case errors.Is(err, eet.ErrMFCRResponseParse):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrMFCRResponseParse, nil))
+		case errors.Is(err, eet.ErrFSCRResponseParse):
+			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseParse, nil))
 			return
-		case errors.Is(err, eet.ErrMFCRResponseVerification):
-			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrMFCRResponseVerification, nil))
+		case errors.Is(err, eet.ErrFSCRResponseVerify):
+			c.JSON(http.StatusInternalServerError, encodeEETResponse(eet.ErrFSCRResponseVerify, nil))
 			return
 		}
 
@@ -134,11 +134,11 @@ func (h *handler) storeCert(c *gin.Context) {
 	err := h.gatewaySvc.Store(c, req.ID, []byte(req.Password), req.PKCS12Data, req.PKCS12Password)
 	if err != nil {
 		switch {
-		case errors.Is(err, eet.ErrInvalidTaxpayerCertificate):
-			c.JSON(http.StatusBadRequest, encodeCreateCertResponse(eet.ErrInvalidTaxpayerCertificate, nil))
+		case errors.Is(err, eet.ErrInvalidTaxpayersCertificate):
+			c.JSON(http.StatusBadRequest, encodeCreateCertResponse(eet.ErrInvalidTaxpayersCertificate, nil))
 			return
-		case errors.Is(err, eet.ErrCertificateParsing):
-			c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(eet.ErrCertificateParsing, nil))
+		case errors.Is(err, eet.ErrCertificateParse):
+			c.JSON(http.StatusInternalServerError, encodeCreateCertResponse(eet.ErrCertificateParse, nil))
 			return
 		case errors.Is(err, eet.ErrIDAlreadyExists):
 			c.JSON(http.StatusConflict, encodeCreateCertResponse(eet.ErrIDAlreadyExists, nil))
@@ -169,8 +169,8 @@ func (h *handler) changePassword(c *gin.Context) {
 		case errors.Is(err, eet.ErrCertificateNotFound):
 			c.JSON(http.StatusNotFound, encodeChangePasswordResponse(eet.ErrCertificateNotFound, nil))
 			return
-		case errors.Is(err, eet.ErrInvalidCipherKey):
-			c.JSON(http.StatusUnauthorized, encodeChangePasswordResponse(eet.ErrInvalidCipherKey, nil))
+		case errors.Is(err, eet.ErrInvalidCertificatePassword):
+			c.JSON(http.StatusUnauthorized, encodeChangePasswordResponse(eet.ErrInvalidCertificatePassword, nil))
 			return
 		case errors.Is(err, eet.ErrCertificateDelete):
 			c.JSON(http.StatusInternalServerError, encodeChangePasswordResponse(eet.ErrCertificateDelete, nil))
@@ -201,8 +201,8 @@ func (h *handler) changeID(c *gin.Context) {
 		case errors.Is(err, eet.ErrIDAlreadyExists):
 			c.JSON(http.StatusConflict, encodeChangeIDResponse(eet.ErrIDAlreadyExists, nil))
 			return
-		case errors.Is(err, eet.ErrCertificateChangeID):
-			c.JSON(http.StatusInternalServerError, encodeChangeIDResponse(eet.ErrCertificateChangeID, nil))
+		case errors.Is(err, eet.ErrCertificatUpdateID):
+			c.JSON(http.StatusInternalServerError, encodeChangeIDResponse(eet.ErrCertificatUpdateID, nil))
 			return
 		}
 

@@ -30,7 +30,7 @@ func TestEETCAService(t *testing.T) {
 			name:     "unknown certificate authority",
 			file:     "testdata/response_2.xml",
 			password: "eet",
-			expErr:   fscr.ErrInsecureCertificate,
+			expErr:   fscr.ErrNotTrustedCertificate,
 		},
 	}
 

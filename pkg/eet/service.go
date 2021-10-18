@@ -9,47 +9,47 @@ import (
 	"github.com/chutommy/eetgateway/pkg/keystore"
 )
 
-// ErrCertificateParsing is returned if a certificate couldn't be parsed.
-var ErrCertificateParsing = errors.New("EET certificate/parse key couldn't be parsed")
-
-// ErrCertificateNotFound is returned if a certificate with the given ID couldn't be found.
-var ErrCertificateNotFound = errors.New("EET certificate couldn't be found")
+// ErrCertificateNotFound is returned if a certificate with the given ID can't be found.
+var ErrCertificateNotFound = errors.New("taxpayer's certificate can't be found")
 
 // ErrIDAlreadyExists is returned if a certificate with the given ID already exists.
-var ErrIDAlreadyExists = errors.New("EET certificate with this ID already exists")
+var ErrIDAlreadyExists = errors.New("taxpayer's certificate with the ID already exists")
 
-// ErrCertificateRetrieval is returned if a certificate with the given ID couldn't be fetched.
-var ErrCertificateRetrieval = errors.New("EET certificate couldn't be retrieved")
+// ErrCertificateParse is returned if a certificate can't be parsed.
+var ErrCertificateParse = errors.New("taxpayer's certificate can't be parsed")
 
-// ErrCertificateStore is returned if a certificate couldn't be stored.
-var ErrCertificateStore = errors.New("EET certificate couldn't be stored")
+// ErrCertificateGet is returned if a certificate with the given ID can't be fetched.
+var ErrCertificateGet = errors.New("taxpayer's certificate can't be retrieved")
 
-// ErrCertificateChangePassword is returned if password of a certificate couldn't be updated.
-var ErrCertificateChangePassword = errors.New("password to a certificate couldn't be updated")
+// ErrCertificateStore is returned if a certificate can't be stored.
+var ErrCertificateStore = errors.New("taxpayer's certificate can't be stored")
 
-// ErrCertificateChangeID is returned if id of a certificate couldn't be updated.
-var ErrCertificateChangeID = errors.New("id of a certificate couldn't be updated")
+// ErrCertificateUpdatePassword is returned if password of a certificate can't be updated.
+var ErrCertificateUpdatePassword = errors.New("password to the taxpayer's certificate can't be updated")
 
-// ErrCertificateDelete is returned if a certificate couldn't be deleted.
-var ErrCertificateDelete = errors.New("EET certificate couldn't be deleted")
+// ErrCertificatUpdateID is returned if id of a certificate can't be updated.
+var ErrCertificatUpdateID = errors.New("id of the taxpayer's certificate can't be updated")
 
-// ErrInvalidCipherKey is returned if the given password can't open sealed certificate/private key.
-var ErrInvalidCipherKey = errors.New("invalid password for cipher decryption")
+// ErrCertificateDelete is returned if a certificate can't be deleted.
+var ErrCertificateDelete = errors.New("taxpayer's certificate can't be deleted")
 
-// ErrRequestConstruction is returned if a SOAP request envelope couldn't be built.
-var ErrRequestConstruction = errors.New("request to EET couldn't be constructed")
+// ErrInvalidCertificatePassword is returned if the given password can't open sealed certificate/private key.
+var ErrInvalidCertificatePassword = errors.New("invalid password for the decryption of the taxpayer's certificate")
 
-// ErrMFCRConnection is returned if an error occurs during the communication with the MFCR server.
-var ErrMFCRConnection = errors.New("MFCR connection error")
+// ErrRequestBuild is returned if a SOAP request envelope can't be built.
+var ErrRequestBuild = errors.New("request to FSCR can't be constructed")
 
-// ErrMFCRResponseParse is returned if an error occurs during the MFCR SOAP response parsing.
-var ErrMFCRResponseParse = errors.New("MFCR response parse error")
+// ErrFSCRConnection is returned if an error occurs during the communication with the MFCR server.
+var ErrFSCRConnection = errors.New("FSCR connection error")
 
-// ErrMFCRResponseVerification is returned if the response doesn't pass security checks and verifications.
-var ErrMFCRResponseVerification = errors.New("MFCR response couldn't be successfully verified")
+// ErrFSCRResponseParse is returned if an error occurs during the MFCR SOAP response parsing.
+var ErrFSCRResponseParse = errors.New("FSCR response parse error")
 
-// ErrInvalidTaxpayerCertificate is returned if an invalid certificate is given.
-var ErrInvalidTaxpayerCertificate = errors.New("invalid taxpayer's certificate")
+// ErrFSCRResponseVerify is returned if the response doesn't pass security checks and verifications.
+var ErrFSCRResponseVerify = errors.New("FSCR response can't be successfully verified")
+
+// ErrInvalidTaxpayersCertificate is returned if an invalid certificate is given.
+var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate")
 
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
@@ -74,31 +74,31 @@ func (g *gatewayService) Send(ctx context.Context, certID string, certPassword [
 		switch {
 		case errors.Is(err, keystore.ErrRecordNotFound):
 			return nil, fmt.Errorf("not found (id=%s): %v: %w", certID, err, ErrCertificateNotFound)
-		case errors.Is(err, keystore.ErrInvalidCipherKey):
-			return nil, fmt.Errorf("open sealed certificate/private key (id=%s): %v: %w", certID, err, ErrInvalidCipherKey)
+		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
+			return nil, fmt.Errorf("open sealed certificate/private key (id=%s): %v: %w", certID, err, ErrInvalidCertificatePassword)
 		}
 
-		return nil, fmt.Errorf("keypair from the keystore (id=%s): %v: %w", certID, err, ErrCertificateRetrieval)
+		return nil, fmt.Errorf("keypair from the keystore (id=%s): %v: %w", certID, err, ErrCertificateGet)
 	}
 
 	reqEnv, err := newRequestEnvelope(trzba, kp.Cert, kp.PK)
 	if err != nil {
-		return nil, fmt.Errorf("build a new soap request envelope: %v: %w", err, ErrRequestConstruction)
+		return nil, fmt.Errorf("build a new soap request envelope: %v: %w", err, ErrRequestBuild)
 	}
 
 	respEnv, err := g.fscrClient.Do(ctx, reqEnv)
 	if err != nil {
-		return nil, fmt.Errorf("make soap request to MFCR server: %v: %w", err, ErrMFCRConnection)
+		return nil, fmt.Errorf("make soap request to MFCR server: %v: %w", err, ErrFSCRConnection)
 	}
 
 	odpoved, err := parseResponseEnvelope(respEnv)
 	if err != nil {
-		return nil, fmt.Errorf("parse response envelope: %v: %w", err, ErrMFCRResponseParse)
+		return nil, fmt.Errorf("parse response envelope: %v: %w", err, ErrFSCRResponseParse)
 	}
 
 	err = verifyResponse(trzba, respEnv, odpoved, g.caSvc.VerifyDSig)
 	if err != nil {
-		return nil, fmt.Errorf("verify response: %v: %w", err, ErrMFCRResponseVerification)
+		return nil, fmt.Errorf("verify response: %v: %w", err, ErrFSCRResponseVerify)
 	}
 
 	return odpoved, nil
@@ -109,10 +109,10 @@ func (g *gatewayService) Store(ctx context.Context, id string, password []byte, 
 	cert, pk, err := g.caSvc.ParseTaxpayerCertificate(pkcsData, pkcsPassword)
 	if err != nil {
 		if errors.Is(err, fscr.ErrInvalidCertificate) {
-			return fmt.Errorf("taxpayer's certificate: %v: %w", err, ErrInvalidTaxpayerCertificate)
+			return fmt.Errorf("taxpayer's certificate: %v: %w", err, ErrInvalidTaxpayersCertificate)
 		}
 
-		return fmt.Errorf("parse taxpayer's certificate: %v: %w", err, ErrCertificateParsing)
+		return fmt.Errorf("parse taxpayer's certificate: %v: %w", err, ErrCertificateParse)
 	}
 
 	err = g.keyStore.Store(ctx, id, password, &keystore.KeyPair{
@@ -136,11 +136,11 @@ func (g *gatewayService) ChangePassword(ctx context.Context, id string, oldPassw
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
 			return fmt.Errorf("find certificate: %w", ErrCertificateNotFound)
-		} else if errors.Is(err, keystore.ErrInvalidCipherKey) {
-			return fmt.Errorf("decrypt certificate with an old key: %w", ErrInvalidCipherKey)
+		} else if errors.Is(err, keystore.ErrInvalidDecryptionKey) {
+			return fmt.Errorf("decrypt certificate with an old key: %w", ErrInvalidCertificatePassword)
 		}
 
-		return fmt.Errorf("change password to taxpayer's certificate: %v: %w", err, ErrCertificateChangePassword)
+		return fmt.Errorf("change password to taxpayer's certificate: %v: %w", err, ErrCertificateUpdatePassword)
 	}
 
 	return nil
@@ -156,7 +156,7 @@ func (g *gatewayService) ChangeID(ctx context.Context, oldID, newID string) erro
 			return fmt.Errorf("rename certificate id: %v: %w", err, ErrIDAlreadyExists)
 		}
 
-		return fmt.Errorf("rename certificate id: %v: %w", err, ErrCertificateChangeID)
+		return fmt.Errorf("rename certificate id: %v: %w", err, ErrCertificatUpdateID)
 	}
 
 	return nil
@@ -179,7 +179,7 @@ func (g *gatewayService) Delete(ctx context.Context, id string) error {
 // Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
 func (g *gatewayService) Ping() error {
 	if err := g.fscrClient.Ping(); err != nil {
-		return fmt.Errorf("ping MFCR server: %v: %w", err, ErrMFCRConnection)
+		return fmt.Errorf("ping MFCR server: %v: %w", err, ErrFSCRConnection)
 	}
 
 	return nil

@@ -74,7 +74,7 @@ func TestParseAndVerifyResponse(t *testing.T) {
 			name:     "invalid digest",
 			respFile: "testdata/response_4.xml",
 			bkp:      "36FA2953-0E365CE7-5829441B-8CAFFB11-A89C7372",
-			expErr:   eet.ErrInvalidDigest,
+			expErr:   eet.ErrInvalidXMLDigest,
 			valid:    false,
 		},
 		{

@@ -13,8 +13,8 @@ import (
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
-// ErrInvalidDigest is returned if the referenced digest is invalid. Computed digest differs from the digest in the XML
-var ErrInvalidDigest = errors.New("invalid referenced digest: computed digest differs from the digest in the XML")
+// ErrInvalidXMLDigest is returned if the referenced digest is invalid. Computed digest differs from the digest in the XML
+var ErrInvalidXMLDigest = errors.New("computed digest differs from the digest in the XML")
 
 // ErrInvalidBKP is returned if the response BKP code is different.
 var ErrInvalidBKP = errors.New("invalid response BKP")
@@ -23,7 +23,7 @@ var ErrInvalidBKP = errors.New("invalid response BKP")
 var ErrInvalidUUID = errors.New("invalid response UUID")
 
 // ErrInvalidSOAPMessage is returned if an invalid or unexpected SOAP message structure is queried.
-var ErrInvalidSOAPMessage = errors.New("SOAP message with unexpected structure")
+var ErrInvalidSOAPMessage = errors.New("SOAP message with an unexpected structure")
 
 // newRequestEnvelope returns a populated and signed SOAP request envelope.
 func newRequestEnvelope(t *TrzbaType, cert *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
@@ -314,7 +314,7 @@ func validateDigestValue(envelope *etree.Document) error {
 	actDigestVal := digestValElem.Text()
 
 	if expDigestVal != actDigestVal {
-		return ErrInvalidDigest
+		return ErrInvalidXMLDigest
 	}
 
 	return nil
