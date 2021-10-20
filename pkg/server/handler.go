@@ -202,8 +202,8 @@ func (h *handler) updateCertID(c *gin.Context) {
 		case errors.Is(err, eet.ErrIDAlreadyExists):
 			c.JSON(http.StatusConflict, encodeUpdateCertIDResponse(eet.ErrIDAlreadyExists, nil))
 			return
-		case errors.Is(err, eet.ErrCertificatUpdateID):
-			c.JSON(http.StatusInternalServerError, encodeUpdateCertIDResponse(eet.ErrCertificatUpdateID, nil))
+		case errors.Is(err, eet.ErrCertificateUpdateID):
+			c.JSON(http.StatusInternalServerError, encodeUpdateCertIDResponse(eet.ErrCertificateUpdateID, nil))
 			return
 		}
 

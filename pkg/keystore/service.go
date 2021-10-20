@@ -154,7 +154,7 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// ChangePassword changes password for encryption/decryption of the record content.
+// UpdatePassword changes password for encryption/decryption of the record content.
 func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	txf := func(tx *redis.Tx) error {
 		// check if exists
@@ -220,7 +220,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 	return ErrReachedMaxRetries
 }
 
-// ChangeID changes ID of the record.
+// UpdateID changes ID of the record.
 func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error {
 	txf := func(tx *redis.Tx) error {
 		// check if exists

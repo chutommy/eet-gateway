@@ -27,8 +27,8 @@ var ErrCertificateStore = errors.New("taxpayer's certificate not stored")
 // ErrCertificateUpdatePassword is returned if password of a certificate can't be updated.
 var ErrCertificateUpdatePassword = errors.New("password to the taxpayer's certificate not updated")
 
-// ErrCertificatUpdateID is returned if id of a certificate can't be updated.
-var ErrCertificatUpdateID = errors.New("id of the taxpayer's certificate not updated")
+// ErrCertificateUpdateID is returned if id of a certificate can't be updated.
+var ErrCertificateUpdateID = errors.New("id of the taxpayer's certificate not updated")
 
 // ErrCertificateDelete is returned if a certificate can't be deleted.
 var ErrCertificateDelete = errors.New("taxpayer's certificate not deleted")
@@ -67,7 +67,7 @@ type gatewayService struct {
 	keyStore   keystore.Service
 }
 
-// Send sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
+// SendSale sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
 func (g *gatewayService) SendSale(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
@@ -104,7 +104,7 @@ func (g *gatewayService) SendSale(ctx context.Context, certID string, certPasswo
 	return odpoved, nil
 }
 
-// Store verifies and stores the taxpayer's certificate.
+// StoreCert verifies and stores the taxpayer's certificate.
 func (g *gatewayService) StoreCert(ctx context.Context, id string, password []byte, pkcsData []byte, pkcsPassword string) error {
 	cert, pk, err := g.caSvc.ParseTaxpayerCertificate(pkcsData, pkcsPassword)
 	if err != nil {
@@ -130,7 +130,7 @@ func (g *gatewayService) StoreCert(ctx context.Context, id string, password []by
 	return nil
 }
 
-// UpdatePassword updates the certificate of given ID with a new password.
+// UpdateCertPassword updates the certificate of given ID with a new password.
 func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	err := g.keyStore.UpdatePassword(ctx, id, oldPassword, newPassword)
 	if err != nil {
@@ -146,7 +146,7 @@ func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldP
 	return nil
 }
 
-// UpdateID renames the current certificate ID to a new ID.
+// UpdateCertID renames the current certificate ID to a new ID.
 func (g *gatewayService) UpdateCertID(ctx context.Context, oldID, newID string) error {
 	err := g.keyStore.UpdateID(ctx, oldID, newID)
 	if err != nil {
@@ -156,13 +156,13 @@ func (g *gatewayService) UpdateCertID(ctx context.Context, oldID, newID string) 
 			return fmt.Errorf("rename certificate id: %v: %w", err, ErrIDAlreadyExists)
 		}
 
-		return fmt.Errorf("rename certificate id: %v: %w", err, ErrCertificatUpdateID)
+		return fmt.Errorf("rename certificate id: %v: %w", err, ErrCertificateUpdateID)
 	}
 
 	return nil
 }
 
-// Delete removes a certificate with the given ID.
+// DeleteID removes a certificate with the given ID.
 func (g *gatewayService) DeleteID(ctx context.Context, id string) error {
 	err := g.keyStore.Delete(ctx, id)
 	if err != nil {
@@ -176,7 +176,7 @@ func (g *gatewayService) DeleteID(ctx context.Context, id string) error {
 	return nil
 }
 
-// Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
+// PingEET checks whether the MFCR server is online. It returns nil if the response status is OK.
 func (g *gatewayService) PingEET() error {
 	if err := g.fscrClient.Ping(); err != nil {
 		return fmt.Errorf("ping MFCR server: %v: %w", err, ErrFSCRConnection)
