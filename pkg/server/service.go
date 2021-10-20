@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"go.uber.org/multierr"
 )
 
 // Service is the server abstraction as a service.
@@ -26,10 +28,7 @@ type httpService struct {
 func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 	go func() {
 		// non blocking server
-		err2 := s.server.ListenAndServe()
-		if err != nil {
-			err = err2
-		}
+		multierr.AppendInto(&err, s.server.ListenAndServe())
 	}()
 
 	quit := make(chan os.Signal, 1)

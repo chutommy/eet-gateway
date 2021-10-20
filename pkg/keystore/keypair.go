@@ -11,6 +11,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+
+	"go.uber.org/multierr"
 )
 
 // ErrInvalidDecryptionKey is returned if the given password for the decryption is invalid and can't be used.
@@ -103,7 +105,7 @@ func decryptPemWithGCM(gcm cipher.AEAD, cipherText []byte) ([]byte, error) {
 	// open sealed cipher
 	pemData, err := gcm.Open(nil, nonce, sealed, nil)
 	if err != nil {
-		return nil, fmt.Errorf("open sealed cipher text: %v: %w", err, ErrInvalidDecryptionKey)
+		return nil, multierr.Append(err, ErrInvalidDecryptionKey)
 	}
 
 	block, _ := pem.Decode(pemData)

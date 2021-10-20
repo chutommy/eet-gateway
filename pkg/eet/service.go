@@ -3,10 +3,10 @@ package eet
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
+	"go.uber.org/multierr"
 )
 
 // ErrCertificateNotFound is returned if a certificate with the given ID can't be found.
@@ -73,32 +73,32 @@ func (g *gatewayService) SendSale(ctx context.Context, certID string, certPasswo
 	if err != nil {
 		switch {
 		case errors.Is(err, keystore.ErrRecordNotFound):
-			return nil, fmt.Errorf("not found (id=%s): %v: %w", certID, err, ErrCertificateNotFound)
+			return nil, multierr.Append(err, ErrCertificateNotFound)
 		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
-			return nil, fmt.Errorf("open sealed certificate/private key (id=%s): %v: %w", certID, err, ErrInvalidCertificatePassword)
+			return nil, multierr.Append(err, ErrInvalidCertificatePassword)
 		}
 
-		return nil, fmt.Errorf("keypair from the keystore (id=%s): %v: %w", certID, err, ErrCertificateGet)
+		return nil, multierr.Append(err, ErrCertificateGet)
 	}
 
 	reqEnv, err := newRequestEnvelope(trzba, kp.Cert, kp.PK)
 	if err != nil {
-		return nil, fmt.Errorf("build a new soap request envelope: %v: %w", err, ErrRequestBuild)
+		return nil, multierr.Append(err, ErrRequestBuild)
 	}
 
 	respEnv, err := g.fscrClient.Do(ctx, reqEnv)
 	if err != nil {
-		return nil, fmt.Errorf("make soap request to MFCR server: %v: %w", err, ErrFSCRConnection)
+		return nil, multierr.Append(err, ErrFSCRConnection)
 	}
 
 	odpoved, err := parseResponseEnvelope(respEnv)
 	if err != nil {
-		return nil, fmt.Errorf("parse response envelope: %v: %w", err, ErrFSCRResponseParse)
+		return nil, multierr.Append(err, ErrFSCRResponseParse)
 	}
 
 	err = verifyResponse(trzba, respEnv, odpoved, g.caSvc.VerifyDSig)
 	if err != nil {
-		return nil, fmt.Errorf("verify response: %v: %w", err, ErrFSCRResponseVerify)
+		return nil, multierr.Append(err, ErrFSCRResponseVerify)
 	}
 
 	return odpoved, nil
@@ -109,10 +109,10 @@ func (g *gatewayService) StoreCert(ctx context.Context, id string, password []by
 	cert, pk, err := g.caSvc.ParseTaxpayerCertificate(pkcsData, pkcsPassword)
 	if err != nil {
 		if errors.Is(err, fscr.ErrInvalidCertificate) {
-			return fmt.Errorf("taxpayer's certificate: %v: %w", err, ErrInvalidTaxpayersCertificate)
+			return multierr.Append(err, ErrInvalidTaxpayersCertificate)
 		}
 
-		return fmt.Errorf("parse taxpayer's certificate: %v: %w", err, ErrCertificateParse)
+		return multierr.Append(err, ErrCertificateParse)
 	}
 
 	err = g.keyStore.Store(ctx, id, password, &keystore.KeyPair{
@@ -121,10 +121,10 @@ func (g *gatewayService) StoreCert(ctx context.Context, id string, password []by
 	})
 	if err != nil {
 		if errors.Is(err, keystore.ErrIDAlreadyExists) {
-			return fmt.Errorf("store certificate: %v: %w", err, ErrIDAlreadyExists)
+			return multierr.Append(err, ErrIDAlreadyExists)
 		}
 
-		return fmt.Errorf("store certificate: %v: %w", err, ErrCertificateStore)
+		return multierr.Append(err, ErrCertificateStore)
 	}
 
 	return nil
@@ -135,12 +135,12 @@ func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldP
 	err := g.keyStore.UpdatePassword(ctx, id, oldPassword, newPassword)
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
-			return fmt.Errorf("find certificate: %w", ErrCertificateNotFound)
+			return multierr.Append(err, ErrCertificateNotFound)
 		} else if errors.Is(err, keystore.ErrInvalidDecryptionKey) {
-			return fmt.Errorf("decrypt certificate with an old key: %w", ErrInvalidCertificatePassword)
+			return multierr.Append(err, ErrInvalidCertificatePassword)
 		}
 
-		return fmt.Errorf("change password to taxpayer's certificate: %v: %w", err, ErrCertificateUpdatePassword)
+		return multierr.Append(err, ErrCertificateUpdatePassword)
 	}
 
 	return nil
@@ -151,12 +151,12 @@ func (g *gatewayService) UpdateCertID(ctx context.Context, oldID, newID string) 
 	err := g.keyStore.UpdateID(ctx, oldID, newID)
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
-			return fmt.Errorf("delete certificate: %v: %w", err, ErrCertificateNotFound)
+			return multierr.Append(err, ErrCertificateNotFound)
 		} else if errors.Is(err, keystore.ErrIDAlreadyExists) {
-			return fmt.Errorf("rename certificate id: %v: %w", err, ErrIDAlreadyExists)
+			return multierr.Append(err, ErrIDAlreadyExists)
 		}
 
-		return fmt.Errorf("rename certificate id: %v: %w", err, ErrCertificateUpdateID)
+		return multierr.Append(err, ErrCertificateUpdateID)
 	}
 
 	return nil
@@ -167,10 +167,10 @@ func (g *gatewayService) DeleteID(ctx context.Context, id string) error {
 	err := g.keyStore.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
-			return fmt.Errorf("delete certificate: %v: %w", err, ErrCertificateNotFound)
+			return multierr.Append(err, ErrCertificateNotFound)
 		}
 
-		return fmt.Errorf("delete certificate: %v: %w", err, ErrCertificateDelete)
+		return multierr.Append(err, ErrCertificateDelete)
 	}
 
 	return nil
@@ -179,7 +179,7 @@ func (g *gatewayService) DeleteID(ctx context.Context, id string) error {
 // PingEET checks whether the MFCR server is online. It returns nil if the response status is OK.
 func (g *gatewayService) PingEET() error {
 	if err := g.fscrClient.Ping(); err != nil {
-		return fmt.Errorf("ping MFCR server: %v: %w", err, ErrFSCRConnection)
+		return multierr.Append(err, ErrFSCRConnection)
 	}
 
 	return nil

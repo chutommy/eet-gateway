@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/multierr"
 	"golang.org/x/crypto/pkcs12"
 )
 
@@ -82,7 +83,7 @@ func (c *caService) VerifyDSig(cert *x509.Certificate) error {
 	}
 
 	if _, err := cert.Verify(opts); err != nil {
-		return fmt.Errorf("verify certificate: %v: %w", err, ErrNotTrustedCertificate)
+		return multierr.Append(err, ErrNotTrustedCertificate)
 	}
 
 	return nil
@@ -104,12 +105,12 @@ func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x50
 	}
 
 	if err = c.VerifyEETCA(caCert); err != nil {
-		return nil, nil, fmt.Errorf("check certificate authority's certificate: %v: %w", err, ErrInvalidCertificate)
+		return nil, nil, multierr.Append(err, ErrInvalidCertificate)
 	}
 
 	err = verifyKeys(caCert, cert, pk)
 	if err != nil {
-		return nil, nil, fmt.Errorf("verify keys: %v: %w", err, ErrInvalidCertificate)
+		return nil, nil, multierr.Append(err, ErrInvalidCertificate)
 	}
 
 	return cert, pk, nil

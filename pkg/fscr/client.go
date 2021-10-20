@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"go.uber.org/multierr"
 )
 
 // ProductionURL is the URL of the production EET system.
@@ -39,7 +41,7 @@ func NewClient(c *http.Client, url string) Client {
 
 // Do makes a valid SOAP request to the MFCR EET server with the request body reqBody and
 // redirects the response body to respBody.
-func (c *client) Do(ctx context.Context, reqBody []byte) ([]byte, error) {
+func (c *client) Do(ctx context.Context, reqBody []byte) (respBody []byte, err error) {
 	req, err := createRequest(ctx, c.url, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("construct http request: %w", err)
@@ -50,16 +52,13 @@ func (c *client) Do(ctx context.Context, reqBody []byte) ([]byte, error) {
 		return nil, fmt.Errorf("handle request: %w", err)
 	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("read response body: %w", err)
 	}
+	defer multierr.AppendInvoke(&err, multierr.Close(resp.Body))
 
-	if err = resp.Body.Close(); err != nil {
-		return nil, fmt.Errorf("close response body: %w", err)
-	}
-
-	return respBody, nil
+	return respBody, err
 }
 
 func (c *client) doHTTP(req *http.Request) (*http.Response, error) {
@@ -89,10 +88,7 @@ func (c *client) Ping() error {
 	if err != nil {
 		return fmt.Errorf("ping %s: %w", c.url, err)
 	}
-
-	if err = resp.Body.Close(); err != nil {
-		return fmt.Errorf("close response body: %w", err)
-	}
+	defer multierr.AppendInvoke(&err, multierr.Close(resp.Body))
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("status code not OK (200): %s", http.StatusText(resp.StatusCode))
