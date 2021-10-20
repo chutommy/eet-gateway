@@ -1,24 +1,27 @@
 package server
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/chutommy/eetgateway/pkg/eet"
 )
 
-// PingEETResponse represents a response structure of HTTP responses for pings.
-type PingEETResponse struct {
+// PingEETResp represents a response structure of HTTP responses for pings.
+type PingEETResp struct {
 	EETGatewayStatus string `json:"eet_gateway"`
 	TaxAdminStatus   string `json:"tax_admin"`
 }
 
-func encodePingEETResponse(taxAdmin string) *PingEETResponse {
-	return &PingEETResponse{
+func pingEETResp(taxAdmin string) *PingEETResp {
+	return &PingEETResp{
 		EETGatewayStatus: "online", // is able to response
 		TaxAdminStatus:   taxAdmin,
 	}
 }
 
-// SendSaleRequest represents a binding structure to HTTP requests for sending sales.
-type SendSaleRequest struct {
+// SendSaleReq represents a binding structure to HTTP requests for sending sales.
+type SendSaleReq struct {
 	CertID       string `json:"cert_id,omitempty" binding:"required"`
 	CertPassword string `json:"cert_password,omitempty" binding:""`
 
@@ -49,7 +52,7 @@ type SendSaleRequest struct {
 	Rezim           eet.RezimType  `json:"rezim" binding:"omitempty,rezim"`
 }
 
-func decodeSendSaleRequest(req *SendSaleRequest) *eet.TrzbaType {
+func sendSaleRequest(req *SendSaleReq) *eet.TrzbaType {
 	return &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   req.UUIDZpravy,
@@ -83,10 +86,8 @@ func decodeSendSaleRequest(req *SendSaleRequest) *eet.TrzbaType {
 	}
 }
 
-// SendSaleResponse represents a reponse structure to HTTP sale requests.
-type SendSaleResponse struct {
-	GatewayError string `json:"gateway_error,omitempty"`
-
+// SendSaleResp represents a reponse structure to HTTP sale requests.
+type SendSaleResp struct {
 	DatOdmit   *eet.DateTime `json:"dat_odmit,omitempty"`
 	ChybZprava string        `json:"chyb_zprava,omitempty"`
 	ChybKod    int           `json:"chyb_kod,omitempty"`
@@ -98,146 +99,105 @@ type SendSaleResponse struct {
 	Test     bool                      `json:"test,omitempty"`
 	Varovani []eet.OdpovedVarovaniType `json:"varovani,omitempty"`
 
-	Trzba *SendSaleRequest `json:"trzba,omitempty"`
+	Trzba *SendSaleReq `json:"trzba,omitempty"`
 }
 
-func encodeSendSaleResponse(err error, req *SendSaleRequest, odpoved *eet.OdpovedType) *SendSaleResponse {
-	if err != nil {
-		return &SendSaleResponse{
-			GatewayError: err.Error(),
-		}
-	} else if odpoved != nil {
-		if (odpoved.Hlavicka.Datodmit != eet.DateTime{}) {
-			return &SendSaleResponse{
-				DatOdmit:   &odpoved.Hlavicka.Datodmit,
-				ChybZprava: odpoved.Chyba.Zprava,
-				ChybKod:    odpoved.Chyba.Kod,
-				Test:       odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
-				Varovani:   odpoved.Varovani,
-			}
-		}
-
-		return &SendSaleResponse{
-			DatPrij:  &odpoved.Hlavicka.Datprij,
-			FIK:      odpoved.Potvrzeni.Fik,
-			BKP:      string(odpoved.Hlavicka.Bkp),
-			Test:     odpoved.Potvrzeni.Test,
-			Varovani: odpoved.Varovani,
-
-			Trzba: req,
+func sendSaleResponse(req *SendSaleReq, odpoved *eet.OdpovedType) *SendSaleResp {
+	if (odpoved.Hlavicka.Datodmit != eet.DateTime{}) {
+		return &SendSaleResp{
+			DatOdmit:   &odpoved.Hlavicka.Datodmit,
+			ChybZprava: odpoved.Chyba.Zprava,
+			ChybKod:    odpoved.Chyba.Kod,
+			Test:       odpoved.Potvrzeni.Test || odpoved.Chyba.Test,
+			Varovani:   odpoved.Varovani,
 		}
 	}
 
-	return &SendSaleResponse{}
+	return &SendSaleResp{
+		DatPrij:  &odpoved.Hlavicka.Datprij,
+		FIK:      odpoved.Potvrzeni.Fik,
+		BKP:      string(odpoved.Hlavicka.Bkp),
+		Test:     odpoved.Potvrzeni.Test,
+		Varovani: odpoved.Varovani,
+
+		Trzba: req,
+	}
 }
 
-// StoreCertRequest represents a binding structure to HTTP requests for storing certificate.
-type StoreCertRequest struct {
-	CertID       string `json:"cert_id" binding:""`
+// StoreCertReq represents a binding structure to HTTP requests for storing certificate.
+type StoreCertReq struct {
+	CertID       string `json:"cert_id" binding:"required"`
 	CertPassword string `json:"cert_password" binding:""`
 
 	PKCS12Data     []byte `json:"pkcs12_data" binding:"required"`
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
 
-// StoreCertResponse represents a response structure to HTTP request for storing certificate .
-type StoreCertResponse struct {
-	GatewayError string `json:"gateway_error,omitempty"`
-
-	CertID string `json:"cert_id,omitempty"`
-}
-
-func encodeStoreCertResponse(err error, id *string) *StoreCertResponse {
-	if err != nil {
-		return &StoreCertResponse{
-			GatewayError: err.Error(),
-		}
-	} else if id != nil {
-		return &StoreCertResponse{
-			CertID: *id,
-		}
-	}
-
-	return &StoreCertResponse{}
-}
-
-// DeleteCertRequest represents a binding structure to HTTP requests for deleting certificate.
-type DeleteCertRequest struct {
+// DeleteCertReq represents a binding structure to HTTP requests for deleting certificate.
+type DeleteCertReq struct {
 	CertID string `json:"cert_id" binding:"required"`
 }
 
-// DeleteCertResponse represents a reponse structure to HTTP delete requests.
-type DeleteCertResponse struct {
-	GatewayError string `json:"gateway_error,omitempty"`
-
-	CertID string `json:"cert_id,omitempty"`
-}
-
-func encodeDeleteCertResponse(err error, id *string) *DeleteCertResponse {
-	if err != nil {
-		return &DeleteCertResponse{
-			GatewayError: err.Error(),
-		}
-	} else if id != nil {
-		return &DeleteCertResponse{
-			CertID: *id,
-		}
-	}
-
-	return &DeleteCertResponse{}
-}
-
-// UpdateCertPasswordRequest represents a binding structure to HTTP requests for password update.
-type UpdateCertPasswordRequest struct {
+// UpdateCertPasswordReq represents a binding structure to HTTP requests for password update.
+type UpdateCertPasswordReq struct {
 	CertID       string `json:"cert_id" binding:"required"`
 	CertPassword string `json:"cert_password" binding:"required"`
-	NewPassword  string `json:"new_password" binding:"required"`
+	NewPassword  string `json:"new_password" binding:"required,necsfield=CertPassword"`
 }
 
-// UpdateCertPasswordResponse represents a reponse structure to HTTP password update requests.
-type UpdateCertPasswordResponse struct {
-	GatewayError string `json:"gateway_error,omitempty"`
-
-	CertID string `json:"cert_id,omitempty"`
-}
-
-func encodeUpdateCertPasswordResponse(err error, id *string) *UpdateCertPasswordResponse {
-	if err != nil {
-		return &UpdateCertPasswordResponse{
-			GatewayError: err.Error(),
-		}
-	} else if id != nil {
-		return &UpdateCertPasswordResponse{
-			CertID: *id,
-		}
-	}
-
-	return &UpdateCertPasswordResponse{}
-}
-
-// UpdateCertIDRequest represents a binding structure to HTTP requests for certificate ID update.
-type UpdateCertIDRequest struct {
+// UpdateCertIDReq represents a binding structure to HTTP requests for certificate ID update.
+type UpdateCertIDReq struct {
 	CertID string `json:"cert_id" binding:"required"`
-	NewID  string `json:"new_id" binding:"required,necsfield=ID"`
+	NewID  string `json:"new_id" binding:"required,necsfield=CertID"`
 }
 
-// UpdateCertIDResponse represents a reponse structure to HTTP certificate ID update requests.
-type UpdateCertIDResponse struct {
-	GatewayError string `json:"gateway_error,omitempty"`
-
-	CertID string `json:"cert_id,omitempty"`
+// SuccessCertResp represents a response of a successful action related to a specific certificate.
+type SuccessCertResp struct {
+	CertID string `json:"cert_id"`
 }
 
-func encodeUpdateCertIDResponse(err error, id *string) *UpdateCertIDResponse {
-	if err != nil {
-		return &UpdateCertIDResponse{
-			GatewayError: err.Error(),
-		}
-	} else if id != nil {
-		return &UpdateCertIDResponse{
-			CertID: *id,
-		}
+func successCertResp(id string) *SuccessCertResp {
+	return &SuccessCertResp{CertID: id}
+}
+
+// GatewayErrResp represents an error returned from the EET Gateway itself, not from the FSCR.
+type GatewayErrResp struct {
+	GatewayError string `json:"gateway_error"`
+}
+
+func gatewayErrResp(err error) (int, *GatewayErrResp) {
+	c, e := http.StatusInternalServerError, ErrUnexpectedFailure
+
+	switch {
+	case errors.Is(err, eet.ErrCertificateNotFound):
+		c, e = http.StatusNotFound, eet.ErrCertificateNotFound
+	case errors.Is(err, eet.ErrInvalidCertificatePassword):
+		c, e = http.StatusUnauthorized, eet.ErrInvalidCertificatePassword
+	case errors.Is(err, eet.ErrIDAlreadyExists):
+		c, e = http.StatusConflict, eet.ErrIDAlreadyExists
+	case errors.Is(err, eet.ErrInvalidTaxpayersCertificate):
+		c, e = http.StatusBadRequest, eet.ErrInvalidTaxpayersCertificate
+	case errors.Is(err, eet.ErrCertificateGet):
+		c, e = http.StatusServiceUnavailable, eet.ErrCertificateGet
+	case errors.Is(err, eet.ErrFSCRConnection):
+		c, e = http.StatusServiceUnavailable, eet.ErrFSCRConnection
+	case errors.Is(err, eet.ErrRequestBuild):
+		c, e = http.StatusInternalServerError, eet.ErrRequestBuild
+	case errors.Is(err, eet.ErrFSCRResponseParse):
+		c, e = http.StatusInternalServerError, eet.ErrFSCRResponseParse
+	case errors.Is(err, eet.ErrFSCRResponseVerify):
+		c, e = http.StatusInternalServerError, eet.ErrFSCRResponseVerify
+	case errors.Is(err, eet.ErrCertificateParse):
+		c, e = http.StatusInternalServerError, eet.ErrCertificateParse
+	case errors.Is(err, eet.ErrCertificateStore):
+		c, e = http.StatusInternalServerError, eet.ErrCertificateStore
+	case errors.Is(err, eet.ErrCertificateDelete):
+		c, e = http.StatusInternalServerError, eet.ErrCertificateDelete
+	case errors.Is(err, eet.ErrCertificateUpdateID):
+		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdateID
+	case errors.Is(err, eet.ErrCertificateUpdatePassword):
+		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdatePassword
 	}
 
-	return &UpdateCertIDResponse{}
+	return c, &GatewayErrResp{GatewayError: e.Error()}
 }
