@@ -240,7 +240,7 @@ func TestTrzbaType_SetSecurityCodes(t *testing.T) {
 
 			{
 				// invalid private key
-				invalidPk, err := rsa.GenerateKey(rand.Reader, 16)
+				invalidPk, err := rsa.GenerateKey(rand.Reader, 12) //nolint:gosec
 				require.NoError(t, err, "generate rsa private key")
 				err = tc.trzba.SetSecurityCodes(invalidPk)
 				require.Error(t, err, "invalid private key")

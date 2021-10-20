@@ -4,6 +4,12 @@ import (
 	"github.com/beevik/etree"
 )
 
+const (
+	sXMLNS    = "s"
+	wseXMLNS  = "wse"
+	wsseXMLNS = "wsse"
+)
+
 var envelopeTmpl *etree.Document
 
 func getSoapEnvelope() *etree.Document {
@@ -24,7 +30,7 @@ func buildSOAPEnvelope() *etree.Document {
 
 func buildEnvelope() *etree.Element {
 	envelope := etree.NewElement("Envelope")
-	envelope.Space = "s"
+	envelope.Space = sXMLNS
 	envelope.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 	envelope.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
 	envelope.AddChild(buildHeader())
@@ -34,7 +40,7 @@ func buildEnvelope() *etree.Element {
 
 func buildHeader() *etree.Element {
 	header := etree.NewElement("Header")
-	header.Space = "s"
+	header.Space = sXMLNS
 	header.AddChild(buildSecurity())
 
 	return header
@@ -42,7 +48,7 @@ func buildHeader() *etree.Element {
 
 func buildSecurity() *etree.Element {
 	security := etree.NewElement("Security")
-	security.Space = "wsse"
+	security.Space = wsseXMLNS
 	security.CreateAttr("xmlns:wsse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
 	security.AddChild(buildBinarySecurityToken())
 	security.AddChild(buildSignature())
@@ -52,7 +58,7 @@ func buildSecurity() *etree.Element {
 
 func buildBinarySecurityToken() *etree.Element {
 	token := etree.NewElement("BinarySecurityToken")
-	token.Space = "wse"
+	token.Space = wseXMLNS
 	token.CreateAttr("xmlns:wse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
 	token.CreateAttr("EncodingType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary")
 	token.CreateAttr("ValueType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3")
@@ -93,10 +99,10 @@ func buildReference() *etree.Element {
 func buildKeyInfo() *etree.Element {
 	keyInfo := etree.NewElement("KeyInfo")
 	securityTokenReference := keyInfo.CreateElement("SecurityTokenReference")
-	securityTokenReference.Space = "wse"
+	securityTokenReference.Space = wseXMLNS
 	securityTokenReference.CreateAttr("xmlns:wse", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
 	tokenReference := securityTokenReference.CreateElement("Reference")
-	tokenReference.Space = "wse"
+	tokenReference.Space = wseXMLNS
 	tokenReference.CreateAttr("URI", "#BinaryToken1")
 	tokenReference.CreateAttr("ValueType", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509")
 
@@ -108,7 +114,7 @@ func buildBodyElem() *etree.Element {
 	body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 	body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
 	body.CreateAttr("u:Id", "_1")
-	body.Space = "s"
+	body.Space = sXMLNS
 
 	return body
 }

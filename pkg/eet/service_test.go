@@ -166,7 +166,7 @@ func TestGatewayService_Send(t *testing.T) {
 	cert, pk, err := caSvc.ParseTaxpayerCertificate(p12File, "eet")
 	require.NoError(t, err, "valid taxpayer's PKCS12 file")
 
-	invalidPK, err := rsa.GenerateKey(rand.Reader, 16)
+	invalidPK, err := rsa.GenerateKey(rand.Reader, 12) //nolint:gosec
 	require.NoError(t, err, "generate random private key")
 
 	// certificate pool for the HTTPS
