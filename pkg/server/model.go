@@ -133,9 +133,10 @@ type StoreCertReq struct {
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
 
-// DeleteCertReq represents a binding structure to HTTP requests for deleting certificate.
-type DeleteCertReq struct {
+// UpdateCertIDReq represents a binding structure to HTTP requests for certificate ID update.
+type UpdateCertIDReq struct {
 	CertID string `json:"cert_id" binding:"required"`
+	NewID  string `json:"new_id" binding:"required,necsfield=CertID"`
 }
 
 // UpdateCertPasswordReq represents a binding structure to HTTP requests for password update.
@@ -145,10 +146,9 @@ type UpdateCertPasswordReq struct {
 	NewPassword  string `json:"new_password" binding:"required,necsfield=CertPassword"`
 }
 
-// UpdateCertIDReq represents a binding structure to HTTP requests for certificate ID update.
-type UpdateCertIDReq struct {
+// DeleteCertReq represents a binding structure to HTTP requests for deleting certificate.
+type DeleteCertReq struct {
 	CertID string `json:"cert_id" binding:"required"`
-	NewID  string `json:"new_id" binding:"required,necsfield=CertID"`
 }
 
 // SuccessCertResp represents a response of a successful action related to a specific certificate.

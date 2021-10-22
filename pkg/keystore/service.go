@@ -23,9 +23,9 @@ var ErrReachedMaxRetries = errors.New("maximum number of retries reached")
 type Service interface {
 	Store(ctx context.Context, id string, password []byte, kp *KeyPair) error
 	Get(ctx context.Context, id string, password []byte) (*KeyPair, error)
-	Delete(ctx context.Context, id string) error
-	UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
 	UpdateID(ctx context.Context, oldID, newID string) error
+	UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
+	Delete(ctx context.Context, id string) error
 }
 
 type redisService struct {
@@ -139,19 +139,47 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 	return nil, ErrReachedMaxRetries
 }
 
-// Delete removes the Keypair by the id.
-func (r *redisService) Delete(ctx context.Context, id string) error {
-	i, err := r.rdb.Del(ctx, id).Result()
-	if err != nil {
-		return fmt.Errorf("delete record from database: %w", err)
+// UpdateID changes ID of the record.
+func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error {
+	txf := func(tx *redis.Tx) error {
+		// check if exists
+		i, err := tx.Exists(ctx, oldID).Result()
+		if err != nil {
+			return fmt.Errorf("check if id (%s) exists: %w", oldID, err)
+		}
+
+		if i == 0 {
+			return fmt.Errorf("not found record with id %s: %w", oldID, ErrRecordNotFound)
+		}
+
+		// set
+		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
+			if err != nil {
+				return fmt.Errorf("rename %s to %s: %w", oldID, newID, err)
+			}
+
+			if !ok {
+				return fmt.Errorf("failed to rename results: %w", ErrIDAlreadyExists)
+			}
+
+			return nil
+		})
+		return err
 	}
 
-	// check number of deleted records
-	if i == 0 {
-		return fmt.Errorf("delete record with ID: %s: %w", id, ErrRecordNotFound)
+	for k := 0; k < 3; k++ {
+		err := r.rdb.Watch(ctx, txf, oldID)
+		if errors.Is(err, redis.TxFailedErr) {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("transaction failed: %w", err)
+		}
+
+		return nil
 	}
 
-	return nil
+	return ErrReachedMaxRetries
 }
 
 // UpdatePassword changes password for encryption/decryption of the record content.
@@ -220,47 +248,19 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 	return ErrReachedMaxRetries
 }
 
-// UpdateID changes ID of the record.
-func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error {
-	txf := func(tx *redis.Tx) error {
-		// check if exists
-		i, err := tx.Exists(ctx, oldID).Result()
-		if err != nil {
-			return fmt.Errorf("check if id (%s) exists: %w", oldID, err)
-		}
-
-		if i == 0 {
-			return fmt.Errorf("not found record with id %s: %w", oldID, ErrRecordNotFound)
-		}
-
-		// set
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
-			if err != nil {
-				return fmt.Errorf("rename %s to %s: %w", oldID, newID, err)
-			}
-
-			if !ok {
-				return fmt.Errorf("failed to rename results: %w", ErrIDAlreadyExists)
-			}
-
-			return nil
-		})
-		return err
+// Delete removes the Keypair by the id.
+func (r *redisService) Delete(ctx context.Context, id string) error {
+	i, err := r.rdb.Del(ctx, id).Result()
+	if err != nil {
+		return fmt.Errorf("delete record from database: %w", err)
 	}
 
-	for k := 0; k < 3; k++ {
-		err := r.rdb.Watch(ctx, txf, oldID)
-		if errors.Is(err, redis.TxFailedErr) {
-			continue
-		} else if err != nil {
-			return fmt.Errorf("transaction failed: %w", err)
-		}
-
-		return nil
+	// check number of deleted records
+	if i == 0 {
+		return fmt.Errorf("delete record with ID: %s: %w", id, ErrRecordNotFound)
 	}
 
-	return ErrReachedMaxRetries
+	return nil
 }
 
 func NewRedisService(rdb *redis.Client) Service {

@@ -115,24 +115,6 @@ func (h *handler) storeCert(c *gin.Context) {
 	c.JSON(http.StatusOK, successCertResp(req.CertID))
 }
 
-func (h *handler) UpdateCertPassword(c *gin.Context) {
-	// default request
-	req := &UpdateCertPasswordReq{}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
-		return
-	}
-
-	err := h.gatewaySvc.UpdateCertPassword(c, req.CertID, []byte(req.CertPassword), []byte(req.NewPassword))
-	if err != nil {
-		code, resp := gatewayErrResp(err)
-		c.JSON(code, resp)
-		return
-	}
-
-	c.JSON(http.StatusOK, successCertResp(req.CertID))
-}
-
 func (h *handler) updateCertID(c *gin.Context) {
 	// default request
 	req := &UpdateCertIDReq{}
@@ -149,6 +131,24 @@ func (h *handler) updateCertID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, successCertResp(req.NewID))
+}
+
+func (h *handler) UpdateCertPassword(c *gin.Context) {
+	// default request
+	req := &UpdateCertPasswordReq{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		return
+	}
+
+	err := h.gatewaySvc.UpdateCertPassword(c, req.CertID, []byte(req.CertPassword), []byte(req.NewPassword))
+	if err != nil {
+		code, resp := gatewayErrResp(err)
+		c.JSON(code, resp)
+		return
+	}
+
+	c.JSON(http.StatusOK, successCertResp(req.CertID))
 }
 
 func (h *handler) deleteCert(c *gin.Context) {
