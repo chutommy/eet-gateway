@@ -38,8 +38,9 @@ func (h *handler) ginEngine() *gin.Engine {
 	r.MaxMultipartMemory = 32 << 10 // 32 KiB
 
 	setValidators()
-	r.Use(loggingMiddleware)
-	r.Use(recoverMiddleware)
+	// r.Use(loggingMiddleware)
+	// r.Use(recoverMiddleware)
+	r.Use(gin.Recovery(), gin.Logger(), gin.ErrorLogger())
 
 	v1 := r.Group("/v1")
 	{
