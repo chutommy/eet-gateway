@@ -49,7 +49,6 @@ func recoverMiddleware(c *gin.Context) {
 			}
 
 			log.Error().
-				Stack().
 				Caller().
 				Err(err.(error)).
 				Send()

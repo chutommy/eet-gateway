@@ -62,11 +62,11 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 		// check if already exists
 		i, err := tx.Exists(ctx, id).Result()
 		if err != nil {
-			return fmt.Errorf("check if id (%s) exists: %w", id, err)
+			return fmt.Errorf("check if certificate exists: %w", err)
 		}
 
 		if i != 0 {
-			return fmt.Errorf("found record with id %s: %w", id, ErrIDAlreadyExists)
+			return fmt.Errorf("found record with same id: %w", ErrIDAlreadyExists)
 		}
 
 		// set
@@ -106,11 +106,11 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 		// check if exists
 		i, err := tx.Exists(ctx, id).Result()
 		if err != nil {
-			return fmt.Errorf("check if id (%s) exists: %w", id, err)
+			return fmt.Errorf("check if id exists: %w", err)
 		}
 
 		if i == 0 {
-			return fmt.Errorf("not found record with id %s: %w", id, ErrRecordNotFound)
+			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
 		}
 
 		// read from database
@@ -162,18 +162,18 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 		// check if exists
 		i, err := tx.Exists(ctx, oldID).Result()
 		if err != nil {
-			return fmt.Errorf("check if id (%s) exists: %w", oldID, err)
+			return fmt.Errorf("check if id exists: %w", err)
 		}
 
 		if i == 0 {
-			return fmt.Errorf("not found record with id %s: %w", oldID, ErrRecordNotFound)
+			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
 		}
 
 		// set
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
 			if err != nil {
-				return fmt.Errorf("rename %s to %s: %w", oldID, newID, err)
+				return fmt.Errorf("rename: %w", err)
 			}
 
 			if !ok {
@@ -205,11 +205,11 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		// check if exists
 		i, err := tx.Exists(ctx, id).Result()
 		if err != nil {
-			return fmt.Errorf("check if id (%s) exists: %w", id, err)
+			return fmt.Errorf("check if id exists: %w", err)
 		}
 
 		if i == 0 {
-			return fmt.Errorf("not found record with id %s: %w", id, ErrRecordNotFound)
+			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
 		}
 
 		// read from database
@@ -274,7 +274,7 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 
 	// check number of deleted records
 	if i == 0 {
-		return fmt.Errorf("delete record with ID: %s: %w", id, ErrRecordNotFound)
+		return fmt.Errorf("delete record by the id: %w", ErrRecordNotFound)
 	}
 
 	return nil

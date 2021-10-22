@@ -21,7 +21,7 @@ import (
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-	zerolog.SetGlobalLevel(zerolog.DebugLevel) // lowest => log everything
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	eetCARoots, err := ca.PlaygroundRoots()
 	errCheck(err)
