@@ -51,6 +51,9 @@ var ErrFSCRResponseVerify = errors.New("FSCR response not successfully verified"
 // ErrInvalidTaxpayersCertificate is returned if an invalid certificate is given.
 var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate")
 
+// ErrRequestDiscarded is returned if the maximum number of transaction tries is reached.
+var ErrRequestDiscarded = errors.New("request discarded")
+
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
 	PingEET() error
@@ -76,6 +79,8 @@ func (g *gatewayService) SendSale(ctx context.Context, certID string, certPasswo
 			return nil, multierr.Append(err, ErrCertificateNotFound)
 		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
 			return nil, multierr.Append(err, ErrInvalidCertificatePassword)
+		case errors.Is(err, keystore.ErrReachedMaxRetries):
+			return nil, multierr.Append(err, ErrRequestDiscarded)
 		}
 
 		return nil, multierr.Append(err, ErrCertificateGet)
@@ -120,8 +125,11 @@ func (g *gatewayService) StoreCert(ctx context.Context, id string, password []by
 		PK:   pk,
 	})
 	if err != nil {
-		if errors.Is(err, keystore.ErrIDAlreadyExists) {
+		switch {
+		case errors.Is(err, keystore.ErrIDAlreadyExists):
 			return multierr.Append(err, ErrIDAlreadyExists)
+		case errors.Is(err, keystore.ErrReachedMaxRetries):
+			return multierr.Append(err, ErrRequestDiscarded)
 		}
 
 		return multierr.Append(err, ErrCertificateStore)
@@ -134,10 +142,13 @@ func (g *gatewayService) StoreCert(ctx context.Context, id string, password []by
 func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	err := g.keyStore.UpdatePassword(ctx, id, oldPassword, newPassword)
 	if err != nil {
-		if errors.Is(err, keystore.ErrRecordNotFound) {
+		switch {
+		case errors.Is(err, keystore.ErrRecordNotFound):
 			return multierr.Append(err, ErrCertificateNotFound)
-		} else if errors.Is(err, keystore.ErrInvalidDecryptionKey) {
+		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
 			return multierr.Append(err, ErrInvalidCertificatePassword)
+		case errors.Is(err, keystore.ErrReachedMaxRetries):
+			return multierr.Append(err, ErrRequestDiscarded)
 		}
 
 		return multierr.Append(err, ErrCertificateUpdatePassword)
@@ -150,10 +161,13 @@ func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldP
 func (g *gatewayService) UpdateCertID(ctx context.Context, oldID, newID string) error {
 	err := g.keyStore.UpdateID(ctx, oldID, newID)
 	if err != nil {
-		if errors.Is(err, keystore.ErrRecordNotFound) {
+		switch {
+		case errors.Is(err, keystore.ErrRecordNotFound):
 			return multierr.Append(err, ErrCertificateNotFound)
-		} else if errors.Is(err, keystore.ErrIDAlreadyExists) {
+		case errors.Is(err, keystore.ErrIDAlreadyExists):
 			return multierr.Append(err, ErrIDAlreadyExists)
+		case errors.Is(err, keystore.ErrReachedMaxRetries):
+			return multierr.Append(err, ErrRequestDiscarded)
 		}
 
 		return multierr.Append(err, ErrCertificateUpdateID)

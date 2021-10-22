@@ -177,8 +177,6 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusConflict, eet.ErrIDAlreadyExists
 	case errors.Is(err, eet.ErrInvalidTaxpayersCertificate):
 		c, e = http.StatusBadRequest, eet.ErrInvalidTaxpayersCertificate
-	case errors.Is(err, eet.ErrCertificateGet):
-		c, e = http.StatusServiceUnavailable, eet.ErrCertificateGet
 	case errors.Is(err, eet.ErrFSCRConnection):
 		c, e = http.StatusServiceUnavailable, eet.ErrFSCRConnection
 	case errors.Is(err, eet.ErrRequestBuild):
@@ -187,6 +185,8 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusInternalServerError, eet.ErrFSCRResponseParse
 	case errors.Is(err, eet.ErrFSCRResponseVerify):
 		c, e = http.StatusInternalServerError, eet.ErrFSCRResponseVerify
+	case errors.Is(err, eet.ErrCertificateGet):
+		c, e = http.StatusInternalServerError, eet.ErrCertificateGet
 	case errors.Is(err, eet.ErrCertificateParse):
 		c, e = http.StatusInternalServerError, eet.ErrCertificateParse
 	case errors.Is(err, eet.ErrCertificateStore):
@@ -197,6 +197,8 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdateID
 	case errors.Is(err, eet.ErrCertificateUpdatePassword):
 		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdatePassword
+	case errors.Is(err, eet.ErrRequestDiscarded):
+		c, e = http.StatusInternalServerError, eet.ErrRequestDiscarded
 	}
 
 	return c, &GatewayErrResp{GatewayError: e.Error()}
