@@ -58,7 +58,7 @@ func main() {
 		TLSConfig:    nil,
 	})
 
-	_, err = rdb.Ping(context.Background()).Result()
+	err = rdb.Ping(context.Background()).Err()
 	errCheck(err)
 
 	ks := keystore.NewRedisService(rdb)

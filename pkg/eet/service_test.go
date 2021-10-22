@@ -39,11 +39,25 @@ type ks struct {
 
 var okCertID = "valid"
 
+func (k *ks) Ping(context.Context) error {
+	return nil
+}
+
 func (k *ks) Store(_ context.Context, id string, password []byte, kp *keystore.KeyPair) error {
 	k.id = id
 	k.password = password
 	k.cert = kp.Cert
 	k.pk = kp.PK
+	return nil
+}
+
+func (k *ks) UpdateID(_ context.Context, _, newID string) error {
+	k.id = newID
+	return nil
+}
+
+func (k *ks) UpdatePassword(_ context.Context, _ string, _, newPassword []byte) error {
+	k.password = newPassword
 	return nil
 }
 
@@ -61,16 +75,6 @@ func (k *ks) Get(_ context.Context, id string, password []byte) (*keystore.KeyPa
 		Cert: k.cert,
 		PK:   k.pk,
 	}, nil
-}
-
-func (k *ks) UpdatePassword(_ context.Context, _ string, _, newPassword []byte) error {
-	k.password = newPassword
-	return nil
-}
-
-func (k *ks) UpdateID(_ context.Context, _, newID string) error {
-	k.id = newID
-	return nil
 }
 
 func newKS(id string, password []byte, cert *x509.Certificate, pk *rsa.PrivateKey) *ks {
@@ -140,10 +144,10 @@ func TestGatewayService_Ping(t *testing.T) {
 			client := fscr.NewClient(c, tc.url)
 
 			// construct the service
-			gSvc := eet.NewGatewayService(client, nil, nil)
+			gSvc := eet.NewGatewayService(client, nil, newKS("", nil, nil, nil))
 
 			// run
-			err := gSvc.PingEET()
+			err := gSvc.PingEET(context.Background())
 			if tc.ok {
 				require.NoError(t, err, "FSCR's servers should be available non-stop")
 			} else {

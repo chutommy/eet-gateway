@@ -11,12 +11,27 @@ import (
 type PingEETResp struct {
 	EETGatewayStatus string `json:"eet_gateway"`
 	TaxAdminStatus   string `json:"tax_admin"`
+	KeystoreStatus   string `json:"keystore"`
 }
 
-func pingEETResp(taxAdmin string) *PingEETResp {
-	return &PingEETResp{
+func pingEETResp(taxAdmin error, keyStore error) (int, *PingEETResp) {
+	online := func(err error) string {
+		if err != nil {
+			return err.Error()
+		}
+
+		return "online"
+	}
+
+	code := http.StatusOK
+	if taxAdmin != nil || keyStore != nil {
+		code = http.StatusServiceUnavailable
+	}
+
+	return code, &PingEETResp{
 		EETGatewayStatus: "online", // is able to response
-		TaxAdminStatus:   taxAdmin,
+		TaxAdminStatus:   online(taxAdmin),
+		KeystoreStatus:   online(keyStore),
 	}
 }
 

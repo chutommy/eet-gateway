@@ -57,13 +57,19 @@ func (h *handler) ginEngine() *gin.Engine {
 }
 
 func (h *handler) pingEET(c *gin.Context) {
-	if err := h.gatewaySvc.PingEET(); err != nil {
-		code, resp := gatewayErrResp(err)
-		c.JSON(code, resp)
-		return
+	err := h.gatewaySvc.PingEET(c)
+	var taxAdmin error
+	if errors.Is(err, eet.ErrFSCRConnection) {
+		taxAdmin = eet.ErrFSCRConnection
 	}
 
-	c.JSON(http.StatusOK, pingEETResp("online"))
+	var keyStore error
+	if errors.Is(err, eet.ErrKeystoreUnavailable) {
+		keyStore = eet.ErrKeystoreUnavailable
+	}
+
+	code, resp := pingEETResp(taxAdmin, keyStore)
+	c.JSON(code, resp)
 }
 
 func (h *handler) sendSale(c *gin.Context) {

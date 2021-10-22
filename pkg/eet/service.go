@@ -54,9 +54,12 @@ var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate"
 // ErrRequestDiscarded is returned if the maximum number of transaction tries is reached.
 var ErrRequestDiscarded = errors.New("request discarded")
 
+// ErrKeystoreUnavailable is returned if the keystore service can't be reached.
+var ErrKeystoreUnavailable = errors.New("Keystore service unavailable")
+
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
-	PingEET() error
+	PingEET(ctx context.Context) error
 	SendSale(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
 	StoreCert(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
 	UpdateCertID(ctx context.Context, oldID, newID string) error
@@ -71,12 +74,16 @@ type gatewayService struct {
 }
 
 // PingEET checks whether the MFCR server is online. It returns nil if the response status is OK.
-func (g *gatewayService) PingEET() error {
-	if err := g.fscrClient.Ping(); err != nil {
-		return multierr.Append(err, ErrFSCRConnection)
+func (g *gatewayService) PingEET(ctx context.Context) (err error) {
+	if e := g.fscrClient.Ping(); e != nil {
+		err = multierr.Append(err, ErrFSCRConnection)
 	}
 
-	return nil
+	if e := g.keyStore.Ping(ctx); e != nil {
+		err = multierr.Append(err, ErrKeystoreUnavailable)
+	}
+
+	return err
 }
 
 // SendSale sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.

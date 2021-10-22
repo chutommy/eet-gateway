@@ -21,6 +21,7 @@ var ErrReachedMaxRetries = errors.New("maximum number of retries reached")
 
 // Service represents a keystore abstraction for a KeyPair management.
 type Service interface {
+	Ping(ctx context.Context) error
 	Store(ctx context.Context, id string, password []byte, kp *KeyPair) error
 	Get(ctx context.Context, id string, password []byte) (*KeyPair, error)
 	UpdateID(ctx context.Context, oldID, newID string) error
@@ -37,6 +38,11 @@ var (
 	privateKeyField  = "private-key"
 	saltField        = "salt"
 )
+
+// Ping tests whether the connection with the database is online.
+func (r *redisService) Ping(ctx context.Context) error {
+	return r.rdb.Ping(ctx).Err()
+}
 
 // Store stores the given Keypair kp in the database encrypted with the password.
 func (r *redisService) Store(ctx context.Context, id string, password []byte, kp *KeyPair) error {
