@@ -148,6 +148,11 @@ type StoreCertReq struct {
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
 
+// ListCertIDsResp represents a response structure of the certificate IDs for the list request.
+type ListCertIDsResp struct {
+	CertIDs []string `json:"cert_ids"`
+}
+
 // UpdateCertIDReq represents a binding structure to HTTP requests for certificate ID update.
 type UpdateCertIDReq struct {
 	CertID string `json:"cert_id" binding:"required"`
@@ -212,6 +217,8 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdateID
 	case errors.Is(err, eet.ErrCertificateUpdatePassword):
 		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdatePassword
+	case errors.Is(err, eet.ErrCertIDsList):
+		c, e = http.StatusInternalServerError, eet.ErrCertIDsList
 	case errors.Is(err, eet.ErrRequestDiscarded):
 		c, e = http.StatusInternalServerError, eet.ErrRequestDiscarded
 	}

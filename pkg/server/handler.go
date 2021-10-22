@@ -48,6 +48,7 @@ func (h *handler) ginEngine() *gin.Engine {
 		v1.POST("/sale", h.sendSale)
 
 		v1.POST("/cert", h.storeCert)
+		v1.GET("/cert", h.listCertIDs)
 		v1.PUT("/cert/id", h.updateCertID)
 		v1.PUT("/cert/password", h.UpdateCertPassword)
 		v1.DELETE("/cert", h.deleteCert)
@@ -119,6 +120,17 @@ func (h *handler) storeCert(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, successCertResp(req.CertID))
+}
+
+func (h *handler) listCertIDs(c *gin.Context) {
+	ids, err := h.gatewaySvc.ListCertIDs(c)
+	if err != nil {
+		code, resp := gatewayErrResp(err)
+		c.JSON(code, resp)
+		return
+	}
+
+	c.JSON(http.StatusOK, ListCertIDsResp{CertIDs: ids})
 }
 
 func (h *handler) updateCertID(c *gin.Context) {

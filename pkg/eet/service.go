@@ -21,6 +21,9 @@ var ErrCertificateParse = errors.New("taxpayer's certificate not parsed")
 // ErrCertificateGet is returned if a certificate with the given ID can't be fetched.
 var ErrCertificateGet = errors.New("taxpayer's certificate not retrieved")
 
+// ErrCertIDsList is returned if certificate IDs can't be retrieved.
+var ErrCertIDsList = errors.New("list of certificate IDs not retrieved")
+
 // ErrCertificateStore is returned if a certificate can't be stored.
 var ErrCertificateStore = errors.New("taxpayer's certificate not stored")
 
@@ -62,6 +65,7 @@ type GatewayService interface {
 	PingEET(ctx context.Context) error
 	SendSale(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
 	StoreCert(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
+	ListCertIDs(ctx context.Context) ([]string, error)
 	UpdateCertID(ctx context.Context, oldID, newID string) error
 	UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
 	DeleteID(ctx context.Context, id string) error
@@ -152,6 +156,16 @@ func (g *gatewayService) StoreCert(ctx context.Context, id string, password []by
 	}
 
 	return nil
+}
+
+// ListCertIDs returns the list of all certificate IDs in the keystore.
+func (g *gatewayService) ListCertIDs(ctx context.Context) ([]string, error) {
+	ids, err := g.keyStore.List(ctx)
+	if err != nil {
+		return nil, multierr.Append(err, ErrCertIDsList)
+	}
+
+	return ids, nil
 }
 
 // UpdateCertID renames the current certificate ID to a new ID.
