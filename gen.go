@@ -1,6 +1,6 @@
 package main
 
-//go:generate go run bin/soap-defs/main.go -dir data/eet-specs/
+//go:generate go run cmd/soap-defs/main.go -dir data/eet-specs/
 
 // https://github.com/droyo/go-xml
 // https://github.com/fatih/gomodifytags
