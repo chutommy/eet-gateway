@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
+	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -19,7 +20,7 @@ type Handler interface {
 }
 
 type handler struct {
-	gatewaySvc eet.GatewayService
+	gatewaySvc gateway.GatewayService
 }
 
 func (h *handler) HTTPHandler() http.Handler {
@@ -27,7 +28,7 @@ func (h *handler) HTTPHandler() http.Handler {
 }
 
 // NewHandler returns an HTTP Handler implementation.
-func NewHandler(gatewaySvc eet.GatewayService) Handler {
+func NewHandler(gatewaySvc gateway.GatewayService) Handler {
 	return &handler{
 		gatewaySvc: gatewaySvc,
 	}
@@ -61,13 +62,13 @@ func (h *handler) ginEngine() *gin.Engine {
 func (h *handler) pingEET(c *gin.Context) {
 	err := h.gatewaySvc.PingEET(c)
 	var taxAdmin error
-	if errors.Is(err, eet.ErrFSCRConnection) {
-		taxAdmin = eet.ErrFSCRConnection
+	if errors.Is(err, gateway.ErrFSCRConnection) {
+		taxAdmin = gateway.ErrFSCRConnection
 	}
 
 	var keyStore error
-	if errors.Is(err, eet.ErrKeystoreUnavailable) {
-		keyStore = eet.ErrKeystoreUnavailable
+	if errors.Is(err, gateway.ErrKeystoreUnavailable) {
+		keyStore = gateway.ErrKeystoreUnavailable
 	}
 
 	code, resp := pingEETResp(taxAdmin, keyStore)

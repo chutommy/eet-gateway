@@ -16,17 +16,17 @@ import (
 // ErrInvalidXMLDigest is returned if the referenced digest is invalid. Computed digest differs from the digest in the XML
 var ErrInvalidXMLDigest = errors.New("computed digest differs from the digest in the XML")
 
-// ErrInvalidBKP is returned if the response BKP code is different.
-var ErrInvalidBKP = errors.New("invalid response BKP")
+// ErrInvalidSOAPMessage is returned if an invalid or unexpected SOAP message structure is queried.
+var ErrInvalidSOAPMessage = errors.New("SOAP message with an unexpected structure")
 
 // ErrInvalidUUID is returned if the response UUID is different.
 var ErrInvalidUUID = errors.New("invalid response UUID")
 
-// ErrInvalidSOAPMessage is returned if an invalid or unexpected SOAP message structure is queried.
-var ErrInvalidSOAPMessage = errors.New("SOAP message with an unexpected structure")
+// ErrInvalidBKP is returned if the response BKP code is different.
+var ErrInvalidBKP = errors.New("invalid response BKP")
 
-// newRequestEnvelope returns a populated and signed SOAP request envelope.
-func newRequestEnvelope(t *TrzbaType, cert *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
+// NewRequestEnvelope returns a populated and signed SOAP request envelope.
+func NewRequestEnvelope(t *TrzbaType, cert *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {
 	if err := t.setSecurityCodes(pk); err != nil {
 		return nil, fmt.Errorf("setting security codes: %w", err)
 	}
@@ -132,8 +132,8 @@ type OdpovedBody struct {
 	Odpoved OdpovedType `xml:"Odpoved"`
 }
 
-// parseResponseEnvelope returns a parsed SOAP response envelope.
-func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
+// ParseResponseEnvelope returns a parsed SOAP response envelope.
+func ParseResponseEnvelope(env []byte) (*OdpovedType, error) {
 	doc := etree.NewDocument()
 	err := doc.ReadFromBytes(env)
 	if err != nil {
@@ -160,7 +160,8 @@ func parseResponseEnvelope(env []byte) (*OdpovedType, error) {
 	return &odpoved.Odpoved, nil
 }
 
-func verifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, verifyCert func(*x509.Certificate) error) error {
+// VerifyResponse checks whether the response envelope is valid and is signed by a trusted certificate.
+func VerifyResponse(trzba *TrzbaType, respEnv []byte, odpoved *OdpovedType, verifyCert func(*x509.Certificate) error) error {
 	envelope := etree.NewDocument()
 	err := envelope.ReadFromBytes(respEnv)
 	if err != nil {

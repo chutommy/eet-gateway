@@ -1,9 +1,10 @@
-package eet
+package gateway
 
 import (
 	"context"
 	"errors"
 
+	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"go.uber.org/multierr"
@@ -63,7 +64,7 @@ var ErrKeystoreUnavailable = errors.New("Keystore service unavailable")
 // GatewayService represents an abstraction of EET Gateway functionalities.
 type GatewayService interface {
 	PingEET(ctx context.Context) error
-	SendSale(ctx context.Context, certID string, pk []byte, trzba *TrzbaType) (*OdpovedType, error)
+	SendSale(ctx context.Context, certID string, pk []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error)
 	StoreCert(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
 	ListCertIDs(ctx context.Context) ([]string, error)
 	UpdateCertID(ctx context.Context, oldID, newID string) error
@@ -91,7 +92,7 @@ func (g *gatewayService) PingEET(ctx context.Context) (err error) {
 }
 
 // SendSale sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
-func (g *gatewayService) SendSale(ctx context.Context, certID string, certPassword []byte, trzba *TrzbaType) (*OdpovedType, error) {
+func (g *gatewayService) SendSale(ctx context.Context, certID string, certPassword []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
 		switch {
@@ -106,7 +107,7 @@ func (g *gatewayService) SendSale(ctx context.Context, certID string, certPasswo
 		return nil, multierr.Append(err, ErrCertificateGet)
 	}
 
-	reqEnv, err := newRequestEnvelope(trzba, kp.Cert, kp.PK)
+	reqEnv, err := eet.NewRequestEnvelope(trzba, kp.Cert, kp.PK)
 	if err != nil {
 		return nil, multierr.Append(err, ErrRequestBuild)
 	}
@@ -116,12 +117,12 @@ func (g *gatewayService) SendSale(ctx context.Context, certID string, certPasswo
 		return nil, multierr.Append(err, ErrFSCRConnection)
 	}
 
-	odpoved, err := parseResponseEnvelope(respEnv)
+	odpoved, err := eet.ParseResponseEnvelope(respEnv)
 	if err != nil {
 		return nil, multierr.Append(err, ErrFSCRResponseParse)
 	}
 
-	err = verifyResponse(trzba, respEnv, odpoved, g.caSvc.VerifyDSig)
+	err = eet.VerifyResponse(trzba, respEnv, odpoved, g.caSvc.VerifyDSig)
 	if err != nil {
 		return nil, multierr.Append(err, ErrFSCRResponseVerify)
 	}

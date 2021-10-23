@@ -29,8 +29,7 @@ func (t *TrzbaType) etree() (*etree.Element, error) {
 	}
 
 	trzba := trzbaDoc.Root()
-	// Overwrite trzba.Tag which value is "TrzbaType". TrzbaType hasn't
-	// defined the XMLName attribute so the type name is used as the tag instead.
+	// Overwrite the tag of a value "TrzbaType".
 	trzba.Tag = "Trzba"
 	trzba.CreateAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 	trzba.CreateAttr("xmlns:xsd", "http://www.w3.org/2001/XMLSchema")
@@ -39,7 +38,6 @@ func (t *TrzbaType) etree() (*etree.Element, error) {
 	return trzba, nil
 }
 
-// setSecurityCodes sets all required security codes of the TrzbaType elements.
 func (t *TrzbaType) setSecurityCodes(pk *rsa.PrivateKey) error {
 	err := t.setPKP(pk)
 	if err != nil {

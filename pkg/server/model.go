@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
+	"github.com/chutommy/eetgateway/pkg/gateway"
 )
 
 // PingEETResp represents a response structure of HTTP responses for pings.
@@ -189,38 +190,38 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 	c, e := http.StatusInternalServerError, ErrUnexpectedFailure
 
 	switch {
-	case errors.Is(err, eet.ErrCertificateNotFound):
-		c, e = http.StatusNotFound, eet.ErrCertificateNotFound
-	case errors.Is(err, eet.ErrInvalidCertificatePassword):
-		c, e = http.StatusUnauthorized, eet.ErrInvalidCertificatePassword
-	case errors.Is(err, eet.ErrIDAlreadyExists):
-		c, e = http.StatusConflict, eet.ErrIDAlreadyExists
-	case errors.Is(err, eet.ErrInvalidTaxpayersCertificate):
-		c, e = http.StatusBadRequest, eet.ErrInvalidTaxpayersCertificate
-	case errors.Is(err, eet.ErrFSCRConnection):
-		c, e = http.StatusServiceUnavailable, eet.ErrFSCRConnection
-	case errors.Is(err, eet.ErrRequestBuild):
-		c, e = http.StatusInternalServerError, eet.ErrRequestBuild
-	case errors.Is(err, eet.ErrFSCRResponseParse):
-		c, e = http.StatusInternalServerError, eet.ErrFSCRResponseParse
-	case errors.Is(err, eet.ErrFSCRResponseVerify):
-		c, e = http.StatusInternalServerError, eet.ErrFSCRResponseVerify
-	case errors.Is(err, eet.ErrCertificateGet):
-		c, e = http.StatusInternalServerError, eet.ErrCertificateGet
-	case errors.Is(err, eet.ErrCertificateParse):
-		c, e = http.StatusInternalServerError, eet.ErrCertificateParse
-	case errors.Is(err, eet.ErrCertificateStore):
-		c, e = http.StatusInternalServerError, eet.ErrCertificateStore
-	case errors.Is(err, eet.ErrCertificateDelete):
-		c, e = http.StatusInternalServerError, eet.ErrCertificateDelete
-	case errors.Is(err, eet.ErrCertificateUpdateID):
-		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdateID
-	case errors.Is(err, eet.ErrCertificateUpdatePassword):
-		c, e = http.StatusInternalServerError, eet.ErrCertificateUpdatePassword
-	case errors.Is(err, eet.ErrCertIDsList):
-		c, e = http.StatusInternalServerError, eet.ErrCertIDsList
-	case errors.Is(err, eet.ErrRequestDiscarded):
-		c, e = http.StatusInternalServerError, eet.ErrRequestDiscarded
+	case errors.Is(err, gateway.ErrCertificateNotFound):
+		c, e = http.StatusNotFound, gateway.ErrCertificateNotFound
+	case errors.Is(err, gateway.ErrInvalidCertificatePassword):
+		c, e = http.StatusUnauthorized, gateway.ErrInvalidCertificatePassword
+	case errors.Is(err, gateway.ErrIDAlreadyExists):
+		c, e = http.StatusConflict, gateway.ErrIDAlreadyExists
+	case errors.Is(err, gateway.ErrInvalidTaxpayersCertificate):
+		c, e = http.StatusBadRequest, gateway.ErrInvalidTaxpayersCertificate
+	case errors.Is(err, gateway.ErrFSCRConnection):
+		c, e = http.StatusServiceUnavailable, gateway.ErrFSCRConnection
+	case errors.Is(err, gateway.ErrRequestBuild):
+		c, e = http.StatusInternalServerError, gateway.ErrRequestBuild
+	case errors.Is(err, gateway.ErrFSCRResponseParse):
+		c, e = http.StatusInternalServerError, gateway.ErrFSCRResponseParse
+	case errors.Is(err, gateway.ErrFSCRResponseVerify):
+		c, e = http.StatusInternalServerError, gateway.ErrFSCRResponseVerify
+	case errors.Is(err, gateway.ErrCertificateGet):
+		c, e = http.StatusInternalServerError, gateway.ErrCertificateGet
+	case errors.Is(err, gateway.ErrCertificateParse):
+		c, e = http.StatusInternalServerError, gateway.ErrCertificateParse
+	case errors.Is(err, gateway.ErrCertificateStore):
+		c, e = http.StatusInternalServerError, gateway.ErrCertificateStore
+	case errors.Is(err, gateway.ErrCertificateDelete):
+		c, e = http.StatusInternalServerError, gateway.ErrCertificateDelete
+	case errors.Is(err, gateway.ErrCertificateUpdateID):
+		c, e = http.StatusInternalServerError, gateway.ErrCertificateUpdateID
+	case errors.Is(err, gateway.ErrCertificateUpdatePassword):
+		c, e = http.StatusInternalServerError, gateway.ErrCertificateUpdatePassword
+	case errors.Is(err, gateway.ErrCertIDsList):
+		c, e = http.StatusInternalServerError, gateway.ErrCertIDsList
+	case errors.Is(err, gateway.ErrRequestDiscarded):
+		c, e = http.StatusInternalServerError, gateway.ErrRequestDiscarded
 	}
 
 	return c, &GatewayErrResp{GatewayError: e.Error()}
