@@ -29,9 +29,9 @@ func CalcSignature(pk *rsa.PrivateKey, signedInfo *etree.Element) ([]byte, error
 func CalcDigest(e *etree.Element) ([]byte, error) {
 	// canonical, err := dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList("").Canonicalize(e.Copy())
 	// note: The line above is using the package dsig (https://github.com/russellhaering/goxmldsig) to canonicalize
-	//       the etree element. The custom excC14NCanonicalize function is used for performance reasons (about 40% faster).
-	//       Nevertheless, since the custom canonicalizer was heavily inspired by the one from this package, the note
-	//       of the original code is left for debugging purposes.
+	//       the etree element. The custom excC14NCanonicalize function is used instead because of the performance
+	//       boost (about 40% faster). Nevertheless, since the custom canonicalizer was heavily inspired by the one
+	//       derived from the dsig package, the link to the original code is left for the debugging purposes.
 	canonical, err := excC14NCanonicalize(e.Copy())
 	if err != nil {
 		return nil, fmt.Errorf("canonicalize the element (c14n): %w", err)

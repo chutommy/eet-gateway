@@ -1,4 +1,4 @@
-package wsse_test
+package fscr_test
 
 import (
 	"crypto/x509"

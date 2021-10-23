@@ -2,7 +2,6 @@ package wsse_test
 
 import (
 	"crypto/rsa"
-	"crypto/x509"
 	"encoding/base64"
 	"io/ioutil"
 	"testing"
@@ -14,22 +13,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func readFile(t require.TestingT, path string) []byte {
-	raw, err := ioutil.ReadFile(path)
-	require.NoError(t, err, "read file")
+func parseTaxpayerCertificate(t require.TestingT, pfxFile string) *rsa.PrivateKey {
+	rawPK, err := ioutil.ReadFile(pfxFile)
+	require.NoError(t, err)
 
-	return raw
-}
-
-func parseTaxpayerCertificate(t require.TestingT, pfxFile string) (*x509.Certificate, *rsa.PrivateKey) {
-	rawPK := readFile(t, pfxFile)
 	roots, err := ca.PlaygroundRoots()
-	require.NoError(t, err, "retrieve playground roots")
-	caSvc := fscr.NewCAService(roots, nil)
-	cert, pk, err := caSvc.ParseTaxpayerCertificate(rawPK, "eet")
-	require.NoError(t, err, "parse taxpayer's private key")
+	require.NoError(t, err)
 
-	return cert, pk
+	caSvc := fscr.NewCAService(roots, nil)
+	_, pk, err := caSvc.ParseTaxpayerCertificate(rawPK, "eet")
+	require.NoError(t, err)
+
+	return pk
 }
 
 func TestCalc(t *testing.T) {
@@ -53,33 +48,37 @@ func TestCalc(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.xmlFile, func(t *testing.T) {
-			xml := readFile(t, tc.xmlFile)
-			_, pk := parseTaxpayerCertificate(t, tc.pfxFile)
+			raw, err := ioutil.ReadFile(tc.xmlFile)
+			require.NoError(t, err)
 
 			envelope := etree.NewDocument()
-			err := envelope.ReadFromBytes(xml)
-			require.NoError(t, err, "retrieve etree from a valid xml value")
+			err = envelope.ReadFromBytes(raw)
+			require.NoError(t, err)
 
 			// get signed info
+			signature := envelope.FindElement("./Envelope/Header/Security/Signature")
+			signedInfoElem := signature.FindElement("./SignedInfo")
+			digestValElem := signedInfoElem.FindElement("./Reference/DigestValue")
+			sigValElem := signature.FindElement("./SignatureValue")
+
+			// get body
 			body := envelope.FindElement("./Envelope/Body")
 			// create namespaces defined outside the scope
 			body.CreateAttr("xmlns:u", "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 			body.CreateAttr("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/")
-			signature := envelope.FindElement("./Envelope/Header/Security/Signature")
 
-			signedInfoElem := signature.FindElement("./SignedInfo")
-			sigValElem := signature.FindElement("./SignatureValue")
-			digestValElem := signedInfoElem.FindElement("./Reference/DigestValue")
-
+			// check digest value
 			calculatedDigest, err := wsse.CalcDigest(body)
+			require.NoError(t, err)
 			calculatedDigestB64 := base64.StdEncoding.EncodeToString(calculatedDigest)
-			require.NoError(t, err, "encode digest to base64")
-			require.Equal(t, digestValElem.Text(), calculatedDigestB64, "digest values")
+			require.Equal(t, digestValElem.Text(), calculatedDigestB64)
 
+			// check signaturevalue
+			pk := parseTaxpayerCertificate(t, tc.pfxFile)
 			calculatedSignature, err := wsse.CalcSignature(pk, signedInfoElem)
+			require.NoError(t, err)
 			calculatedSignatureB64 := base64.StdEncoding.EncodeToString(calculatedSignature)
-			require.NoError(t, err, "encode signature to base64")
-			require.Equal(t, sigValElem.Text(), calculatedSignatureB64, "signature values")
+			require.Equal(t, sigValElem.Text(), calculatedSignatureB64)
 		})
 	}
 }

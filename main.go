@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/ca"
-	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/fscr"
+	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/server"
 	"github.com/go-redis/redis/v8"
@@ -62,7 +62,7 @@ func main() {
 	errCheck(err)
 
 	ks := keystore.NewRedisService(rdb)
-	gSvc := eet.NewGatewayService(client, caSvc, ks)
+	gSvc := gateway.NewGatewayService(client, caSvc, ks)
 
 	// server
 	h := server.NewHandler(gSvc)
