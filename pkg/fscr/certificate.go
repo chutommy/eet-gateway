@@ -33,7 +33,6 @@ const OrganizationName = "Česká republika - Generální finanční ředitelstv
 // CAService verifies certificates signed off by the CA.
 type CAService interface {
 	VerifyDSig(cert *x509.Certificate) error
-	VerifyEETCA(cert *x509.Certificate) error
 	ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error)
 }
 
@@ -49,24 +48,6 @@ func NewCAService(eetRoots []*x509.Certificate, dsigPool *x509.CertPool) CAServi
 		eetCARoots: eetRoots,
 		dsigPool:   dsigPool,
 	}
-}
-
-// VerifyEETCA verifies certificate used for issuing certificates of taxpayers.
-func (c *caService) VerifyEETCA(caCert *x509.Certificate) error {
-	var ok bool
-	// iterate over stored CA's root certificates
-	for _, root := range c.eetCARoots {
-		if caCert.Equal(root) {
-			ok = true
-			break
-		}
-	}
-
-	if !ok {
-		return fmt.Errorf("certificate not found in a pool of valid EET CA certificates: %w", ErrNotTrustedCertificate)
-	}
-
-	return nil
 }
 
 // VerifyDSig verifies certificate used for the digital signature.
@@ -104,7 +85,7 @@ func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x50
 		return nil, nil, fmt.Errorf("parse PEM blocks: %w", err)
 	}
 
-	if err = c.VerifyEETCA(caCert); err != nil {
+	if err = verifyEETCA(c.eetCARoots, caCert); err != nil {
 		return nil, nil, multierr.Append(err, ErrInvalidCertificate)
 	}
 
@@ -114,22 +95,6 @@ func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x50
 	}
 
 	return cert, pk, nil
-}
-
-func verifyKeys(caCert *x509.Certificate, cert *x509.Certificate, pk *rsa.PrivateKey) error {
-	if isCa := caCert.IsCA; !isCa {
-		return fmt.Errorf("expected CA's certificate: %w", ErrNotCACertificate)
-	}
-
-	if err := cert.CheckSignatureFrom(caCert); err != nil {
-		return fmt.Errorf("taxpayer's certificate not signed off by the CA's certificate: %w", err)
-	}
-
-	if !pk.PublicKey.Equal(cert.PublicKey) {
-		return fmt.Errorf("the keypair of the taxpayer's private key and the certificate is not valid: %w", ErrInvalidKeyPair)
-	}
-
-	return nil
 }
 
 func parsePEMBlocks(blocks []*pem.Block) (cert *x509.Certificate, caCert *x509.Certificate, pk *rsa.PrivateKey, err error) {
@@ -149,4 +114,38 @@ func parsePEMBlocks(blocks []*pem.Block) (cert *x509.Certificate, caCert *x509.C
 	}
 
 	return cert, caCert, pk, nil
+}
+
+// verifyEETCA verifies certificate used for issuing certificates of taxpayers.
+func verifyEETCA(roots []*x509.Certificate, cert *x509.Certificate) error {
+	var ok bool
+	// iterate over stored CA's root certificates
+	for _, root := range roots {
+		if cert.Equal(root) {
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		return fmt.Errorf("certificate not found in a pool of valid EET CA certificates: %w", ErrNotTrustedCertificate)
+	}
+
+	return nil
+}
+
+func verifyKeys(caCert *x509.Certificate, cert *x509.Certificate, pk *rsa.PrivateKey) error {
+	if isCa := caCert.IsCA; !isCa {
+		return fmt.Errorf("expected CA's certificate: %w", ErrNotCACertificate)
+	}
+
+	if err := cert.CheckSignatureFrom(caCert); err != nil {
+		return fmt.Errorf("taxpayer's certificate not signed off by the CA's certificate: %w", err)
+	}
+
+	if !pk.PublicKey.Equal(cert.PublicKey) {
+		return fmt.Errorf("the keypair of the taxpayer's private key and the certificate is not valid: %w", ErrInvalidKeyPair)
+	}
+
+	return nil
 }
