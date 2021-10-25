@@ -19,6 +19,15 @@ var ErrIDAlreadyExists = errors.New("record with the ID already exists")
 // ErrReachedMaxRetries is returned if the maximum number of retries of transactions is reached.
 var ErrReachedMaxRetries = errors.New("maximum number of retries reached")
 
+var (
+	// CertificateKey is the redis key of the certificate.
+	CertificateKey = "certificate"
+	// PrivateKeyKey is the redis key of the private key.
+	PrivateKeyKey = "private-key"
+	// SaltKey is the redis key of the salt.
+	SaltKey = "salt"
+)
+
 // Service represents a keystore abstraction for a KeyPair management.
 type Service interface {
 	Ping(ctx context.Context) error
@@ -33,12 +42,6 @@ type Service interface {
 type redisService struct {
 	rdb *redis.Client
 }
-
-var (
-	certificateField = "certificate"
-	privateKeyField  = "private-key"
-	saltField        = "salt"
-)
 
 // Ping tests whether the connection with the database is online.
 func (r *redisService) Ping(ctx context.Context) error {
@@ -73,9 +76,9 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// store in database
 			_, err = pipe.HSet(ctx, id, map[string]interface{}{
-				certificateField: cert,
-				privateKeyField:  pk,
-				saltField:        salt,
+				CertificateKey: cert,
+				PrivateKeyKey:  pk,
+				SaltKey:        salt,
 			}).Result()
 			if err != nil {
 				return fmt.Errorf("store certificate in database: %w", err)
@@ -130,9 +133,9 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 			return nil, fmt.Errorf("transaction failed: %w", err)
 		}
 
-		salt := []byte(m[saltField])
-		cert := []byte(m[certificateField])
-		pk := []byte(m[privateKeyField])
+		salt := []byte(m[SaltKey])
+		cert := []byte(m[CertificateKey])
+		pk := []byte(m[PrivateKeyKey])
 
 		kp := new(KeyPair)
 		err = kp.decrypt(password, salt, cert, pk)
@@ -209,7 +212,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		}
 
 		if i == 0 {
-			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
+			return fmt.Errorf("record not found by the id: %w", ErrRecordNotFound)
 		}
 
 		// read from database
@@ -219,9 +222,9 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		}
 
 		// decrypt KeyPair with the old password
-		salt := []byte(m[saltField])
-		cert := []byte(m[certificateField])
-		pk := []byte(m[privateKeyField])
+		salt := []byte(m[SaltKey])
+		cert := []byte(m[CertificateKey])
+		pk := []byte(m[PrivateKeyKey])
 
 		kp := new(KeyPair)
 		err = kp.decrypt(oldPassword, salt, cert, pk)
@@ -239,8 +242,8 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// overwrite in database
 			_, err = pipe.HSet(ctx, id, map[string]interface{}{
-				certificateField: cert,
-				privateKeyField:  pk,
+				CertificateKey: cert,
+				PrivateKeyKey:  pk,
 			}).Result()
 			if err != nil {
 				return fmt.Errorf("store certificate in database: %w", err)
@@ -280,6 +283,7 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// NewRedisService returns an implementation of the Service.
 func NewRedisService(rdb *redis.Client) Service {
 	return &redisService{
 		rdb: rdb,
