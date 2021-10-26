@@ -62,7 +62,7 @@ func main() {
 	errCheck(err)
 
 	ks := keystore.NewRedisService(rdb)
-	gSvc := gateway.NewGatewayService(client, caSvc, ks)
+	gSvc := gateway.NewService(client, caSvc, ks)
 
 	// server
 	h := server.NewHandler(gSvc)

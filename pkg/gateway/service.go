@@ -59,11 +59,11 @@ var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate"
 var ErrRequestDiscarded = errors.New("request discarded")
 
 // ErrKeystoreUnavailable is returned if the keystore service can't be reached.
-var ErrKeystoreUnavailable = errors.New("Keystore service unavailable")
+var ErrKeystoreUnavailable = errors.New("keystore service unavailable")
 
-// GatewayService represents an abstraction of EET Gateway functionalities.
-type GatewayService interface {
-	PingEET(ctx context.Context) error
+// Service represents an abstraction of EET Gateway functionalities.
+type Service interface {
+	Ping(ctx context.Context) error
 	SendSale(ctx context.Context, certID string, pk []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error)
 	StoreCert(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
 	ListCertIDs(ctx context.Context) ([]string, error)
@@ -72,14 +72,14 @@ type GatewayService interface {
 	DeleteID(ctx context.Context, id string) error
 }
 
-type gatewayService struct {
+type service struct {
 	fscrClient fscr.Client
 	caSvc      fscr.CAService
 	keyStore   keystore.Service
 }
 
-// PingEET checks whether the MFCR server is online. It returns nil if the response status is OK.
-func (g *gatewayService) PingEET(ctx context.Context) (err error) {
+// Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
+func (g *service) Ping(ctx context.Context) (err error) {
 	if e := g.fscrClient.Ping(); e != nil {
 		err = multierr.Append(err, ErrFSCRConnection)
 	}
@@ -92,7 +92,7 @@ func (g *gatewayService) PingEET(ctx context.Context) (err error) {
 }
 
 // SendSale sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
-func (g *gatewayService) SendSale(ctx context.Context, certID string, certPassword []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error) {
+func (g *service) SendSale(ctx context.Context, certID string, certPassword []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
 		switch {
@@ -131,7 +131,7 @@ func (g *gatewayService) SendSale(ctx context.Context, certID string, certPasswo
 }
 
 // StoreCert verifies and stores the taxpayer's certificate.
-func (g *gatewayService) StoreCert(ctx context.Context, id string, password []byte, pkcsData []byte, pkcsPassword string) error {
+func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkcsData []byte, pkcsPassword string) error {
 	cert, pk, err := g.caSvc.ParseTaxpayerCertificate(pkcsData, pkcsPassword)
 	if err != nil {
 		if errors.Is(err, fscr.ErrInvalidCertificate) {
@@ -160,7 +160,7 @@ func (g *gatewayService) StoreCert(ctx context.Context, id string, password []by
 }
 
 // ListCertIDs returns the list of all certificate IDs in the keystore.
-func (g *gatewayService) ListCertIDs(ctx context.Context) ([]string, error) {
+func (g *service) ListCertIDs(ctx context.Context) ([]string, error) {
 	ids, err := g.keyStore.List(ctx)
 	if err != nil {
 		return nil, multierr.Append(err, ErrCertIDsList)
@@ -170,7 +170,7 @@ func (g *gatewayService) ListCertIDs(ctx context.Context) ([]string, error) {
 }
 
 // UpdateCertID renames the current certificate ID to a new ID.
-func (g *gatewayService) UpdateCertID(ctx context.Context, oldID, newID string) error {
+func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 	err := g.keyStore.UpdateID(ctx, oldID, newID)
 	if err != nil {
 		switch {
@@ -189,7 +189,7 @@ func (g *gatewayService) UpdateCertID(ctx context.Context, oldID, newID string) 
 }
 
 // UpdateCertPassword updates the certificate of given ID with a new password.
-func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
+func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	err := g.keyStore.UpdatePassword(ctx, id, oldPassword, newPassword)
 	if err != nil {
 		switch {
@@ -208,7 +208,7 @@ func (g *gatewayService) UpdateCertPassword(ctx context.Context, id string, oldP
 }
 
 // DeleteID removes a certificate with the given ID.
-func (g *gatewayService) DeleteID(ctx context.Context, id string) error {
+func (g *service) DeleteID(ctx context.Context, id string) error {
 	err := g.keyStore.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, keystore.ErrRecordNotFound) {
@@ -221,9 +221,9 @@ func (g *gatewayService) DeleteID(ctx context.Context, id string) error {
 	return nil
 }
 
-// NewGatewayService returns GatewayService implementation.
-func NewGatewayService(fscrClient fscr.Client, eetCASvc fscr.CAService, keyStore keystore.Service) GatewayService {
-	return &gatewayService{
+// NewService returns Service implementation.
+func NewService(fscrClient fscr.Client, eetCASvc fscr.CAService, keyStore keystore.Service) Service {
+	return &service{
 		fscrClient: fscrClient,
 		caSvc:      eetCASvc,
 		keyStore:   keyStore,

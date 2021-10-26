@@ -20,7 +20,7 @@ type Handler interface {
 }
 
 type handler struct {
-	gatewaySvc gateway.GatewayService
+	gatewaySvc gateway.Service
 }
 
 func (h *handler) HTTPHandler() http.Handler {
@@ -28,7 +28,7 @@ func (h *handler) HTTPHandler() http.Handler {
 }
 
 // NewHandler returns an HTTP Handler implementation.
-func NewHandler(gatewaySvc gateway.GatewayService) Handler {
+func NewHandler(gatewaySvc gateway.Service) Handler {
 	return &handler{
 		gatewaySvc: gatewaySvc,
 	}
@@ -60,7 +60,7 @@ func (h *handler) ginEngine() *gin.Engine {
 }
 
 func (h *handler) pingEET(c *gin.Context) {
-	err := h.gatewaySvc.PingEET(c)
+	err := h.gatewaySvc.Ping(c)
 	var taxAdmin error
 	if errors.Is(err, gateway.ErrFSCRConnection) {
 		taxAdmin = gateway.ErrFSCRConnection
