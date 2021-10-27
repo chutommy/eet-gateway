@@ -22,8 +22,8 @@ const (
 
 // Client represents a client that can communicate with the EET server.
 type Client interface {
-	Do(ctx context.Context, reqBody []byte) ([]byte, error)
 	Ping() error
+	Do(ctx context.Context, reqBody []byte) ([]byte, error)
 }
 
 type client struct {
@@ -37,6 +37,21 @@ func NewClient(c *http.Client, url string) Client {
 		c:   c,
 		url: url,
 	}
+}
+
+// Ping pings the host and returns the status code of the HTTP response.
+func (c *client) Ping() error {
+	resp, err := c.c.Head(c.url)
+	if err != nil {
+		return fmt.Errorf("ping %s: %w", c.url, err)
+	}
+	defer multierr.AppendInvoke(&err, multierr.Close(resp.Body))
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("status code not OK (200): %s", http.StatusText(resp.StatusCode))
+	}
+
+	return nil
 }
 
 // Do makes a valid SOAP request to the MFCR EET server with the request body reqBody and
@@ -80,19 +95,4 @@ func createRequest(ctx context.Context, url string, reqBody []byte) (*http.Reque
 	req.Header.Set("Content-Type", "text/xml; charset=\"utf-8\"")
 
 	return req, nil
-}
-
-// Ping pings the host and returns the status code of the HTTP response.
-func (c *client) Ping() error {
-	resp, err := c.c.Head(c.url)
-	if err != nil {
-		return fmt.Errorf("ping %s: %w", c.url, err)
-	}
-	defer multierr.AppendInvoke(&err, multierr.Close(resp.Body))
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code not OK (200): %s", http.StatusText(resp.StatusCode))
-	}
-
-	return nil
 }
