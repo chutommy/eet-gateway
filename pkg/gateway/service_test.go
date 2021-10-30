@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var errUnexpected = errors.New("unexpected error")
+
 var defaultCertTmpl = &x509.Certificate{
 	SerialNumber:          big.NewInt(1),
 	NotBefore:             time.Now(),
@@ -76,7 +78,7 @@ func TestService_Ping(t *testing.T) {
 		{
 			name: "bad fscr",
 			setup: func(c *mfscr.Client, ks *mkeystore.Service) {
-				c.On("Ping").Return(errors.New("ping failed"))
+				c.On("Ping").Return(errUnexpected)
 				ks.On("Ping", context.Background()).Return(nil)
 			},
 			errs: []error{gateway.ErrFSCRConnection},
@@ -85,15 +87,15 @@ func TestService_Ping(t *testing.T) {
 			name: "bad keystore",
 			setup: func(c *mfscr.Client, ks *mkeystore.Service) {
 				c.On("Ping").Return(nil)
-				ks.On("Ping", context.Background()).Return(errors.New("ping failed"))
+				ks.On("Ping", context.Background()).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrKeystoreUnavailable},
 		},
 		{
 			name: "bad fscr and keystore",
 			setup: func(c *mfscr.Client, ks *mkeystore.Service) {
-				c.On("Ping").Return(errors.New("ping failed"))
-				ks.On("Ping", context.Background()).Return(errors.New("ping failed"))
+				c.On("Ping").Return(errUnexpected)
+				ks.On("Ping", context.Background()).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrFSCRConnection, gateway.ErrKeystoreUnavailable},
 		},
@@ -147,7 +149,7 @@ func TestService_StoreCert(t *testing.T) {
 		{
 			name: "unknown certificate parse error",
 			setup: func(cas *mfscr.CAService, ks *mkeystore.Service) {
-				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(nil, nil, errors.New("parse error"))
+				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(nil, nil, errUnexpected)
 			},
 			errs: []error{gateway.ErrCertificateParse},
 		},
@@ -165,13 +167,13 @@ func TestService_StoreCert(t *testing.T) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
 				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(keystore.ErrReachedMaxRetries)
 			},
-			errs: []error{gateway.ErrRequestDiscarded},
+			errs: []error{gateway.ErrTXBlock},
 		},
 		{
 			name: "unknown certificate store error",
 			setup: func(cas *mfscr.CAService, ks *mkeystore.Service) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
-				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(errors.New("store error"))
+				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrCertificateStore},
 		},
@@ -218,7 +220,7 @@ func TestService_ListCertIDs(t *testing.T) {
 		{
 			name: "unknown list certificates error",
 			setup: func(ks *mkeystore.Service) {
-				ks.On("List", context.Background()).Return(nil, errors.New("list error"))
+				ks.On("List", context.Background()).Return(nil, errUnexpected)
 			},
 			errs: []error{gateway.ErrListCertIDs},
 		},
@@ -282,12 +284,12 @@ func TestService_UpdateCertID(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdateID", context.Background(), certID, certID2).Return(keystore.ErrReachedMaxRetries)
 			},
-			errs: []error{gateway.ErrRequestDiscarded},
+			errs: []error{gateway.ErrTXBlock},
 		},
 		{
 			name: "unknown update certificate id error",
 			setup: func(ks *mkeystore.Service) {
-				ks.On("UpdateID", context.Background(), certID, certID2).Return(errors.New("update certificate id error"))
+				ks.On("UpdateID", context.Background(), certID, certID2).Return(errUnexpected, errUnexpected)
 			},
 			errs: []error{gateway.ErrCertificateUpdateID},
 		},
@@ -350,12 +352,12 @@ func TestService_UpdateCertPassword(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(keystore.ErrReachedMaxRetries)
 			},
-			errs: []error{gateway.ErrRequestDiscarded},
+			errs: []error{gateway.ErrTXBlock},
 		},
 		{
 			name: "unknown update certificate password error",
 			setup: func(ks *mkeystore.Service) {
-				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(errors.New("update certificate password error"))
+				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrCertificateUpdatePassword},
 		},
@@ -409,7 +411,7 @@ func TestService_DeleteID(t *testing.T) {
 		{
 			name: "unknown certificate delete error",
 			setup: func(ks *mkeystore.Service) {
-				ks.On("Delete", context.Background(), certID).Return(errors.New("certificate delete error"))
+				ks.On("Delete", context.Background(), certID).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrCertificateDelete},
 		},

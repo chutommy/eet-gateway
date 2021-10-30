@@ -187,7 +187,7 @@ type GatewayErrResp struct {
 }
 
 func gatewayErrResp(err error) (int, *GatewayErrResp) {
-	c, e := http.StatusInternalServerError, ErrUnexpectedFailure
+	c, e := http.StatusInternalServerError, ErrUnexpected
 
 	switch {
 	case errors.Is(err, gateway.ErrCertificateNotFound):
@@ -222,8 +222,8 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusInternalServerError, gateway.ErrCertificateUpdatePassword
 	case errors.Is(err, gateway.ErrListCertIDs):
 		c, e = http.StatusInternalServerError, gateway.ErrListCertIDs
-	case errors.Is(err, gateway.ErrRequestDiscarded):
-		c, e = http.StatusInternalServerError, gateway.ErrRequestDiscarded
+	case errors.Is(err, gateway.ErrTXBlock):
+		c, e = http.StatusInternalServerError, gateway.ErrTXBlock
 	}
 
 	return c, &GatewayErrResp{GatewayError: e.Error()}

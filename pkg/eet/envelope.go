@@ -20,10 +20,10 @@ var ErrInvalidXMLDigest = errors.New("computed digest differs from the digest in
 var ErrInvalidSOAPMessage = errors.New("SOAP message with an unexpected structure")
 
 // ErrInvalidUUID is returned if the response UUID is different.
-var ErrInvalidUUID = errors.New("invalid response UUID")
+var ErrInvalidUUID = errors.New("invalid UUID format")
 
 // ErrInvalidBKP is returned if the response BKP code is different.
-var ErrInvalidBKP = errors.New("invalid response BKP")
+var ErrInvalidBKP = errors.New("incorrect response BKP")
 
 // NewRequestEnvelope returns a populated and signed SOAP request envelope.
 func NewRequestEnvelope(t *TrzbaType, cert *x509.Certificate, pk *rsa.PrivateKey) ([]byte, error) {

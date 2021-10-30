@@ -59,7 +59,7 @@ func recoverMiddleware(c *gin.Context) {
 				return
 			}
 
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"fatal_error": ErrUnexpectedFailure.Error()})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"fatal_error": ErrUnexpected.Error()})
 		}
 	}()
 

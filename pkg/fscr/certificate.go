@@ -15,13 +15,13 @@ import (
 var ErrInvalidOrganizationName = errors.New("invalid organization name")
 
 // ErrNotCACertificate is returned if a non-CA's certificate is provided when CA's certificate is being expected.
-var ErrNotCACertificate = errors.New("not a certificate authority's certificate")
+var ErrNotCACertificate = errors.New("not CA's certificate")
 
 // ErrInvalidKeyPair is returned if a certificate/private key keypair is invalid.
-var ErrInvalidKeyPair = errors.New("invalid certificate/private key keypair")
+var ErrInvalidKeyPair = errors.New("invalid certificate/private-key keypair")
 
 // ErrInvalidCertificate is returned if a certificate/private key is invalid.
-var ErrInvalidCertificate = errors.New("invalid certificate/private key")
+var ErrInvalidCertificate = errors.New("invalid certificate or private key")
 
 // ErrNotTrustedCertificate is returned if a certificate is issued or signed by an unknown authority
 // and can't be verified.

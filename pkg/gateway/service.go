@@ -19,7 +19,7 @@ var ErrCertificateNotFound = errors.New("taxpayer's certificate not found")
 var ErrIDAlreadyExists = errors.New("taxpayer's certificate with the ID already exists")
 
 // ErrCertificateParse is returned if a certificate can't be parsed.
-var ErrCertificateParse = errors.New("taxpayer's certificate not parsed")
+var ErrCertificateParse = errors.New("taxpayer's certificate not parsable")
 
 // ErrCertificateGet is returned if a certificate with the given ID can't be fetched.
 var ErrCertificateGet = errors.New("taxpayer's certificate not retrieved")
@@ -43,22 +43,22 @@ var ErrCertificateDelete = errors.New("taxpayer's certificate not deleted")
 var ErrInvalidCertificatePassword = errors.New("invalid password for the decryption of the taxpayer's certificate")
 
 // ErrRequestBuild is returned if a SOAP request envelope can't be built.
-var ErrRequestBuild = errors.New("request to FSCR not constructed")
+var ErrRequestBuild = errors.New("SOAP request to FSCR not completed")
 
 // ErrFSCRConnection is returned if an error occurs during the communication with the MFCR server.
-var ErrFSCRConnection = errors.New("FSCR connection error")
+var ErrFSCRConnection = errors.New("bad FSCR connection")
 
 // ErrFSCRResponseParse is returned if an error occurs during the MFCR SOAP response parsing.
-var ErrFSCRResponseParse = errors.New("FSCR response parse error")
+var ErrFSCRResponseParse = errors.New("invalid FSCR response structure")
 
 // ErrFSCRResponseVerify is returned if the response doesn't pass security checks and verifications.
-var ErrFSCRResponseVerify = errors.New("FSCR response not successfully verified")
+var ErrFSCRResponseVerify = errors.New("FSCR response not verified")
 
 // ErrInvalidTaxpayersCertificate is returned if an invalid certificate is given.
 var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate")
 
-// ErrRequestDiscarded is returned if the maximum number of transaction tries is reached.
-var ErrRequestDiscarded = errors.New("request discarded")
+// ErrTXBlock is returned if the maximum number of transaction tries is reached.
+var ErrTXBlock = errors.New("request discarded due to the transaction block")
 
 // ErrKeystoreUnavailable is returned if the keystore service can't be reached.
 var ErrKeystoreUnavailable = errors.New("keystore service unavailable")
@@ -103,7 +103,7 @@ func (g *service) SendSale(ctx context.Context, certID string, certPassword []by
 		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
 			return nil, multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return nil, multierr.Append(err, ErrRequestDiscarded)
+			return nil, multierr.Append(err, ErrTXBlock)
 		case errors.Is(err, io.EOF):
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
@@ -154,7 +154,7 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 		case errors.Is(err, keystore.ErrIDAlreadyExists):
 			return multierr.Append(err, ErrIDAlreadyExists)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return multierr.Append(err, ErrRequestDiscarded)
+			return multierr.Append(err, ErrTXBlock)
 		case errors.Is(err, syscall.ECONNREFUSED):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
@@ -189,7 +189,7 @@ func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 		case errors.Is(err, keystore.ErrIDAlreadyExists):
 			return multierr.Append(err, ErrIDAlreadyExists)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return multierr.Append(err, ErrRequestDiscarded)
+			return multierr.Append(err, ErrTXBlock)
 		case errors.Is(err, io.EOF):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
@@ -210,7 +210,7 @@ func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword
 		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
 			return multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return multierr.Append(err, ErrRequestDiscarded)
+			return multierr.Append(err, ErrTXBlock)
 		case errors.Is(err, io.EOF):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
