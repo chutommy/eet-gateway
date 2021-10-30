@@ -116,7 +116,7 @@ func parsePEMBlocks(blocks []*pem.Block) (cert *x509.Certificate, caCert *x509.C
 	return cert, caCert, pk, nil
 }
 
-// verifyEETCA verifies certificate used for issuing certificates of taxpayers.
+// verifyEETCA verifies a root certificate used for issuing taxpayers' certificates.
 func verifyEETCA(roots []*x509.Certificate, cert *x509.Certificate) error {
 	var ok bool
 	// iterate over stored CA's root certificates
