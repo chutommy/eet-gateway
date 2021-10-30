@@ -35,7 +35,8 @@ func TestCaService_VerifyDSig(t *testing.T) {
 	}
 
 	pool := x509.NewCertPool()
-	require.True(t, pool.AppendCertsFromPEM(ca.ICACertificate))
+	ok := pool.AppendCertsFromPEM(ca.ICACertificate)
+	require.True(t, ok)
 	eetCASvc := fscr.NewCAService(nil, pool)
 
 	for _, tc := range tests {
@@ -46,7 +47,8 @@ func TestCaService_VerifyDSig(t *testing.T) {
 
 			// load into etree
 			doc := etree.NewDocument()
-			require.NoError(t, doc.ReadFromBytes(resp))
+			err = doc.ReadFromBytes(resp)
+			require.NoError(t, err)
 
 			// retrieve binary security token
 			token := doc.FindElement("./Envelope/Header/Security/BinarySecurityToken")

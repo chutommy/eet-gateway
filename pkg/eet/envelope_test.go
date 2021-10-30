@@ -157,7 +157,8 @@ func TestParseAndVerifyResponse(t *testing.T) {
 	}
 
 	pool := x509.NewCertPool()
-	require.True(t, pool.AppendCertsFromPEM(ca.ICACertificate))
+	ok := pool.AppendCertsFromPEM(ca.ICACertificate)
+	require.True(t, ok)
 	eetCASvc := fscr.NewCAService(nil, pool)
 
 	for _, tc := range tests {
