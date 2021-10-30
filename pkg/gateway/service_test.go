@@ -8,7 +8,6 @@ import (
 	"github.com/chutommy/eetgateway/pkg/gateway"
 	mfscr "github.com/chutommy/eetgateway/pkg/mocks/fscr"
 	mkeystore "github.com/chutommy/eetgateway/pkg/mocks/keystore"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +21,7 @@ func TestService_Ping(t *testing.T) {
 			name: "ok",
 			setup: func(c *mfscr.Client, ks *mkeystore.Service) {
 				c.On("Ping").Return(nil)
-				ks.On("Ping", mock.AnythingOfType("*context.emptyCtx")).Return(nil)
+				ks.On("Ping", context.Background()).Return(nil)
 			},
 			errs: nil,
 		},
@@ -30,7 +29,7 @@ func TestService_Ping(t *testing.T) {
 			name: "bad fscr",
 			setup: func(c *mfscr.Client, ks *mkeystore.Service) {
 				c.On("Ping").Return(errors.New("ping failed"))
-				ks.On("Ping", mock.AnythingOfType("*context.emptyCtx")).Return(nil)
+				ks.On("Ping", context.Background()).Return(nil)
 			},
 			errs: []error{gateway.ErrFSCRConnection},
 		},
@@ -38,7 +37,7 @@ func TestService_Ping(t *testing.T) {
 			name: "bad keystore",
 			setup: func(c *mfscr.Client, ks *mkeystore.Service) {
 				c.On("Ping").Return(nil)
-				ks.On("Ping", mock.AnythingOfType("*context.emptyCtx")).Return(errors.New("ping failed"))
+				ks.On("Ping", context.Background()).Return(errors.New("ping failed"))
 			},
 			errs: []error{gateway.ErrKeystoreUnavailable},
 		},
@@ -46,7 +45,7 @@ func TestService_Ping(t *testing.T) {
 			name: "bad fscr and keystore",
 			setup: func(c *mfscr.Client, ks *mkeystore.Service) {
 				c.On("Ping").Return(errors.New("ping failed"))
-				ks.On("Ping", mock.AnythingOfType("*context.emptyCtx")).Return(errors.New("ping failed"))
+				ks.On("Ping", context.Background()).Return(errors.New("ping failed"))
 			},
 			errs: []error{gateway.ErrFSCRConnection, gateway.ErrKeystoreUnavailable},
 		},
