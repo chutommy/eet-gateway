@@ -73,7 +73,7 @@ func TestCalc(t *testing.T) {
 			calculatedDigestB64 := base64.StdEncoding.EncodeToString(calculatedDigest)
 			require.Equal(t, digestValElem.Text(), calculatedDigestB64)
 
-			// check signaturevalue
+			// check signature value
 			pk := parseTaxpayerCertificate(t, tc.pfxFile)
 			calculatedSignature, err := wsse.CalcSignature(pk, signedInfoElem)
 			require.NoError(t, err)
