@@ -200,6 +200,8 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusBadRequest, gateway.ErrInvalidTaxpayersCertificate
 	case errors.Is(err, gateway.ErrFSCRConnection):
 		c, e = http.StatusServiceUnavailable, gateway.ErrFSCRConnection
+	case errors.Is(err, gateway.ErrKeystoreUnavailable):
+		c, e = http.StatusServiceUnavailable, gateway.ErrKeystoreUnavailable
 	case errors.Is(err, gateway.ErrRequestBuild):
 		c, e = http.StatusInternalServerError, gateway.ErrRequestBuild
 	case errors.Is(err, gateway.ErrFSCRResponseParse):

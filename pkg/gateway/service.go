@@ -3,6 +3,8 @@ package gateway
 import (
 	"context"
 	"errors"
+	"io"
+	"syscall"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/fscr"
@@ -102,6 +104,8 @@ func (g *service) SendSale(ctx context.Context, certID string, certPassword []by
 			return nil, multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
 			return nil, multierr.Append(err, ErrRequestDiscarded)
+		case errors.Is(err, io.EOF):
+			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
 		return nil, multierr.Append(err, ErrCertificateGet)
@@ -151,6 +155,8 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 			return multierr.Append(err, ErrIDAlreadyExists)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
 			return multierr.Append(err, ErrRequestDiscarded)
+		case errors.Is(err, syscall.ECONNREFUSED):
+			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
 		return multierr.Append(err, ErrCertificateStore)
@@ -163,6 +169,10 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 func (g *service) ListCertIDs(ctx context.Context) ([]string, error) {
 	ids, err := g.keyStore.List(ctx)
 	if err != nil {
+		if errors.Is(err, syscall.ECONNREFUSED) {
+			return nil, multierr.Append(err, ErrKeystoreUnavailable)
+		}
+
 		return nil, multierr.Append(err, ErrListCertIDs)
 	}
 
@@ -180,6 +190,8 @@ func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 			return multierr.Append(err, ErrIDAlreadyExists)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
 			return multierr.Append(err, ErrRequestDiscarded)
+		case errors.Is(err, io.EOF):
+			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
 		return multierr.Append(err, ErrCertificateUpdateID)
@@ -199,6 +211,8 @@ func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword
 			return multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxRetries):
 			return multierr.Append(err, ErrRequestDiscarded)
+		case errors.Is(err, io.EOF):
+			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
 		return multierr.Append(err, ErrCertificateUpdatePassword)
@@ -211,8 +225,11 @@ func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword
 func (g *service) DeleteID(ctx context.Context, id string) error {
 	err := g.keyStore.Delete(ctx, id)
 	if err != nil {
-		if errors.Is(err, keystore.ErrRecordNotFound) {
+		switch {
+		case errors.Is(err, keystore.ErrRecordNotFound):
 			return multierr.Append(err, ErrCertificateNotFound)
+		case errors.Is(err, syscall.ECONNREFUSED):
+			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
 		return multierr.Append(err, ErrCertificateDelete)
