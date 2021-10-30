@@ -13,14 +13,14 @@ import (
 	"github.com/chutommy/eetgateway/pkg/wsse"
 )
 
-// ErrInvalidXMLDigest is returned if the referenced digest is invalid. Computed digest differs from the digest in the XML
+// ErrInvalidXMLDigest is returned if the referenced computed digest differs from the digest in the XML.
 var ErrInvalidXMLDigest = errors.New("computed digest differs from the digest in the XML")
 
-// ErrInvalidSOAPMessage is returned if an invalid or unexpected SOAP message structure is queried.
+// ErrInvalidSOAPMessage is returned if a SOAP message has an unexpected structure.
 var ErrInvalidSOAPMessage = errors.New("SOAP message with an unexpected structure")
 
-// ErrInvalidUUID is returned if the response UUID is different.
-var ErrInvalidUUID = errors.New("invalid UUID format")
+// ErrInvalidUUID is returned if the response UUID is different, or it has invalid format.
+var ErrInvalidUUID = errors.New("invalid UUID value or format")
 
 // ErrInvalidBKP is returned if the response BKP code is different.
 var ErrInvalidBKP = errors.New("incorrect response BKP")

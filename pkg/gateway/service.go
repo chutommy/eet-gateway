@@ -21,22 +21,22 @@ var ErrIDAlreadyExists = errors.New("taxpayer's certificate with the ID already 
 // ErrCertificateParse is returned if a certificate can't be parsed.
 var ErrCertificateParse = errors.New("taxpayer's certificate not parsable")
 
-// ErrInvalidCertificatePassword is returned if the given password can't open sealed certificate/private key.
+// ErrInvalidCertificatePassword is returned if the given password can't open sealed certificate and private key.
 var ErrInvalidCertificatePassword = errors.New("invalid password for the decryption of the taxpayer's certificate")
 
 // ErrRequestBuild is returned if a SOAP request envelope can't be built.
 var ErrRequestBuild = errors.New("SOAP request to FSCR not completed")
 
-// ErrFSCRConnection is returned if an error occurs during the communication with the MFCR server.
+// ErrFSCRConnection is returned if an error occurs during the communication with the FSCR servers.
 var ErrFSCRConnection = errors.New("bad FSCR connection")
 
-// ErrFSCRResponseParse is returned if an error occurs during the MFCR SOAP response parsing.
+// ErrFSCRResponseParse is returned if an error occurs during the FSCR SOAP response parsing.
 var ErrFSCRResponseParse = errors.New("invalid FSCR response structure")
 
 // ErrFSCRResponseVerify is returned if the response doesn't pass security checks and verifications.
 var ErrFSCRResponseVerify = errors.New("FSCR response not verified")
 
-// ErrInvalidTaxpayersCertificate is returned if an invalid certificate is given.
+// ErrInvalidTaxpayersCertificate is returned if an invalid taxpayer's certificate is given.
 var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate")
 
 // ErrTXBlock is returned if the maximum number of transaction tries is reached.

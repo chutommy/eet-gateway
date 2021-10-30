@@ -9,7 +9,7 @@ import (
 	"github.com/beevik/etree"
 )
 
-// DateTimeLayout is the chosen layout for the time and date data.
+// DateTimeLayout is the datetime layout of the EET system.
 const DateTimeLayout = "2006-01-02T15:04:05-07:00"
 
 // MarshalText encodes CastkaType value to the correct form with two decimal places included.

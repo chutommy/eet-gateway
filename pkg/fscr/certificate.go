@@ -11,20 +11,20 @@ import (
 	"golang.org/x/crypto/pkcs12"
 )
 
-// ErrInvalidOrganizationName is returned if the organization name is invalid.
+// ErrInvalidOrganizationName is returned if the organization name of a certificate is invalid.
 var ErrInvalidOrganizationName = errors.New("invalid organization name")
 
-// ErrNotCACertificate is returned if a non-CA's certificate is provided when CA's certificate is being expected.
+// ErrNotCACertificate is returned if a non-CA's certificate is provided where the one is being expected.
 var ErrNotCACertificate = errors.New("not CA's certificate")
 
-// ErrInvalidKeyPair is returned if a certificate/private key keypair is invalid.
+// ErrInvalidKeyPair is returned if a certificate/private-key keypair is invalid.
 var ErrInvalidKeyPair = errors.New("invalid certificate/private-key keypair")
 
-// ErrInvalidCertificate is returned if a certificate/private key is invalid.
+// ErrInvalidCertificate is returned if a given certificate or private key is invalid.
 var ErrInvalidCertificate = errors.New("invalid certificate or private key")
 
 // ErrNotTrustedCertificate is returned if a certificate is issued or signed by an unknown authority
-// and can't be verified.
+// and can't be trusted.
 var ErrNotTrustedCertificate = errors.New("certificate issued or signed by an unknown authority")
 
 // OrganizationName is the legal name that the organization is registered with authority at the national level.

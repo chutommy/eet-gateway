@@ -10,10 +10,10 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// ErrRecordNotFound is returned if the searched record can't be found.
+// ErrRecordNotFound is returned if a record can't be found.
 var ErrRecordNotFound = errors.New("record not found")
 
-// ErrIDAlreadyExists is returned if an ID conflict occurs.
+// ErrIDAlreadyExists is returned if an ID is already in use.
 var ErrIDAlreadyExists = errors.New("record with the ID already exists")
 
 // ErrReachedMaxRetries is returned if the maximum number of retries of transactions is reached.

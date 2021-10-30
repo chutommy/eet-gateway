@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// ErrUnexpected is returned if no error was expected but some did occur.
+// ErrUnexpected is returned if unexpected error is raised.
 var ErrUnexpected = errors.New("unexpected error")
 
 // Handler provides handling options for incoming requests.
