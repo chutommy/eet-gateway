@@ -1,13 +1,13 @@
 package main
 
-// WARNING: This file consists of dev snippets.
+// NOTE: This file consists of dev snippets.
 
 import (
-	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/ca"
@@ -17,12 +17,15 @@ import (
 	"github.com/chutommy/eetgateway/pkg/server"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
+	// logs
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
+	// CA service
 	eetCARoots, err := ca.PlaygroundRoots()
 	errCheck(err)
 
@@ -30,9 +33,10 @@ func main() {
 	if ok := dsigPool.AppendCertsFromPEM(ca.ICACertificate); !ok {
 		panic("failed to parse root certificate")
 	}
+
 	caSvc := fscr.NewCAService(eetCARoots, dsigPool)
 
-	// dep services
+	// FSCR client
 	certPool, err := x509.SystemCertPool()
 	errCheck(err)
 	c := &http.Client{
@@ -46,8 +50,8 @@ func main() {
 	}
 
 	client := fscr.NewClient(c, fscr.PlaygroundURL)
-	errCheck(err)
 
+	// keystore client
 	rdb := redis.NewClient(&redis.Options{
 		Network:      "tcp",
 		Addr:         "localhost:6379",
@@ -58,13 +62,12 @@ func main() {
 		TLSConfig:    nil,
 	})
 
-	err = rdb.Ping(context.Background()).Err()
-	errCheck(err)
-
 	ks := keystore.NewRedisService(rdb)
+
+	// EET gateway service
 	gSvc := gateway.NewService(client, caSvc, ks)
 
-	// server
+	// HTTP server
 	h := server.NewHandler(gSvc)
 	srv := server.NewService(&http.Server{
 		Addr:              ":8080",
@@ -76,6 +79,7 @@ func main() {
 		IdleTimeout:       time.Second * 100,
 		MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
 	})
+
 	fmt.Println(srv.ListenAndServe(10 * time.Second))
 }
 
