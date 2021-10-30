@@ -5,7 +5,9 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"io"
 	"math/big"
+	"syscall"
 	"testing"
 	"time"
 
@@ -19,15 +21,15 @@ const redisAddr = "127.0.0.1:6380"
 
 func newRedisSvc(t *testing.T) (keystore.Service, *miniredis.Miniredis) {
 	// start a redis test server
-	mr := miniredis.NewMiniRedis()
-	err := mr.StartAddr(redisAddr)
+	m := miniredis.NewMiniRedis()
+	err := m.StartAddr(redisAddr)
 	require.NoError(t, err)
 
 	ks := keystore.NewRedisService(redis.NewClient(&redis.Options{
-		Addr: mr.Addr(),
+		Addr: m.Addr(),
 	}))
 
-	return ks, mr
+	return ks, m
 }
 
 var defaultCertTmpl = &x509.Certificate{
@@ -62,225 +64,383 @@ func randomKeyPair() *keystore.KeyPair {
 }
 
 var (
-	certID       = "cert1"
-	certPassword = []byte("secret1")
-	certKP       = randomKeyPair()
+	certID        = "cert1"
+	certID2       = "cert2"
+	certPassword  = []byte("secret1")
+	certPassword2 = []byte("secret2")
+	certKP        = randomKeyPair()
 )
 
 func TestRedisService_Ping(t *testing.T) {
-	ks, mr := newRedisSvc(t)
-	defer mr.Close()
+	tests := []struct {
+		name  string
+		setup func(m *miniredis.Miniredis)
+		err   error
+	}{
+		{
+			name:  "ok",
+			setup: func(m *miniredis.Miniredis) {},
+			err:   nil,
+		},
+		{
+			name: "offline",
+			setup: func(m *miniredis.Miniredis) {
+				m.Close()
+			},
+			err: syscall.ECONNREFUSED,
+		},
+	}
 
-	t.Run("ok", func(t *testing.T) {
-		err := ks.Ping(context.Background())
-		require.NoError(t, err)
-	})
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ks, m := newRedisSvc(t)
+			defer m.Close()
 
-	mr.Close()
-	t.Run("redis offline", func(t *testing.T) {
-		err := ks.Ping(context.Background())
-		require.Error(t, err)
-	})
+			tc.setup(m)
+
+			err := ks.Ping(context.Background())
+			if tc.err == nil {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, tc.err)
+			}
+		})
+	}
 }
 
 func TestRedisService_Store(t *testing.T) {
-	ks, mr := newRedisSvc(t)
-	defer mr.Close()
+	tests := []struct {
+		name  string
+		setup func(m *miniredis.Miniredis)
+		err   error
+	}{
+		{
+			name:  "ok",
+			setup: func(m *miniredis.Miniredis) {},
+			err:   nil,
+		},
+		{
+			name: "id already used",
+			setup: func(m *miniredis.Miniredis) {
+				err := m.Set(certID, "")
+				require.NoError(t, err)
+			},
+			err: keystore.ErrIDAlreadyExists,
+		},
+		{
+			name: "redis offline",
+			setup: func(m *miniredis.Miniredis) {
+				m.Close()
+			},
+			err: syscall.ECONNREFUSED,
+		},
+	}
 
-	t.Run("ok", func(t *testing.T) {
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.NoError(t, err)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ks, m := newRedisSvc(t)
+			defer m.Close()
 
-		certVal := mr.HGet(certID, keystore.CertificateKey)
-		require.NotEmpty(t, certVal)
+			tc.setup(m)
 
-		pkVal := mr.HGet(certID, keystore.PrivateKeyKey)
-		require.NotEmpty(t, pkVal)
+			err := ks.Store(context.Background(), certID, certPassword, certKP)
+			if tc.err == nil {
+				require.NoError(t, err)
 
-		saltVal := mr.HGet(certID, keystore.SaltKey)
-		require.NotEmpty(t, saltVal)
-	})
+				certVal := m.HGet(certID, keystore.CertificateKey)
+				require.NotEmpty(t, certVal)
 
-	t.Run("id already used", func(t *testing.T) {
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.ErrorIs(t, err, keystore.ErrIDAlreadyExists)
-	})
+				pkVal := m.HGet(certID, keystore.PrivateKeyKey)
+				require.NotEmpty(t, pkVal)
 
-	mr.Close()
-	t.Run("redis offline", func(t *testing.T) {
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.Error(t, err)
-	})
+				saltVal := m.HGet(certID, keystore.SaltKey)
+				require.NotEmpty(t, saltVal)
+			} else {
+				require.ErrorIs(t, err, tc.err)
+			}
+		})
+	}
 }
 
 func TestRedisService_Get(t *testing.T) {
-	ks, mr := newRedisSvc(t)
-	defer mr.Close()
-
-	{
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.NoError(t, err)
+	tests := []struct {
+		name  string
+		setup func(m *miniredis.Miniredis)
+		err   error
+	}{
+		{
+			name:  "ok",
+			setup: func(m *miniredis.Miniredis) {},
+			err:   nil,
+		},
+		{
+			name: "id not found",
+			setup: func(m *miniredis.Miniredis) {
+				ok := m.Del(certID)
+				require.True(t, ok)
+			},
+			err: keystore.ErrRecordNotFound,
+		},
+		{
+			name: "incorrect password",
+			setup: func(m *miniredis.Miniredis) {
+				m.HSet(certID, keystore.PrivateKeyKey, "invalid")
+			},
+			err: keystore.ErrInvalidDecryptionKey,
+		},
+		{
+			name: "offline",
+			setup: func(m *miniredis.Miniredis) {
+				m.Close()
+			},
+			err: io.EOF,
+		},
 	}
 
-	t.Run("ok", func(t *testing.T) {
-		kp, err := ks.Get(context.Background(), certID, certPassword)
-		require.NoError(t, err)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ks, m := newRedisSvc(t)
+			defer m.Close()
 
-		equalKeyPairs(t, certKP, kp)
-	})
+			err := ks.Store(context.Background(), certID, certPassword, certKP)
+			require.NoError(t, err)
 
-	t.Run("id not found", func(t *testing.T) {
-		_, err := ks.Get(context.Background(), "invalid_id", certPassword)
-		require.ErrorIs(t, err, keystore.ErrRecordNotFound)
-	})
+			tc.setup(m)
 
-	t.Run("incorrect password", func(t *testing.T) {
-		_, err := ks.Get(context.Background(), certID, []byte{})
-		require.ErrorIs(t, err, keystore.ErrInvalidDecryptionKey)
-	})
-
-	mr.Close()
-	t.Run("redis offline", func(t *testing.T) {
-		_, err := ks.Get(context.Background(), certID, certPassword)
-		require.Error(t, err)
-	})
+			kp, err := ks.Get(context.Background(), certID, certPassword)
+			if tc.err == nil {
+				require.NoError(t, err)
+				equalKeyPairs(t, certKP, kp)
+			} else {
+				require.ErrorIs(t, err, tc.err)
+			}
+		})
+	}
 }
 
 func TestRedisService_List(t *testing.T) {
-	ks, mr := newRedisSvc(t)
-	defer mr.Close()
-
-	{
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.NoError(t, err)
+	tests := []struct {
+		name  string
+		setup func(m *miniredis.Miniredis)
+		err   error
+	}{
+		{
+			name:  "ok",
+			setup: func(m *miniredis.Miniredis) {},
+			err:   nil,
+		},
+		{
+			name: "offline",
+			setup: func(m *miniredis.Miniredis) {
+				m.Close()
+			},
+			err: syscall.ECONNREFUSED,
+		},
 	}
 
-	t.Run("ok", func(t *testing.T) {
-		ids, err := ks.List(context.Background())
-		require.NoError(t, err)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ks, m := newRedisSvc(t)
+			defer m.Close()
 
-		require.Len(t, ids, 1)
-		require.Equal(t, certID, ids[0])
-	})
+			err := ks.Store(context.Background(), certID, certPassword, certKP)
+			require.NoError(t, err)
 
-	mr.Close()
-	t.Run("redis offline", func(t *testing.T) {
-		_, err := ks.List(context.Background())
-		require.Error(t, err)
-	})
+			tc.setup(m)
+
+			ids, err := ks.List(context.Background())
+			if tc.err == nil {
+				require.NoError(t, err)
+
+				require.Len(t, ids, 1)
+				require.Equal(t, certID, ids[0])
+			} else {
+				require.ErrorIs(t, err, tc.err)
+			}
+		})
+	}
 }
 
 func TestRedisService_UpdateID(t *testing.T) {
-	ks, mr := newRedisSvc(t)
-	defer mr.Close()
-
-	{
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.NoError(t, err)
+	tests := []struct {
+		name  string
+		setup func(m *miniredis.Miniredis)
+		err   error
+	}{
+		{
+			name:  "ok",
+			setup: func(m *miniredis.Miniredis) {},
+			err:   nil,
+		},
+		{
+			name: "id not found",
+			setup: func(m *miniredis.Miniredis) {
+				ok := m.Del(certID)
+				require.True(t, ok)
+			},
+			err: keystore.ErrRecordNotFound,
+		},
+		{
+			name: "id already used",
+			setup: func(m *miniredis.Miniredis) {
+				err := m.Set(certID2, "")
+				require.NoError(t, err)
+			},
+			err: keystore.ErrIDAlreadyExists,
+		},
+		{
+			name: "id not found",
+			setup: func(m *miniredis.Miniredis) {
+				ok := m.Del(certID)
+				require.True(t, ok)
+			},
+			err: keystore.ErrRecordNotFound,
+		},
+		{
+			name: "offline",
+			setup: func(m *miniredis.Miniredis) {
+				m.Close()
+			},
+			err: io.EOF,
+		},
 	}
 
-	newCertID := "cert2"
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ks, m := newRedisSvc(t)
+			defer m.Close()
 
-	t.Run("ok", func(t *testing.T) {
-		err := ks.UpdateID(context.Background(), certID, newCertID)
-		require.NoError(t, err)
+			err := ks.Store(context.Background(), certID, certPassword, certKP)
+			require.NoError(t, err)
 
-		// verify the certificate
-		kp, err := ks.Get(context.Background(), newCertID, certPassword)
-		require.NoError(t, err)
-		equalKeyPairs(t, certKP, kp)
+			tc.setup(m)
 
-		// return the certificate ID back to the default
-		err = ks.UpdateID(context.Background(), newCertID, certID)
-		require.NoError(t, err)
-	})
+			err = ks.UpdateID(context.Background(), certID, certID2)
+			if tc.err == nil {
+				require.NoError(t, err)
 
-	t.Run("id not found", func(t *testing.T) {
-		err := ks.UpdateID(context.Background(), "invalid_id", newCertID)
-		require.ErrorIs(t, err, keystore.ErrRecordNotFound)
-	})
+				// verify the certificate
+				kp, err := ks.Get(context.Background(), certID2, certPassword)
+				require.NoError(t, err)
 
-	t.Run("id already used", func(t *testing.T) {
-		err := ks.UpdateID(context.Background(), certID, certID)
-		require.ErrorIs(t, err, keystore.ErrIDAlreadyExists)
-	})
-
-	mr.Close()
-	t.Run("redis offline", func(t *testing.T) {
-		err := ks.UpdateID(context.Background(), certID, newCertID)
-		require.Error(t, err)
-	})
+				equalKeyPairs(t, certKP, kp)
+			} else {
+				require.ErrorIs(t, err, tc.err)
+			}
+		})
+	}
 }
 
 func TestRedisService_UpdatePassword(t *testing.T) {
-	ks, mr := newRedisSvc(t)
-	defer mr.Close()
-
-	{
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.NoError(t, err)
+	tests := []struct {
+		name  string
+		setup func(m *miniredis.Miniredis)
+		err   error
+	}{
+		{
+			name:  "ok",
+			setup: func(m *miniredis.Miniredis) {},
+			err:   nil,
+		},
+		{
+			name: "id not found",
+			setup: func(m *miniredis.Miniredis) {
+				ok := m.Del(certID)
+				require.True(t, ok)
+			},
+			err: keystore.ErrRecordNotFound,
+		},
+		{
+			name: "incorrect password",
+			setup: func(m *miniredis.Miniredis) {
+				m.HSet(certID, keystore.PrivateKeyKey, "invalid")
+			},
+			err: keystore.ErrInvalidDecryptionKey,
+		},
+		{
+			name: "offline",
+			setup: func(m *miniredis.Miniredis) {
+				m.Close()
+			},
+			err: io.EOF,
+		},
 	}
 
-	newCertPassword := []byte("secret2")
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ks, m := newRedisSvc(t)
+			defer m.Close()
 
-	t.Run("ok", func(t *testing.T) {
-		err := ks.UpdatePassword(context.Background(), certID, certPassword, newCertPassword)
-		require.NoError(t, err)
+			err := ks.Store(context.Background(), certID, certPassword, certKP)
+			require.NoError(t, err)
 
-		// verify the certificate
-		kp, err := ks.Get(context.Background(), certID, newCertPassword)
-		require.NoError(t, err)
-		equalKeyPairs(t, certKP, kp)
+			tc.setup(m)
 
-		// return the certificate password back to the default
-		err = ks.UpdatePassword(context.Background(), certID, newCertPassword, certPassword)
-		require.NoError(t, err)
-	})
+			err = ks.UpdatePassword(context.Background(), certID, certPassword, certPassword2)
+			if tc.err == nil {
+				require.NoError(t, err)
 
-	t.Run("id not found", func(t *testing.T) {
-		err := ks.UpdatePassword(context.Background(), "invalid_id", certPassword, newCertPassword)
-		require.ErrorIs(t, err, keystore.ErrRecordNotFound)
-	})
+				// verify the certificate
+				kp, err := ks.Get(context.Background(), certID, certPassword2)
+				require.NoError(t, err)
 
-	t.Run("incorrect password", func(t *testing.T) {
-		err := ks.UpdatePassword(context.Background(), certID, []byte{}, newCertPassword)
-		require.ErrorIs(t, err, keystore.ErrInvalidDecryptionKey)
-	})
-
-	mr.Close()
-	t.Run("redis offline", func(t *testing.T) {
-		err := ks.UpdatePassword(context.Background(), certID, certPassword, newCertPassword)
-		require.Error(t, err)
-	})
+				equalKeyPairs(t, certKP, kp)
+			} else {
+				require.ErrorIs(t, err, tc.err)
+			}
+		})
+	}
 }
 
 func TestRedisService_Delete(t *testing.T) {
-	ks, mr := newRedisSvc(t)
-	defer mr.Close()
-
-	{
-		err := ks.Store(context.Background(), certID, certPassword, certKP)
-		require.NoError(t, err)
+	tests := []struct {
+		name  string
+		setup func(m *miniredis.Miniredis)
+		err   error
+	}{
+		{
+			name:  "ok",
+			setup: func(m *miniredis.Miniredis) {},
+			err:   nil,
+		},
+		{
+			name: "id not found",
+			setup: func(m *miniredis.Miniredis) {
+				ok := m.Del(certID)
+				require.True(t, ok)
+			},
+			err: keystore.ErrRecordNotFound,
+		},
+		{
+			name: "offline",
+			setup: func(m *miniredis.Miniredis) {
+				m.Close()
+			},
+			err: syscall.ECONNREFUSED,
+		},
 	}
 
-	t.Run("ok", func(t *testing.T) {
-		err := ks.Delete(context.Background(), certID)
-		require.NoError(t, err)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ks, m := newRedisSvc(t)
+			defer m.Close()
 
-		exists := mr.Exists(certID)
-		require.False(t, exists)
-	})
+			err := ks.Store(context.Background(), certID, certPassword, certKP)
+			require.NoError(t, err)
 
-	t.Run("id not found", func(t *testing.T) {
-		err := ks.Delete(context.Background(), certID)
-		require.ErrorIs(t, err, keystore.ErrRecordNotFound)
-	})
+			tc.setup(m)
 
-	mr.Close()
-	t.Run("redis offline", func(t *testing.T) {
-		err := ks.Delete(context.Background(), certID)
-		require.Error(t, err)
-	})
+			err = ks.Delete(context.Background(), certID)
+			if tc.err == nil {
+				require.NoError(t, err)
+
+				exists := m.Exists(certID)
+				require.False(t, exists)
+			} else {
+				require.ErrorIs(t, err, tc.err)
+			}
+		})
+	}
 }
 
 func equalKeyPairs(t *testing.T, exp, act *keystore.KeyPair) {
