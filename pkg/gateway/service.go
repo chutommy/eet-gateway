@@ -22,8 +22,8 @@ var ErrCertificateParse = errors.New("taxpayer's certificate not parsed")
 // ErrCertificateGet is returned if a certificate with the given ID can't be fetched.
 var ErrCertificateGet = errors.New("taxpayer's certificate not retrieved")
 
-// ErrCertIDsList is returned if certificate IDs can't be retrieved.
-var ErrCertIDsList = errors.New("list of certificate IDs not retrieved")
+// ErrListCertIDs is returned if certificate IDs can't be retrieved.
+var ErrListCertIDs = errors.New("list of certificate IDs not retrieved")
 
 // ErrCertificateStore is returned if a certificate can't be stored.
 var ErrCertificateStore = errors.New("taxpayer's certificate not stored")
@@ -163,7 +163,7 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 func (g *service) ListCertIDs(ctx context.Context) ([]string, error) {
 	ids, err := g.keyStore.List(ctx)
 	if err != nil {
-		return nil, multierr.Append(err, ErrCertIDsList)
+		return nil, multierr.Append(err, ErrListCertIDs)
 	}
 
 	return ids, nil

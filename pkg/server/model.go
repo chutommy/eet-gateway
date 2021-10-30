@@ -218,8 +218,8 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusInternalServerError, gateway.ErrCertificateUpdateID
 	case errors.Is(err, gateway.ErrCertificateUpdatePassword):
 		c, e = http.StatusInternalServerError, gateway.ErrCertificateUpdatePassword
-	case errors.Is(err, gateway.ErrCertIDsList):
-		c, e = http.StatusInternalServerError, gateway.ErrCertIDsList
+	case errors.Is(err, gateway.ErrListCertIDs):
+		c, e = http.StatusInternalServerError, gateway.ErrListCertIDs
 	case errors.Is(err, gateway.ErrRequestDiscarded):
 		c, e = http.StatusInternalServerError, gateway.ErrRequestDiscarded
 	}
