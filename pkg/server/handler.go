@@ -41,7 +41,6 @@ func (h *handler) ginEngine() *gin.Engine {
 	setValidators()
 	r.Use(loggingMiddleware)
 	r.Use(recoverMiddleware)
-	// r.Use(gin.Recovery(), gin.Logger(), gin.ErrorLogger())
 
 	v1 := r.Group("/v1")
 	{
@@ -64,11 +63,13 @@ func (h *handler) pingEET(c *gin.Context) {
 	var taxAdmin error
 	if errors.Is(err, gateway.ErrFSCRConnection) {
 		taxAdmin = gateway.ErrFSCRConnection
+		_ = c.Error(gateway.ErrFSCRConnection)
 	}
 
 	var keyStore error
 	if errors.Is(err, gateway.ErrKeystoreUnavailable) {
 		keyStore = gateway.ErrKeystoreUnavailable
+		_ = c.Error(gateway.ErrKeystoreUnavailable)
 	}
 
 	code, resp := pingEETResp(taxAdmin, keyStore)
@@ -90,6 +91,7 @@ func (h *handler) sendSale(c *gin.Context) {
 	// bind to default
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		_ = c.Error(err)
 		return
 	}
 
@@ -97,6 +99,7 @@ func (h *handler) sendSale(c *gin.Context) {
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
+		_ = c.Error(err)
 		return
 	}
 
@@ -111,6 +114,7 @@ func (h *handler) storeCert(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		_ = c.Error(err)
 		return
 	}
 
@@ -118,6 +122,7 @@ func (h *handler) storeCert(c *gin.Context) {
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
+		_ = c.Error(err)
 		return
 	}
 
@@ -129,6 +134,7 @@ func (h *handler) listCertIDs(c *gin.Context) {
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
+		_ = c.Error(err)
 		return
 	}
 
@@ -140,6 +146,7 @@ func (h *handler) updateCertID(c *gin.Context) {
 	req := &UpdateCertIDReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		_ = c.Error(err)
 		return
 	}
 
@@ -147,6 +154,7 @@ func (h *handler) updateCertID(c *gin.Context) {
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
+		_ = c.Error(err)
 		return
 	}
 
@@ -158,6 +166,7 @@ func (h *handler) UpdateCertPassword(c *gin.Context) {
 	req := &UpdateCertPasswordReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		_ = c.Error(err)
 		return
 	}
 
@@ -165,6 +174,7 @@ func (h *handler) UpdateCertPassword(c *gin.Context) {
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
+		_ = c.Error(err)
 		return
 	}
 
@@ -176,6 +186,7 @@ func (h *handler) deleteCert(c *gin.Context) {
 	req := &DeleteCertReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		_ = c.Error(err)
 		return
 	}
 
@@ -183,6 +194,7 @@ func (h *handler) deleteCert(c *gin.Context) {
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
+		_ = c.Error(err)
 		return
 	}
 
