@@ -126,7 +126,7 @@ func TestService_Ping(t *testing.T) {
 func TestService_StoreCert(t *testing.T) {
 	tests := []struct {
 		name  string
-		setup func(ca *mfscr.CAService, ks *mkeystore.Service)
+		setup func(cas *mfscr.CAService, ks *mkeystore.Service)
 		errs  []error
 	}{
 		{
