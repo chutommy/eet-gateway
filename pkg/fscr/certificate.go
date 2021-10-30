@@ -17,8 +17,8 @@ var ErrInvalidOrganizationName = errors.New("invalid organization name")
 // ErrNotCACertificate is returned if a non-CA's certificate is provided where the one is being expected.
 var ErrNotCACertificate = errors.New("not CA's certificate")
 
-// ErrInvalidKeyPair is returned if a certificate/private-key keypair is invalid.
-var ErrInvalidKeyPair = errors.New("invalid certificate/private-key keypair")
+// ErrInvalidKeyPair is returned if a certificate/private-key KeyPair is invalid.
+var ErrInvalidKeyPair = errors.New("invalid certificate/private-key KeyPair")
 
 // ErrInvalidCertificate is returned if a given certificate or private key is invalid.
 var ErrInvalidCertificate = errors.New("invalid certificate or private key")
@@ -73,7 +73,7 @@ func (c *caService) VerifyDSig(cert *x509.Certificate) error {
 // ParseTaxpayerCertificate takes a raw data of a PFX file and decodes it into PEM blocks.
 // Blocks are expected to be in this order: taxpayer's certificate, certificate authority's certificate
 // and private key. CA's certificate is used to verify taxpayer's certificate. The taxpayer's certificate
-// and the private key must be a valid keypair.
+// and the private key must be a valid KeyPair.
 func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	blocks, err := pkcs12.ToPEM(data, password)
 	if err != nil {
@@ -144,7 +144,7 @@ func verifyKeys(caCert *x509.Certificate, cert *x509.Certificate, pk *rsa.Privat
 	}
 
 	if !pk.PublicKey.Equal(cert.PublicKey) {
-		return fmt.Errorf("the keypair of the taxpayer's private key and the certificate is not valid: %w", ErrInvalidKeyPair)
+		return fmt.Errorf("the KeyPair of the taxpayer's private key and the certificate is not valid: %w", ErrInvalidKeyPair)
 	}
 
 	return nil

@@ -48,7 +48,7 @@ func (r *redisService) Ping(ctx context.Context) error {
 	return r.rdb.Ping(ctx).Err()
 }
 
-// Store stores the given Keypair kp in the database encrypted with the password.
+// Store stores the given KeyPair kp in the database encrypted with the password.
 func (r *redisService) Store(ctx context.Context, id string, password []byte, kp *KeyPair) error {
 	// generate random salt for each record
 	salt := make([]byte, 256)
@@ -58,7 +58,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 
 	cert, pk, err := kp.encrypt(password, salt)
 	if err != nil {
-		return fmt.Errorf("encrypt a keypair: %w", err)
+		return fmt.Errorf("encrypt a KeyPair: %w", err)
 	}
 
 	txf := func(tx *redis.Tx) error {
@@ -102,7 +102,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 	return ErrReachedMaxAttempts
 }
 
-// Get retrieves a Keypair by the ID.
+// Get retrieves a KeyPair by the ID.
 func (r *redisService) Get(ctx context.Context, id string, password []byte) (*KeyPair, error) {
 	m := make(map[string]string)
 	txf := func(tx *redis.Tx) error {
@@ -140,7 +140,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 		kp := new(KeyPair)
 		err = kp.decrypt(password, salt, cert, pk)
 		if err != nil {
-			return nil, fmt.Errorf("decrypt a keypair: %w", err)
+			return nil, fmt.Errorf("decrypt a KeyPair: %w", err)
 		}
 
 		return kp, nil
@@ -229,13 +229,13 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		kp := new(KeyPair)
 		err = kp.decrypt(oldPassword, salt, cert, pk)
 		if err != nil {
-			return fmt.Errorf("decrypt a keypair: %w", err)
+			return fmt.Errorf("decrypt a KeyPair: %w", err)
 		}
 
-		// encrypt Keypair with the new password
+		// encrypt KeyPair with the new password
 		cert, pk, err = kp.encrypt(newPassword, salt)
 		if err != nil {
-			return fmt.Errorf("encrypt a keypair: %w", err)
+			return fmt.Errorf("encrypt a KeyPair: %w", err)
 		}
 
 		// set
@@ -268,7 +268,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 	return ErrReachedMaxAttempts
 }
 
-// Delete removes the Keypair with the ID.
+// Delete removes the KeyPair with the ID.
 func (r *redisService) Delete(ctx context.Context, id string) error {
 	i, err := r.rdb.Del(ctx, id).Result()
 	if err != nil {
