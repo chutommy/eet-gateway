@@ -142,18 +142,14 @@ func TestService_StoreCert(t *testing.T) {
 			setup: func(cas *mfscr.CAService, ks *mkeystore.Service) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(nil, nil, fscr.ErrInvalidCertificate)
 			},
-			errs: []error{
-				gateway.ErrInvalidTaxpayersCertificate,
-			},
+			errs: []error{gateway.ErrInvalidTaxpayersCertificate},
 		},
 		{
 			name: "unknown certificate parse error",
 			setup: func(cas *mfscr.CAService, ks *mkeystore.Service) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(nil, nil, errors.New("parse error"))
 			},
-			errs: []error{
-				gateway.ErrCertificateParse,
-			},
+			errs: []error{gateway.ErrCertificateParse},
 		},
 		{
 			name: "id already exists",
@@ -161,9 +157,7 @@ func TestService_StoreCert(t *testing.T) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
 				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(keystore.ErrIDAlreadyExists)
 			},
-			errs: []error{
-				gateway.ErrIDAlreadyExists,
-			},
+			errs: []error{gateway.ErrIDAlreadyExists},
 		},
 		{
 			name: "max tries of db transactions",
@@ -171,9 +165,7 @@ func TestService_StoreCert(t *testing.T) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
 				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(keystore.ErrReachedMaxRetries)
 			},
-			errs: []error{
-				gateway.ErrRequestDiscarded,
-			},
+			errs: []error{gateway.ErrRequestDiscarded},
 		},
 		{
 			name: "unknown certificate store error",
@@ -181,9 +173,7 @@ func TestService_StoreCert(t *testing.T) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
 				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(errors.New("store error"))
 			},
-			errs: []error{
-				gateway.ErrCertificateStore,
-			},
+			errs: []error{gateway.ErrCertificateStore},
 		},
 	}
 
@@ -230,9 +220,7 @@ func TestService_ListCertIDs(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("List", context.Background()).Return(nil, errors.New("list error"))
 			},
-			errs: []error{
-				gateway.ErrListCertIDs,
-			},
+			errs: []error{gateway.ErrListCertIDs},
 		},
 	}
 
@@ -280,36 +268,28 @@ func TestService_UpdateCertID(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdateID", context.Background(), certID, certID2).Return(keystore.ErrRecordNotFound)
 			},
-			errs: []error{
-				gateway.ErrCertificateNotFound,
-			},
+			errs: []error{gateway.ErrCertificateNotFound},
 		},
 		{
 			name: "certificate id already exists",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdateID", context.Background(), certID, certID2).Return(keystore.ErrIDAlreadyExists)
 			},
-			errs: []error{
-				gateway.ErrIDAlreadyExists,
-			},
+			errs: []error{gateway.ErrIDAlreadyExists},
 		},
 		{
 			name: "max tries of db transactions",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdateID", context.Background(), certID, certID2).Return(keystore.ErrReachedMaxRetries)
 			},
-			errs: []error{
-				gateway.ErrRequestDiscarded,
-			},
+			errs: []error{gateway.ErrRequestDiscarded},
 		},
 		{
 			name: "unknown update certificate id error",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdateID", context.Background(), certID, certID2).Return(errors.New("update certificate id error"))
 			},
-			errs: []error{
-				gateway.ErrCertificateUpdateID,
-			},
+			errs: []error{gateway.ErrCertificateUpdateID},
 		},
 	}
 
@@ -356,36 +336,28 @@ func TestService_UpdateCertPassword(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(keystore.ErrRecordNotFound)
 			},
-			errs: []error{
-				gateway.ErrCertificateNotFound,
-			},
+			errs: []error{gateway.ErrCertificateNotFound},
 		},
 		{
 			name: "invalid certificate password",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(keystore.ErrInvalidDecryptionKey)
 			},
-			errs: []error{
-				gateway.ErrInvalidCertificatePassword,
-			},
+			errs: []error{gateway.ErrInvalidCertificatePassword},
 		},
 		{
 			name: "max tries of db transactions",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(keystore.ErrReachedMaxRetries)
 			},
-			errs: []error{
-				gateway.ErrRequestDiscarded,
-			},
+			errs: []error{gateway.ErrRequestDiscarded},
 		},
 		{
 			name: "unknown update certificate password error",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(errors.New("update certificate password error"))
 			},
-			errs: []error{
-				gateway.ErrCertificateUpdatePassword,
-			},
+			errs: []error{gateway.ErrCertificateUpdatePassword},
 		},
 	}
 
@@ -432,18 +404,14 @@ func TestService_DeleteID(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("Delete", context.Background(), certID).Return(keystore.ErrRecordNotFound)
 			},
-			errs: []error{
-				gateway.ErrCertificateNotFound,
-			},
+			errs: []error{gateway.ErrCertificateNotFound},
 		},
 		{
 			name: "unknown certificate delete error",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("Delete", context.Background(), certID).Return(errors.New("certificate delete error"))
 			},
-			errs: []error{
-				gateway.ErrCertificateDelete,
-			},
+			errs: []error{gateway.ErrCertificateDelete},
 		},
 	}
 
