@@ -16,9 +16,7 @@ const ProductionURL = "https://prod.eet.cz/eet/services/EETServiceSOAP/v3"
 // PlaygroundURL is the URL of the playground EET system.
 const PlaygroundURL = "https://pg.eet.cz/eet/services/EETServiceSOAP/v3"
 
-const (
-	soapAction = "http://fs.mfcr.cz/eet/OdeslaniTrzby"
-)
+const soapAction = "http://fs.mfcr.cz/eet/OdeslaniTrzby"
 
 // Client represents a client that can communicate with the EET server.
 type Client interface {
