@@ -157,7 +157,7 @@ func TestParseAndVerifyResponse(t *testing.T) {
 	}
 
 	pool := x509.NewCertPool()
-	require.True(t, pool.AppendCertsFromPEM(ca.ICACertificate), "valid PEM SSL certificate")
+	require.True(t, pool.AppendCertsFromPEM(ca.ICACertificate))
 	eetCASvc := fscr.NewCAService(nil, pool)
 
 	for _, tc := range tests {
@@ -184,10 +184,10 @@ func TestParseAndVerifyResponse(t *testing.T) {
 			}
 
 			if tc.expErr == nil {
-				require.NoError(t, err, "valid test case")
-				require.NotEmpty(t, odp, "valid response OdpovedType")
+				require.NoError(t, err)
+				require.NotEmpty(t, odp)
 			} else {
-				require.ErrorIs(t, err, tc.expErr, "invalid test case")
+				require.ErrorIs(t, err, tc.expErr)
 			}
 		})
 	}
