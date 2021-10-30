@@ -212,8 +212,8 @@ func gatewayErrResp(err error) (int, *GatewayErrResp) {
 		c, e = http.StatusInternalServerError, gateway.ErrCertificateParse
 	case errors.Is(err, gateway.ErrKeystoreUnexpected):
 		c, e = http.StatusInternalServerError, gateway.ErrKeystoreUnexpected
-	case errors.Is(err, gateway.ErrTXBlock):
-		c, e = http.StatusInternalServerError, gateway.ErrTXBlock
+	case errors.Is(err, gateway.ErrMaxTXAttempts):
+		c, e = http.StatusInternalServerError, gateway.ErrMaxTXAttempts
 	}
 
 	return c, &GatewayErrResp{GatewayError: e.Error()}

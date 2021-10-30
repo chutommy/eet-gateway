@@ -39,8 +39,8 @@ var ErrFSCRResponseVerify = errors.New("FSCR response not verified")
 // ErrInvalidTaxpayersCertificate is returned if an invalid taxpayer's certificate is given.
 var ErrInvalidTaxpayersCertificate = errors.New("invalid taxpayer's certificate")
 
-// ErrTXBlock is returned if the maximum number of transaction tries is reached.
-var ErrTXBlock = errors.New("request discarded due to the transaction block")
+// ErrMaxTXAttempts is returned if the maximum number of transaction attempts is reached.
+var ErrMaxTXAttempts = errors.New("request discarded caused by maximum transaction attempts")
 
 // ErrKeystoreUnavailable is returned if the keystore service can't be reached.
 var ErrKeystoreUnavailable = errors.New("keystore service unavailable")
@@ -87,8 +87,8 @@ func (g *service) SendSale(ctx context.Context, certID string, certPassword []by
 			return nil, multierr.Append(err, ErrCertificateNotFound)
 		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
 			return nil, multierr.Append(err, ErrInvalidCertificatePassword)
-		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return nil, multierr.Append(err, ErrTXBlock)
+		case errors.Is(err, keystore.ErrReachedMaxAttempts):
+			return nil, multierr.Append(err, ErrMaxTXAttempts)
 		case errors.Is(err, io.EOF):
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
@@ -138,8 +138,8 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 		switch {
 		case errors.Is(err, keystore.ErrIDAlreadyExists):
 			return multierr.Append(err, ErrIDAlreadyExists)
-		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return multierr.Append(err, ErrTXBlock)
+		case errors.Is(err, keystore.ErrReachedMaxAttempts):
+			return multierr.Append(err, ErrMaxTXAttempts)
 		case errors.Is(err, syscall.ECONNREFUSED):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
@@ -173,8 +173,8 @@ func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 			return multierr.Append(err, ErrCertificateNotFound)
 		case errors.Is(err, keystore.ErrIDAlreadyExists):
 			return multierr.Append(err, ErrIDAlreadyExists)
-		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return multierr.Append(err, ErrTXBlock)
+		case errors.Is(err, keystore.ErrReachedMaxAttempts):
+			return multierr.Append(err, ErrMaxTXAttempts)
 		case errors.Is(err, io.EOF):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
@@ -194,8 +194,8 @@ func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword
 			return multierr.Append(err, ErrCertificateNotFound)
 		case errors.Is(err, keystore.ErrInvalidDecryptionKey):
 			return multierr.Append(err, ErrInvalidCertificatePassword)
-		case errors.Is(err, keystore.ErrReachedMaxRetries):
-			return multierr.Append(err, ErrTXBlock)
+		case errors.Is(err, keystore.ErrReachedMaxAttempts):
+			return multierr.Append(err, ErrMaxTXAttempts)
 		case errors.Is(err, io.EOF):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}

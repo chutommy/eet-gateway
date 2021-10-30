@@ -16,8 +16,8 @@ var ErrRecordNotFound = errors.New("record not found")
 // ErrIDAlreadyExists is returned if an ID is already in use.
 var ErrIDAlreadyExists = errors.New("record with the ID already exists")
 
-// ErrReachedMaxRetries is returned if the maximum number of retries of transactions is reached.
-var ErrReachedMaxRetries = errors.New("maximum number of retries reached")
+// ErrReachedMaxAttempts is returned if the maximum number of attempts of transactions is reached.
+var ErrReachedMaxAttempts = errors.New("maximum number of attempts reached")
 
 var (
 	// CertificateKey is the redis key of the certificate field.
@@ -99,7 +99,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 		return nil
 	}
 
-	return ErrReachedMaxRetries
+	return ErrReachedMaxAttempts
 }
 
 // Get retrieves a Keypair by the id.
@@ -146,7 +146,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 		return kp, nil
 	}
 
-	return nil, ErrReachedMaxRetries
+	return nil, ErrReachedMaxAttempts
 }
 
 // List returns all record keys in the database.
@@ -199,7 +199,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 		return nil
 	}
 
-	return ErrReachedMaxRetries
+	return ErrReachedMaxAttempts
 }
 
 // UpdatePassword modifies the password for encryption/decryption of the record.
@@ -265,7 +265,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		return nil
 	}
 
-	return ErrReachedMaxRetries
+	return ErrReachedMaxAttempts
 }
 
 // Delete removes the Keypair with the id.

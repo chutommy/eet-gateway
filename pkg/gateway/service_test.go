@@ -165,9 +165,9 @@ func TestService_StoreCert(t *testing.T) {
 			name: "max tries of db transactions",
 			setup: func(cas *mfscr.CAService, ks *mkeystore.Service) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
-				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(keystore.ErrReachedMaxRetries)
+				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(keystore.ErrReachedMaxAttempts)
 			},
-			errs: []error{gateway.ErrTXBlock},
+			errs: []error{gateway.ErrMaxTXAttempts},
 		},
 		{
 			name: "unknown certificate store error",
@@ -282,9 +282,9 @@ func TestService_UpdateCertID(t *testing.T) {
 		{
 			name: "max tries of db transactions",
 			setup: func(ks *mkeystore.Service) {
-				ks.On("UpdateID", context.Background(), certID, certID2).Return(keystore.ErrReachedMaxRetries)
+				ks.On("UpdateID", context.Background(), certID, certID2).Return(keystore.ErrReachedMaxAttempts)
 			},
-			errs: []error{gateway.ErrTXBlock},
+			errs: []error{gateway.ErrMaxTXAttempts},
 		},
 		{
 			name: "unknown update certificate id error",
@@ -350,9 +350,9 @@ func TestService_UpdateCertPassword(t *testing.T) {
 		{
 			name: "max tries of db transactions",
 			setup: func(ks *mkeystore.Service) {
-				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(keystore.ErrReachedMaxRetries)
+				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(keystore.ErrReachedMaxAttempts)
 			},
-			errs: []error{gateway.ErrTXBlock},
+			errs: []error{gateway.ErrMaxTXAttempts},
 		},
 		{
 			name: "unknown update certificate password error",
