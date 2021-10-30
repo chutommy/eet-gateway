@@ -20,11 +20,11 @@ var ErrIDAlreadyExists = errors.New("record with the ID already exists")
 var ErrReachedMaxRetries = errors.New("maximum number of retries reached")
 
 var (
-	// CertificateKey is the redis key of the certificate.
+	// CertificateKey is the redis key of the certificate field.
 	CertificateKey = "certificate"
-	// PrivateKeyKey is the redis key of the private key.
+	// PrivateKeyKey is the redis key of the private key field.
 	PrivateKeyKey = "private-key"
-	// SaltKey is the redis key of the salt.
+	// SaltKey is the redis key of the salt field.
 	SaltKey = "salt"
 )
 
