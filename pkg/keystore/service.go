@@ -102,14 +102,14 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 	return ErrReachedMaxAttempts
 }
 
-// Get retrieves a Keypair by the id.
+// Get retrieves a Keypair by the ID.
 func (r *redisService) Get(ctx context.Context, id string, password []byte) (*KeyPair, error) {
 	m := make(map[string]string)
 	txf := func(tx *redis.Tx) error {
 		// check if exists
 		i, err := tx.Exists(ctx, id).Result()
 		if err != nil {
-			return fmt.Errorf("check if id exists: %w", err)
+			return fmt.Errorf("check if ID exists: %w", err)
 		}
 
 		if i == 0 {
@@ -165,7 +165,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 		// check if exists
 		i, err := tx.Exists(ctx, oldID).Result()
 		if err != nil {
-			return fmt.Errorf("check if id exists: %w", err)
+			return fmt.Errorf("check if ID exists: %w", err)
 		}
 
 		if i == 0 {
@@ -208,7 +208,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		// check if exists
 		i, err := tx.Exists(ctx, id).Result()
 		if err != nil {
-			return fmt.Errorf("check if id exists: %w", err)
+			return fmt.Errorf("check if ID exists: %w", err)
 		}
 
 		if i == 0 {
@@ -268,7 +268,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 	return ErrReachedMaxAttempts
 }
 
-// Delete removes the Keypair with the id.
+// Delete removes the Keypair with the ID.
 func (r *redisService) Delete(ctx context.Context, id string) error {
 	i, err := r.rdb.Del(ctx, id).Result()
 	if err != nil {
