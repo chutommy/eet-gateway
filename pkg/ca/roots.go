@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// ProductionRoots returns CA EET root certificates for production purposes.
+// ProductionRoots returns a CA EET root certificates for production purposes.
 func ProductionRoots() ([]*x509.Certificate, error) {
 	cert, err := parseCert(RootCAEET1Production)
 	if err != nil {
@@ -21,7 +21,7 @@ func ProductionRoots() ([]*x509.Certificate, error) {
 	return []*x509.Certificate{cert, cert2025}, nil
 }
 
-// PlaygroundRoots returns CA EET root certificates for development purposes.
+// PlaygroundRoots returns a CA EET root certificates for development purposes.
 func PlaygroundRoots() ([]*x509.Certificate, error) {
 	cert, err := parseCert(RootCAEET1Playground)
 	if err != nil {

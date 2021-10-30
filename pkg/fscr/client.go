@@ -18,7 +18,7 @@ const PlaygroundURL = "https://pg.eet.cz/eet/services/EETServiceSOAP/v3"
 
 const soapAction = "http://fs.mfcr.cz/eet/OdeslaniTrzby"
 
-// Client represents a client that can communicate with the EET server.
+// Client represents a client to communicate with the FSCR servers.
 type Client interface {
 	Ping() error
 	Do(ctx context.Context, reqBody []byte) ([]byte, error)
@@ -52,7 +52,7 @@ func (c *client) Ping() error {
 	return nil
 }
 
-// Do makes a valid SOAP request to the MFCR EET server with the request body reqBody and
+// Do makes a valid SOAP request to the FSCR servers with the request body reqBody and
 // redirects the response body to respBody.
 func (c *client) Do(ctx context.Context, reqBody []byte) (respBody []byte, err error) {
 	req, err := createRequest(ctx, c.url, reqBody)

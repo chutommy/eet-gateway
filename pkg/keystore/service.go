@@ -28,7 +28,7 @@ var (
 	SaltKey = "salt"
 )
 
-// Service represents a keystore abstraction for a KeyPair management.
+// Service represents a keystore abstraction for KeyPair management.
 type Service interface {
 	Ping(ctx context.Context) error
 	Store(ctx context.Context, id string, password []byte, kp *KeyPair) error
@@ -43,7 +43,7 @@ type redisService struct {
 	rdb *redis.Client
 }
 
-// Ping tests whether the connection with the database is online.
+// Ping tries to connect to the database and find out whether it is online.
 func (r *redisService) Ping(ctx context.Context) error {
 	return r.rdb.Ping(ctx).Err()
 }
@@ -159,7 +159,7 @@ func (r *redisService) List(ctx context.Context) ([]string, error) {
 	return ids, nil
 }
 
-// UpdateID changes ID of the record.
+// UpdateID modifies the ID of the record.
 func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error {
 	txf := func(tx *redis.Tx) error {
 		// check if exists
@@ -202,7 +202,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 	return ErrReachedMaxRetries
 }
 
-// UpdatePassword changes password for encryption/decryption of the record content.
+// UpdatePassword modifies the password for encryption/decryption of the record.
 func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	txf := func(tx *redis.Tx) error {
 		// check if exists
@@ -268,7 +268,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 	return ErrReachedMaxRetries
 }
 
-// Delete removes the Keypair by the id.
+// Delete removes the Keypair with the id.
 func (r *redisService) Delete(ctx context.Context, id string) error {
 	i, err := r.rdb.Del(ctx, id).Result()
 	if err != nil {

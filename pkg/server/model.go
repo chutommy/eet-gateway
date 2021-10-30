@@ -8,7 +8,7 @@ import (
 	"github.com/chutommy/eetgateway/pkg/gateway"
 )
 
-// PingEETResp represents a response structure of HTTP responses for pings.
+// PingEETResp is a response structure for HTTP pings.
 type PingEETResp struct {
 	EETGatewayStatus string `json:"eet_gateway"`
 	TaxAdminStatus   string `json:"tax_admin"`
@@ -36,7 +36,7 @@ func pingEETResp(taxAdmin error, keyStore error) (int, *PingEETResp) {
 	}
 }
 
-// SendSaleReq represents a binding structure to HTTP requests for sending sales.
+// SendSaleReq is a binding request structure for sales.
 type SendSaleReq struct {
 	CertID       string `json:"cert_id,omitempty" binding:"required"`
 	CertPassword string `json:"cert_password,omitempty" binding:""`
@@ -102,7 +102,7 @@ func sendSaleRequest(req *SendSaleReq) *eet.TrzbaType {
 	}
 }
 
-// SendSaleResp represents a reponse structure to HTTP sale requests.
+// SendSaleResp is a reponse structure to sale requests.
 type SendSaleResp struct {
 	DatOdmit   *eet.DateTime `json:"dat_odmit,omitempty"`
 	ChybZprava string        `json:"chyb_zprava,omitempty"`
@@ -140,7 +140,7 @@ func sendSaleResponse(req *SendSaleReq, odpoved *eet.OdpovedType) *SendSaleResp 
 	}
 }
 
-// StoreCertReq represents a binding structure to HTTP requests for storing certificate.
+// StoreCertReq is a binding request structure for storing certificates.
 type StoreCertReq struct {
 	CertID       string `json:"cert_id" binding:"required"`
 	CertPassword string `json:"cert_password" binding:""`
@@ -149,30 +149,30 @@ type StoreCertReq struct {
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
 
-// ListCertIDsResp represents a response structure of the certificate IDs for the list request.
+// ListCertIDsResp is a response structure for listing certificate IDs.
 type ListCertIDsResp struct {
 	CertIDs []string `json:"cert_ids"`
 }
 
-// UpdateCertIDReq represents a binding structure to HTTP requests for certificate ID update.
+// UpdateCertIDReq is a binding request structure for certificate ID updates.
 type UpdateCertIDReq struct {
 	CertID string `json:"cert_id" binding:"required"`
 	NewID  string `json:"new_id" binding:"required,necsfield=CertID"`
 }
 
-// UpdateCertPasswordReq represents a binding structure to HTTP requests for password update.
+// UpdateCertPasswordReq is a binding request structure for password updates.
 type UpdateCertPasswordReq struct {
 	CertID       string `json:"cert_id" binding:"required"`
 	CertPassword string `json:"cert_password" binding:"required"`
 	NewPassword  string `json:"new_password" binding:"required,necsfield=CertPassword"`
 }
 
-// DeleteCertReq represents a binding structure to HTTP requests for deleting certificate.
+// DeleteCertReq is a binding request structure for deleting certificates.
 type DeleteCertReq struct {
 	CertID string `json:"cert_id" binding:"required"`
 }
 
-// SuccessCertResp represents a response of a successful action related to a specific certificate.
+// SuccessCertResp is a response of a successful action related to certificate.
 type SuccessCertResp struct {
 	CertID string `json:"cert_id"`
 }
@@ -181,7 +181,7 @@ func successCertResp(id string) *SuccessCertResp {
 	return &SuccessCertResp{CertID: id}
 }
 
-// GatewayErrResp represents an error returned from the EET Gateway itself, not from the FSCR.
+// GatewayErrResp represents an error response structure returned from the EET Gateway API (not from the FSCR).
 type GatewayErrResp struct {
 	GatewayError string `json:"gateway_error"`
 }

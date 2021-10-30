@@ -18,7 +18,7 @@ import (
 // ErrInvalidDecryptionKey is returned if the given password for the decryption is invalid and can't be used.
 var ErrInvalidDecryptionKey = errors.New("given password can't decrypt the message")
 
-// KeyPair represents a key pair combination of a certificate and a private key.
+// KeyPair represents a combination of a certificate and a private key.
 type KeyPair struct {
 	Cert *x509.Certificate
 	PK   *rsa.PrivateKey

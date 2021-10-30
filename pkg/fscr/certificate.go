@@ -30,7 +30,7 @@ var ErrNotTrustedCertificate = errors.New("certificate issued or signed by an un
 // OrganizationName is the legal name that the organization is registered with authority at the national level.
 const OrganizationName = "Česká republika - Generální finanční ředitelství"
 
-// CAService verifies certificates signed off by the CA.
+// CAService verifies certificates signed off by trusted CAs.
 type CAService interface {
 	VerifyDSig(cert *x509.Certificate) error
 	ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error)

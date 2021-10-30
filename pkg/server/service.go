@@ -12,7 +12,7 @@ import (
 	"go.uber.org/multierr"
 )
 
-// Service is the server abstraction as a service.
+// Service is a server of the EET Gateway.
 type Service interface {
 	ListenAndServe(duration time.Duration) error
 }

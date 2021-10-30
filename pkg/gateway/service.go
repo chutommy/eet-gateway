@@ -48,7 +48,7 @@ var ErrKeystoreUnavailable = errors.New("keystore service unavailable")
 // ErrKeystoreUnexpected is returned if an unexpected error occurs.
 var ErrKeystoreUnexpected = errors.New("unexpected keystore error")
 
-// Service represents an abstraction of EET Gateway functionalities.
+// Service handles all functionalities provided by the EET Gateway.
 type Service interface {
 	Ping(ctx context.Context) error
 	SendSale(ctx context.Context, certID string, pk []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error)
@@ -65,7 +65,7 @@ type service struct {
 	keyStore   keystore.Service
 }
 
-// Ping checks whether the MFCR server is online. It returns nil if the response status is OK.
+// Ping checks whether the FSCR servers are online. It returns nil if the response status is OK.
 func (g *service) Ping(ctx context.Context) (err error) {
 	if e := g.fscrClient.Ping(); e != nil {
 		err = multierr.Append(err, ErrFSCRConnection)
@@ -78,7 +78,7 @@ func (g *service) Ping(ctx context.Context) (err error) {
 	return err
 }
 
-// SendSale sends TrzbaType using fscr.Client, validate and verifies response and returns OdpovedType.
+// SendSale sends TrzbaType using fscr.Client, validates and verifies response and returns OdpovedType.
 func (g *service) SendSale(ctx context.Context, certID string, certPassword []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error) {
 	kp, err := g.keyStore.Get(ctx, certID, certPassword)
 	if err != nil {
@@ -164,7 +164,7 @@ func (g *service) ListCertIDs(ctx context.Context) ([]string, error) {
 	return ids, nil
 }
 
-// UpdateCertID renames the current certificate ID to a new ID.
+// UpdateCertID updates the ID of the certificate.
 func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 	err := g.keyStore.UpdateID(ctx, oldID, newID)
 	if err != nil {
@@ -185,7 +185,7 @@ func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 	return nil
 }
 
-// UpdateCertPassword updates the certificate of given ID with a new password.
+// UpdateCertPassword updates the password of the certificate.
 func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
 	err := g.keyStore.UpdatePassword(ctx, id, oldPassword, newPassword)
 	if err != nil {

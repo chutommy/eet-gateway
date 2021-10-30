@@ -12,7 +12,7 @@ import (
 // DateTimeLayout is the chosen layout for the time and date data.
 const DateTimeLayout = "2006-01-02T15:04:05-07:00"
 
-// MarshalText encodes CastkaType value to the correct form with two included decimal places.
+// MarshalText encodes CastkaType value to the correct form with two decimal places included.
 func (c CastkaType) MarshalText() ([]byte, error) {
 	return []byte(fmt.Sprintf("%.2f", float64(c))), nil
 }
