@@ -175,7 +175,7 @@ func TestService_StoreCert(t *testing.T) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
 				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(errUnexpected)
 			},
-			errs: []error{gateway.ErrCertificateStore},
+			errs: []error{gateway.ErrKeystoreUnexpected},
 		},
 	}
 
@@ -222,7 +222,7 @@ func TestService_ListCertIDs(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("List", context.Background()).Return(nil, errUnexpected)
 			},
-			errs: []error{gateway.ErrListCertIDs},
+			errs: []error{gateway.ErrKeystoreUnexpected},
 		},
 	}
 
@@ -291,7 +291,7 @@ func TestService_UpdateCertID(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdateID", context.Background(), certID, certID2).Return(errUnexpected, errUnexpected)
 			},
-			errs: []error{gateway.ErrCertificateUpdateID},
+			errs: []error{gateway.ErrKeystoreUnexpected},
 		},
 	}
 
@@ -359,7 +359,7 @@ func TestService_UpdateCertPassword(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(errUnexpected)
 			},
-			errs: []error{gateway.ErrCertificateUpdatePassword},
+			errs: []error{gateway.ErrKeystoreUnexpected},
 		},
 	}
 
@@ -413,7 +413,7 @@ func TestService_DeleteID(t *testing.T) {
 			setup: func(ks *mkeystore.Service) {
 				ks.On("Delete", context.Background(), certID).Return(errUnexpected)
 			},
-			errs: []error{gateway.ErrCertificateDelete},
+			errs: []error{gateway.ErrKeystoreUnexpected},
 		},
 	}
 

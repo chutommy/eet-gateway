@@ -21,24 +21,6 @@ var ErrIDAlreadyExists = errors.New("taxpayer's certificate with the ID already 
 // ErrCertificateParse is returned if a certificate can't be parsed.
 var ErrCertificateParse = errors.New("taxpayer's certificate not parsable")
 
-// ErrCertificateGet is returned if a certificate with the given ID can't be fetched.
-var ErrCertificateGet = errors.New("taxpayer's certificate not retrieved")
-
-// ErrListCertIDs is returned if certificate IDs can't be retrieved.
-var ErrListCertIDs = errors.New("list of certificate IDs not retrieved")
-
-// ErrCertificateStore is returned if a certificate can't be stored.
-var ErrCertificateStore = errors.New("taxpayer's certificate not stored")
-
-// ErrCertificateUpdatePassword is returned if password of a certificate can't be updated.
-var ErrCertificateUpdatePassword = errors.New("password to the taxpayer's certificate not updated")
-
-// ErrCertificateUpdateID is returned if id of a certificate can't be updated.
-var ErrCertificateUpdateID = errors.New("id of the taxpayer's certificate not updated")
-
-// ErrCertificateDelete is returned if a certificate can't be deleted.
-var ErrCertificateDelete = errors.New("taxpayer's certificate not deleted")
-
 // ErrInvalidCertificatePassword is returned if the given password can't open sealed certificate/private key.
 var ErrInvalidCertificatePassword = errors.New("invalid password for the decryption of the taxpayer's certificate")
 
@@ -62,6 +44,9 @@ var ErrTXBlock = errors.New("request discarded due to the transaction block")
 
 // ErrKeystoreUnavailable is returned if the keystore service can't be reached.
 var ErrKeystoreUnavailable = errors.New("keystore service unavailable")
+
+// ErrKeystoreUnexpected is returned if an unexpected error occurs.
+var ErrKeystoreUnexpected = errors.New("unexpected keystore error")
 
 // Service represents an abstraction of EET Gateway functionalities.
 type Service interface {
@@ -108,7 +93,7 @@ func (g *service) SendSale(ctx context.Context, certID string, certPassword []by
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
-		return nil, multierr.Append(err, ErrCertificateGet)
+		return nil, multierr.Append(err, ErrKeystoreUnexpected)
 	}
 
 	reqEnv, err := eet.NewRequestEnvelope(trzba, kp.Cert, kp.PK)
@@ -159,7 +144,7 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
-		return multierr.Append(err, ErrCertificateStore)
+		return multierr.Append(err, ErrKeystoreUnexpected)
 	}
 
 	return nil
@@ -173,7 +158,7 @@ func (g *service) ListCertIDs(ctx context.Context) ([]string, error) {
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
-		return nil, multierr.Append(err, ErrListCertIDs)
+		return nil, multierr.Append(err, ErrKeystoreUnexpected)
 	}
 
 	return ids, nil
@@ -194,7 +179,7 @@ func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
-		return multierr.Append(err, ErrCertificateUpdateID)
+		return multierr.Append(err, ErrKeystoreUnexpected)
 	}
 
 	return nil
@@ -215,7 +200,7 @@ func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
-		return multierr.Append(err, ErrCertificateUpdatePassword)
+		return multierr.Append(err, ErrKeystoreUnexpected)
 	}
 
 	return nil
@@ -232,7 +217,7 @@ func (g *service) DeleteID(ctx context.Context, id string) error {
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
-		return multierr.Append(err, ErrCertificateDelete)
+		return multierr.Append(err, ErrKeystoreUnexpected)
 	}
 
 	return nil
