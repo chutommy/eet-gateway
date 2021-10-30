@@ -100,7 +100,7 @@ func decryptPemWithGCM(gcm cipher.AEAD, cipherText []byte) ([]byte, error) {
 		return nil, fmt.Errorf("nonce is longer than cipher text: %w", ErrInvalidDecryptionKey)
 	}
 
-	// split nonce and the cipher
+	// split nonce and cipher
 	nonce, sealed := cipherText[:nonceSize], cipherText[nonceSize:]
 	// open sealed cipher
 	pemData, err := gcm.Open(nil, nonce, sealed, nil)

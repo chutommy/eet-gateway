@@ -29,7 +29,7 @@ func (t *TrzbaType) etree() (*etree.Element, error) {
 	}
 
 	trzba := trzbaDoc.Root()
-	// Overwrite the tag of a value "TrzbaType".
+	// Overwrite the tag of value "TrzbaType".
 	trzba.Tag = "Trzba"
 	trzba.CreateAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 	trzba.CreateAttr("xmlns:xsd", "http://www.w3.org/2001/XMLSchema")

@@ -86,7 +86,7 @@ func TestNewSoapEnvelope(t *testing.T) {
 
 	cert, pk := parseTaxpayerCertificate(t, "testdata/EET_CA1_Playground-CZ00000019.p12")
 
-	// pass a copy (control codes are internally set to the TrzbaType)
+	// pass a value (control codes of the TrzbaType are internally modified)
 	trzbaCopy := trzba
 	envelope, err := eet.NewRequestEnvelope(&trzbaCopy, cert, pk)
 	require.NoError(t, err)
@@ -168,7 +168,7 @@ func TestParseAndVerifyResponse(t *testing.T) {
 
 			odp, err := eet.ParseResponseEnvelope(resp)
 			if err == nil {
-				// set TrzbaType with required control codes
+				// fill TrzbaType with required control codes
 				trzba := &eet.TrzbaType{
 					Hlavicka: eet.TrzbaHlavickaType{
 						Uuidzpravy: odp.Hlavicka.Uuidzpravy,

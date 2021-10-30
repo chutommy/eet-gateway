@@ -60,7 +60,6 @@ func TestCaService_VerifyDSig(t *testing.T) {
 			cert, err := x509.ParseCertificate(certRaw)
 			require.NoError(t, err)
 
-			// verify
 			err = eetCASvc.VerifyDSig(cert)
 			if tc.expErr == nil {
 				require.NoError(t, err)

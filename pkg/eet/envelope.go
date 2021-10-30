@@ -272,7 +272,7 @@ func getSignatureDate(envelope *etree.Document) (sigVal []byte, digest []byte, e
 			return nil, nil, err
 		}
 
-		// namespace for XML digital signature
+		// namespace for the XML digital signature
 		signedInfo.CreateAttr("xmlns", "http://www.w3.org/2000/09/xmldsig#")
 
 		digest, err = wsse.CalcDigest(signedInfo)
