@@ -3,7 +3,6 @@ package gateway
 import (
 	"context"
 	"errors"
-	"io"
 	"syscall"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
@@ -89,7 +88,7 @@ func (g *service) SendSale(ctx context.Context, certID string, certPassword []by
 			return nil, multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxAttempts):
 			return nil, multierr.Append(err, ErrMaxTXAttempts)
-		case errors.Is(err, io.EOF):
+		case errors.Is(err, syscall.ECONNREFUSED):
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
@@ -175,7 +174,7 @@ func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 			return multierr.Append(err, ErrIDAlreadyExists)
 		case errors.Is(err, keystore.ErrReachedMaxAttempts):
 			return multierr.Append(err, ErrMaxTXAttempts)
-		case errors.Is(err, io.EOF):
+		case errors.Is(err, syscall.ECONNREFUSED):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
@@ -196,7 +195,7 @@ func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword
 			return multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxAttempts):
 			return multierr.Append(err, ErrMaxTXAttempts)
-		case errors.Is(err, io.EOF):
+		case errors.Is(err, syscall.ECONNREFUSED):
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
