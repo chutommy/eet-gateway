@@ -21,9 +21,6 @@ builds:
       - 386
       - amd64
       - arm64
-    ignore:
-      - goos: darwin
-        goarch: 386
 
 archives:
   - wrap_in_directory: true
@@ -54,27 +51,27 @@ changelog:
       - 'typo'
 
 release:
-  draft: true
+  draft: false
   discussion_category_name: General
 
+  name_template: "EETGateway v{{.Version}}"
+
   header: |
-    ## Changes {{ .Tag }} ({{ .Date }})
+    ### Release date {{ .Date }}
 
     Welcome to this new release!
 
   footer: |
-    ## Thanks!
+    ### Thanks!
 
     Those were the changes on {{ .Tag }}!
-
-  name_template: "EETGateway v{{.Version}} {{.Env.USER}}"
 
 source:
   enabled: true
 
 milestones:
   - close: true
-    fail_on_error: true
+    fail_on_error: false
     name_template: "{{ .Tag }}"
 
 snapshot:
