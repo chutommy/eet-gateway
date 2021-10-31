@@ -5,7 +5,6 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -82,7 +81,7 @@ func main() {
 		MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
 	})
 
-	fmt.Println(srv.ListenAndServe(10 * time.Second))
+	srv.ListenAndServe(10 * time.Second)
 }
 
 func errCheck(err error) {

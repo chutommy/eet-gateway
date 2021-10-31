@@ -15,7 +15,7 @@ import (
 
 // Service is a server of the EET Gateway.
 type Service interface {
-	ListenAndServe(duration time.Duration) error
+	ListenAndServe(duration time.Duration)
 }
 
 type httpService struct {
@@ -26,7 +26,7 @@ type httpService struct {
 // be manually shutdown with system calls like: interrupt, termination or kill signals.
 // The server is then gracefully shutdown with the given timeout. After the timeout
 // exceeds the server is forcefully shutdown.
-func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
+func (s *httpService) ListenAndServe(timeout time.Duration) {
 	log.Info().
 		Timestamp().
 		Str("action", "listen and serve").
@@ -38,19 +38,23 @@ func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 		Str("status", "offline").
 		Send()
 
-	quit := make(chan os.Signal, 1)
+	var err error
+	stop := make(chan os.Signal, 1)
+	exit := make(chan struct{}, 1)
 
 	// non blocking server
 	go func() {
 		e := s.server.ListenAndServe()
 		if !errors.Is(e, http.ErrServerClosed) {
 			multierr.AppendInto(&err, e)
-			quit <- syscall.SIGABRT
+			stop <- syscall.SIGABRT
 		}
+
+		exit <- struct{}{}
 	}()
 
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) // SIGKILL cannot be handled
-	sig := <-quit                                        // block
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM) // SIGKILL cannot be handled
+	sig := <-stop                                        // block
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -65,14 +69,13 @@ func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 		multierr.AppendInto(&err, e)
 	}
 
+	<-exit
 	if err != nil {
 		log.Error().
 			Timestamp().
 			Err(err).
 			Send()
 	}
-
-	return err
 }
 
 // NewService returns a Service implementation with the given HTTP server.
