@@ -36,7 +36,6 @@ func NewHandler(gatewaySvc gateway.Service) Handler {
 
 func (h *handler) ginEngine() *gin.Engine {
 	r := gin.New()
-	r.MaxMultipartMemory = 32 << 10 // 32 KiB
 
 	setValidators()
 	r.Use(loggingMiddleware)
