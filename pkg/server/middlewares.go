@@ -18,14 +18,14 @@ func loggingMiddleware(c *gin.Context) {
 	c.Next()
 
 	log.Info().
+		Timestamp().
 		Str("client", c.ClientIP()).
 		Str("method", c.Request.Method).
 		Str("path", c.Request.URL.Path).
-		Int("status", c.Writer.Status()).
 		Int64("reqBodySize", c.Request.ContentLength).
 		Int("respBodySize", c.Writer.Size()).
+		Int("status", c.Writer.Status()).
 		TimeDiff("latency", time.Now(), start).
-		Timestamp().
 		Err(c.Errors.Last()).
 		Send()
 }
@@ -45,9 +45,9 @@ func recoverMiddleware(c *gin.Context) {
 			}
 
 			log.Error().
+				Timestamp().
 				Caller().
 				Err(err.(error)).
-				Timestamp().
 				Send()
 
 			if brokenPipe {

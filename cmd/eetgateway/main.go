@@ -15,6 +15,7 @@ import (
 	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/server"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -24,6 +25,7 @@ func main() {
 	// logs
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	gin.SetMode(gin.ReleaseMode)
 
 	// CA service
 	eetCARoots, err := ca.PlaygroundRoots()
@@ -70,7 +72,7 @@ func main() {
 	// HTTP server
 	h := server.NewHandler(gSvc)
 	srv := server.NewService(&http.Server{
-		Addr:              ":8080",
+		Addr:              ":3000",
 		Handler:           h.HTTPHandler(),
 		TLSConfig:         nil,
 		ReadTimeout:       time.Second * 10,
