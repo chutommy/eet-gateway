@@ -44,7 +44,7 @@ func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
 		return fmt.Errorf("server is shutting down: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 // NewService returns a Service implementation with the given HTTP server.
