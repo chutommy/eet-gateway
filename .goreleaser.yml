@@ -1,29 +1,81 @@
+project_name: eetgateway
+
+env:
+  - GO111MODULE=on
+
 before:
   hooks:
     - go mod tidy
-    - go fmt ./...
     - go generate ./...
+    - go fmt ./...
+
 builds:
-  - env:
+  - main: ./cmd/eetgateway
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
       - windows
       - darwin
+    goarch:
+      - 386
+      - amd64
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: 386
+
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - wrap_in_directory: true
+    files:
+      - LICENSE
+      - docs/*
+
+# TODO: add packages for package managers
+# https://goreleaser.com/customization/nfpm/
+# https://goreleaser.com/customization/snapcraft/
+# https://goreleaser.com/customization/docker/
+# https://goreleaser.com/customization/docker_manifest/
+# https://goreleaser.com/customization/homebrew/
+
 checksum:
-  name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  name_template: "{{ .ProjectName }}_checksums.txt"
+  algorithm: sha256
+
 changelog:
-  sort: asc
+  use: github
   filters:
     exclude:
       - '^docs:'
-      - '^test:'
+      - '^style'
+      - '^chore'
+      - '^test'
+      - '^ci'
+      - 'typo'
+
+release:
+  draft: true
+  discussion_category_name: General
+
+  header: |
+    ## Changes {{ .Tag }} ({{ .Date }})
+
+    Welcome to this new release!
+
+  footer: |
+    ## Thanks!
+
+    Those were the changes on {{ .Tag }}!
+
+  name_template: "EETGateway v{{.Version}} {{.Env.USER}}"
+
+source:
+  enabled: true
+
+milestones:
+  - close: true
+    fail_on_error: true
+    name_template: "{{ .Tag }}"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-SNAPSHOT-{{.ShortCommit}}"
