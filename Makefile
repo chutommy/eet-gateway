@@ -15,7 +15,7 @@ eet-gens: eet-specs eet-models eet-mocks
 
 .PHONY: eet-specs
 eet-specs:
-	go run cmd/soap-defs/main.go -dir data/eet-specs
+	go run scripts/soap-defs/main.go -dir data/eet-specs
 
 .PHONY: eet-models
 eet-models:
