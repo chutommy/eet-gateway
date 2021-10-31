@@ -73,6 +73,10 @@ func webContentToFile(url, path string) error {
 }
 
 func writeFile(path string, data []byte) error {
+	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+		return err
+	}
+
 	return os.WriteFile(path, data, 0600)
 }
 
