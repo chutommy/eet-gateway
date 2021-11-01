@@ -18,12 +18,13 @@ func loggingMiddleware(c *gin.Context) {
 	c.Next()
 
 	log.Info().
-		Timestamp().
+		Str("entity", "HTTP Handler").
+		Str("action", "serving request").
 		Str("client", c.ClientIP()).
 		Str("method", c.Request.Method).
 		Str("path", c.Request.URL.Path).
-		Int64("reqBodySize", c.Request.ContentLength).
-		Int("respBodySize", c.Writer.Size()).
+		Int64("requestBodySize", c.Request.ContentLength).
+		Int("responseBodySize", c.Writer.Size()).
 		Int("status", c.Writer.Status()).
 		TimeDiff("latency", time.Now(), start).
 		Err(c.Errors.Last()).
@@ -45,8 +46,8 @@ func recoverMiddleware(c *gin.Context) {
 			}
 
 			log.Error().
-				Timestamp().
-				Caller().
+				Str("entity", "Recovery system").
+				Str("action", "recovering from fatal error").
 				Err(err.(error)).
 				Send()
 
