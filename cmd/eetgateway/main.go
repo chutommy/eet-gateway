@@ -5,8 +5,11 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/ca"
@@ -46,7 +49,27 @@ const (
 )
 
 func main() {
+	// Logger
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+	zerolog.DurationFieldUnit = time.Second
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	gin.SetMode(gin.ReleaseMode)
+
+	log.Info().
+		Str("entity", "EET Gateway").
+		Str("action", "initiating").
+		Send()
+	defer log.Info().
+		Str("entity", "EET Gateway").
+		Str("action", "exiting").
+		Send()
+
 	// Viper
+	log.Info().
+		Str("entity", "Config Service").
+		Str("action", "setting defaults").
+		Send()
+
 	viper.SetDefault(eetProductionMode, false)
 	viper.SetDefault(redisNetwork, "tcp")
 	viper.SetDefault(redisAddr, "localhost:6379")
@@ -69,20 +92,46 @@ func main() {
 	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 	viper.SetDefault(serverShutdownTimeout, 10*time.Second)
 
-	// Logger
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-	zerolog.DurationFieldUnit = time.Millisecond
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	gin.SetMode(gin.ReleaseMode)
+	var configDir string
+	homeDir, err := os.UserHomeDir()
+	errCheck(err)
+
+	switch runtime.GOOS {
+	case "linux":
+		configDir = filepath.Join(homeDir, ".config", "eetgateway")
+	case "darwin":
+		configDir = filepath.Join(homeDir, "Library", "Preferences", "eetgateway")
+	case "windows":
+		configDir = filepath.Join(homeDir, "AppData", "Local", "EETGateway")
+	}
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("json")
+	viper.AddConfigPath(configDir)
 
 	log.Info().
-		Str("entity", "EET Gateway").
-		Str("action", "initiating").
+		Str("entity", "Config Service").
+		Str("action", "looking for config file").
+		Str("path", configDir+"/"+"config"+"."+"json").
 		Send()
-	defer log.Info().
-		Str("entity", "EET Gateway").
-		Str("action", "exiting").
-		Send()
+
+	if err := viper.ReadInConfig(); err != nil {
+		if ok := errors.As(err, &viper.ConfigFileNotFoundError{}); ok {
+			log.Info().
+				Str("entity", "Config Service").
+				Str("action", "generating config file").
+				Str("status", "config file not found").
+				Str("path", configDir+"/"+"config"+"."+"json").
+				Send()
+
+			err = os.MkdirAll(configDir, os.ModePerm)
+			errCheck(err)
+
+			err = viper.SafeWriteConfig()
+		}
+
+		errCheck(err)
+	}
 
 	// CA Service
 	caRoots, err := ca.PlaygroundRoots()
