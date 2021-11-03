@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/chutommy/eetgateway/pkg/ca"
@@ -17,6 +18,7 @@ import (
 	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/server"
+	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
@@ -25,27 +27,35 @@ import (
 )
 
 const (
-	eetProductionMode       = "eet_production_mode"
-	redisNetwork            = "redis_network"
-	redisAddr               = "redis_addr"
-	redisUsername           = "redis_username"
-	redisPassword           = "redis_password"
-	redisDB                 = "redis_db"
-	redisIdleTimeout        = "redis_idle_timeout"
-	redisDialTimeout        = "redis_dial_timeout"
-	redisReadTimeout        = "redis_read_timeout"
-	redisWriteTimeout       = "redis_write_timeout"
-	redisPoolTimeout        = "redis_pool_timeout"
-	redisPoolSize           = "redis_pool_size"
-	redisIdleCheckFrequency = "redis_idle_check_frequency"
-	redisMinIdleConns       = "redis_min_idle_conns"
-	serverAddr              = "server_addr"
-	serverIdleTimeout       = "server_idle_timeout"
-	serverWriteTimeout      = "server_write_timeout"
-	serverReadTimeout       = "server_read_timeout"
-	serverReadHeaderTimeout = "server_read_header_timeout"
-	serverMaxHeaderBytes    = "server_max_header_bytes"
-	serverShutdownTimeout   = "server_shutdown_timeout"
+	configFileName = "config"
+	configFileType = "json"
+	configFile     = configFileName + "." + configFileType
+)
+
+const (
+	eetProductionMode = "eet.production.mode"
+
+	redisNetwork            = "redis.network"
+	redisAddr               = "redis.addr"
+	redisUsername           = "redis.username"
+	redisPassword           = "redis.password"
+	redisDB                 = "redis.db"
+	redisIdleTimeout        = "redis.time.idle_timeout"
+	redisDialTimeout        = "redis.time.dial_timeout"
+	redisReadTimeout        = "redis.time.read_timeout"
+	redisWriteTimeout       = "redis.time.write_timeout"
+	redisPoolTimeout        = "redis.time.pool_timeout"
+	redisIdleCheckFrequency = "redis.time.idle_check_frequency"
+	redisPoolSize           = "redis.pool_size"
+	redisMinIdleConns       = "redis.min_idle_conns"
+
+	serverAddr              = "server.addr"
+	serverIdleTimeout       = "server.time.idle_timeout"
+	serverWriteTimeout      = "server.time.write_timeout"
+	serverReadTimeout       = "server.time.read_timeout"
+	serverReadHeaderTimeout = "server.time.read_header_timeout"
+	serverShutdownTimeout   = "server.time.shutdown_timeout"
+	serverMaxHeaderBytes    = "server.data.max_header_bytes"
 )
 
 func main() {
@@ -70,6 +80,7 @@ func main() {
 		Str("action", "setting defaults").
 		Send()
 
+	// set defaults
 	viper.SetDefault(eetProductionMode, false)
 	viper.SetDefault(redisNetwork, "tcp")
 	viper.SetDefault(redisAddr, "localhost:6379")
@@ -92,6 +103,7 @@ func main() {
 	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 	viper.SetDefault(serverShutdownTimeout, 10*time.Second)
 
+	// load from file
 	var configDir string
 	homeDir, err := os.UserHomeDir()
 	errCheck(err)
@@ -105,14 +117,14 @@ func main() {
 		configDir = filepath.Join(homeDir, "AppData", "Local", "EETGateway")
 	}
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("json")
+	viper.SetConfigName(configFileName)
+	viper.SetConfigType(configFileType)
 	viper.AddConfigPath(configDir)
 
 	log.Info().
 		Str("entity", "Config Service").
 		Str("action", "looking for config file").
-		Str("path", configDir+"/"+"config"+"."+"json").
+		Str("path", filepath.Join(configDir, configFile)).
 		Send()
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -121,26 +133,35 @@ func main() {
 				Str("entity", "Config Service").
 				Str("action", "generating config file").
 				Str("status", "config file not found").
-				Str("path", configDir+"/"+"config"+"."+"json").
+				Str("path", filepath.Join(configDir, configFile)).
 				Send()
 
 			err = os.MkdirAll(configDir, os.ModePerm)
 			errCheck(err)
 
 			err = viper.SafeWriteConfig()
+			errCheck(err)
+		} else {
+			errCheck(err)
 		}
-
-		errCheck(err)
+	} else {
+		log.Info().
+			Str("entity", "Config Service").
+			Str("action", "loading config file").
+			Str("status", "config file located").
+			Str("path", filepath.Join(configDir, configFile)).
+			Send()
 	}
 
 	// CA Service
 	caRoots, err := ca.PlaygroundRoots()
+	errCheck(err)
 	caMode := "playground"
 	if viper.GetBool(eetProductionMode) {
 		caRoots, err = ca.ProductionRoots()
+		errCheck(err)
 		caMode = "production"
 	}
-	errCheck(err)
 
 	caDSigPool := x509.NewCertPool()
 	if ok := caDSigPool.AppendCertsFromPEM(ca.ICACertificate); !ok {
