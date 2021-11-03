@@ -38,11 +38,10 @@ func initCmdRunE(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("retrieve 'path' flag: %w", err)
 	}
 
-	// create dir
-	err = os.MkdirAll(dir, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("make directory %s: %w", dir, err)
-	}
+	// err = os.MkdirAll(dir, os.ModePerm)
+	// if err != nil {
+	// 	return fmt.Errorf("make directory %s: %w", dir, err)
+	// }
 
 	// write file
 	path := filepath.Join(dir, configFile)
