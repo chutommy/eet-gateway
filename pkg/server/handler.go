@@ -9,6 +9,7 @@ import (
 	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 )
 
 // ErrUnexpected is returned if unexpected error is raised.
@@ -44,14 +45,21 @@ func (h *handler) ginEngine() *gin.Engine {
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/ping", h.pingEET)
+		logEndpoint(http.MethodGet, "/ping")
 
 		v1.POST("/sale", h.sendSale)
+		logEndpoint(http.MethodPost, "/sale")
 
 		v1.POST("/cert", h.storeCert)
+		logEndpoint(http.MethodPost, "/cert")
 		v1.GET("/cert", h.listCertIDs)
+		logEndpoint(http.MethodGet, "/cert")
 		v1.PUT("/cert/id", h.updateCertID)
+		logEndpoint(http.MethodPut, "/cert/id")
 		v1.PUT("/cert/password", h.UpdateCertPassword)
+		logEndpoint(http.MethodPut, "/cert/password")
 		v1.DELETE("/cert", h.deleteCert)
+		logEndpoint(http.MethodDelete, "/cert")
 	}
 
 	return r
@@ -198,4 +206,13 @@ func (h *handler) deleteCert(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, successCertResp(req.CertID))
+}
+
+func logEndpoint(method string, path string) {
+	log.Info().
+		Str("entity", "HTTP Server").
+		Str("action", "opening HTTP endpoint").
+		Str("method", method).
+		Str("path", path).
+		Send()
 }
