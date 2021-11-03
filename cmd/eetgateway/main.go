@@ -153,6 +153,25 @@ func main() {
 			Send()
 	}
 
+	// watch config changes
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		log.Info().
+			Str("entity", "Config Service").
+			Str("action", "watching config file").
+			Str("status", "config file changed").
+			Str("operation", e.Op.String()).
+			Str("path", e.Name).
+			Str("note", "restart server to take effect").
+			Send()
+	})
+
+	viper.WatchConfig()
+
+	// load env variables
+	viper.SetEnvPrefix("EETG")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+
 	// CA Service
 	caRoots, err := ca.PlaygroundRoots()
 	errCheck(err)
