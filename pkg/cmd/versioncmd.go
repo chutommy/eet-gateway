@@ -10,8 +10,8 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number of the EET Gateway",
-	Long: `Version command prints out the current version of the EET
-Gateway and the OS/architecture of the binary build.`,
+	Long: `Version command prints out the current version of the EET Gateway and
+the OS/architecture of the binary build.`,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		s := fmt.Sprintf("EET Gateway v%s %s/%s", eetgVersion, runtime.GOOS, runtime.GOARCH)
