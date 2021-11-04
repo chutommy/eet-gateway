@@ -25,11 +25,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "eetg",
-	Short: "EET Gateway is the entry point for communication with the Czech EET system (Electronic Registration of Sales)",
-}
-
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Initialize the EET Gateway service and start serving",
@@ -39,19 +34,6 @@ var serveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		m()
 	},
-}
-
-// Execute executes the root command.
-func Execute() {
-	rootCmd.AddCommand(initCmd, serveCmd, versionCmd)
-
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatal().
-			Str("entity", "CLI Service").
-			Str("action", "executing root command").
-			Err(err).
-			Send()
-	}
 }
 
 func m() {
