@@ -36,6 +36,8 @@ func NewHandler(gatewaySvc gateway.Service) Handler {
 }
 
 func (h *handler) ginEngine() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
+
 	r := gin.New()
 
 	setValidators()
