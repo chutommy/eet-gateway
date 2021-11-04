@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
@@ -29,15 +28,6 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "eetg",
 	Short: "EET Gateway is the entry point for communication with the Czech EET system (Electronic Registration of Sales)",
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of the EET Gateway",
-	Run: func(cmd *cobra.Command, args []string) {
-		s := fmt.Sprintf("EET Gateway %s %s/%s", eetgVersion, runtime.GOOS, runtime.GOARCH)
-		fmt.Println(s)
-	},
 }
 
 var serveCmd = &cobra.Command{
