@@ -16,7 +16,7 @@ const (
 	dirFlag = "dir"
 )
 
-func init() {
+func initInitCmd() {
 	configDir, err := osConfigDir()
 	if err != nil {
 		panic(err)

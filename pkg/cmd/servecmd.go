@@ -27,7 +27,7 @@ const (
 	configPathFlag = "config"
 )
 
-func init() {
+func initServeCmd() {
 	configDir, err := osConfigDir()
 	if err != nil {
 		panic(err)
