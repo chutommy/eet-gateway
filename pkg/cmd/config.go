@@ -1,7 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/spf13/viper"
@@ -65,4 +69,22 @@ func viperSetDefaults() {
 	viper.SetDefault(serverReadHeaderTimeout, time.Second*2)
 	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 	viper.SetDefault(serverShutdownTimeout, 10*time.Second)
+}
+
+func osConfigDir() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("retrieve user's home directory: %w", err)
+	}
+
+	var configDir string
+	switch runtime.GOOS {
+	case "linux":
+		configDir = filepath.Join(homeDir, ".config", "eetgateway")
+	case "darwin":
+		configDir = filepath.Join(homeDir, "Library", "Preferences", "eetgateway")
+	case "windows":
+		configDir = filepath.Join(homeDir, "AppData", "Local", "EETGateway")
+	}
+	return configDir, nil
 }
