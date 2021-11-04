@@ -33,6 +33,9 @@ var rootCmd = &cobra.Command{
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Initialize the EET Gateway service and start serving",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		viperSetDefaults()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		m()
 	},
@@ -40,7 +43,6 @@ var serveCmd = &cobra.Command{
 
 // Execute executes the root command.
 func Execute() {
-	viperSetDefaults()
 	rootCmd.AddCommand(initCmd, serveCmd, versionCmd)
 
 	if err := rootCmd.Execute(); err != nil {

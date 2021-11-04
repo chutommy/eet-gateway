@@ -2,16 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 const (
-	configFile = "eetg.json"
+	configFile = "eetgateway.json"
 
 	dirFlagName = "dir"
 )
@@ -28,8 +26,12 @@ func init() {
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Generate the default config file",
+	Long:  `Generate command creates a new config file with default values.`,
 	Args:  cobra.NoArgs,
-	RunE:  initCmdRunE,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		viperSetDefaults()
+	},
+	RunE: initCmdRunE,
 }
 
 func initCmdRunE(cmd *cobra.Command, _ []string) error {
@@ -58,22 +60,4 @@ func initCmdRunE(cmd *cobra.Command, _ []string) error {
 	fmt.Printf("The config file was successfully generated: %s\n", absPath)
 
 	return nil
-}
-
-func osConfigDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("retrieve user's home directory: %w", err)
-	}
-
-	var configDir string
-	switch runtime.GOOS {
-	case "linux":
-		configDir = filepath.Join(homeDir, ".config", "eetgateway")
-	case "darwin":
-		configDir = filepath.Join(homeDir, "Library", "Preferences", "eetgateway")
-	case "windows":
-		configDir = filepath.Join(homeDir, "AppData", "Local", "EETGateway")
-	}
-	return configDir, nil
 }
