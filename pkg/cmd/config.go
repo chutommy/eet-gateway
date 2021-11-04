@@ -43,7 +43,7 @@ const (
 	serverMaxHeaderBytes    = "server.data.max_header_bytes"
 )
 
-func viperSetDefaults() {
+func configSetDefault() {
 	viper.SetDefault(apiQuietMode, false)
 
 	viper.SetDefault(eetProductionMode, false)

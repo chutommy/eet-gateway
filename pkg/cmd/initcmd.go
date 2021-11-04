@@ -10,8 +10,10 @@ import (
 
 const (
 	configFile = "eetgateway.json"
+)
 
-	dirFlagName = "dir"
+const (
+	dirFlag = "dir"
 )
 
 func init() {
@@ -20,7 +22,7 @@ func init() {
 		panic(err)
 	}
 
-	initCmd.Flags().StringP(dirFlagName, "d", configDir, "location to generate config file")
+	initCmd.Flags().StringP(dirFlag, "d", configDir, "location to generate config file")
 }
 
 var initCmd = &cobra.Command{
@@ -28,14 +30,11 @@ var initCmd = &cobra.Command{
 	Short: "Generate the default config file",
 	Long:  `Generate command creates a new config file with default values.`,
 	Args:  cobra.NoArgs,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		viperSetDefaults()
-	},
-	RunE: initCmdRunE,
+	RunE:  initCmdRunE,
 }
 
 func initCmdRunE(cmd *cobra.Command, _ []string) error {
-	dir, err := cmd.Flags().GetString(dirFlagName)
+	dir, err := cmd.Flags().GetString(dirFlag)
 	if err != nil {
 		return fmt.Errorf("retrieve 'path' flag: %w", err)
 	}
@@ -46,6 +45,7 @@ func initCmdRunE(cmd *cobra.Command, _ []string) error {
 	// }
 
 	// write file
+	configSetDefault()
 	path := filepath.Join(dir, configFile)
 	err = viper.WriteConfigAs(path)
 	if err != nil {
