@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -39,10 +40,10 @@ func initCmdRunE(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("retrieve 'path' flag: %w", err)
 	}
 
-	// err = os.MkdirAll(dir, os.ModePerm)
-	// if err != nil {
-	// 	return fmt.Errorf("make directory %s: %w", dir, err)
-	// }
+	err = os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("make directory %s: %w", dir, err)
+	}
 
 	// write file
 	configSetDefault()
