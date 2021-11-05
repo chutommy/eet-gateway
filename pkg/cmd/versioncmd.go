@@ -14,7 +14,7 @@ var versionCmd = &cobra.Command{
 the OS/architecture of the binary build.`,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		s := fmt.Sprintf("EET Gateway v%s %s/%s", eetgVersion, runtime.GOOS, runtime.GOARCH)
+		s := fmt.Sprintf("EET Gateway v%s [%s/%s] (%s)", eetgVersion, runtime.GOOS, runtime.GOARCH, eetgBuildTime)
 		fmt.Println(s)
 	},
 }

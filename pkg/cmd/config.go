@@ -11,8 +11,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	eetgVersion = "0.4.0"
+var (
+	eetgVersion   string
+	eetgBuildTime string
 )
 
 const (

@@ -10,6 +10,14 @@ gotest-cover:
 gobench:
 	go test -bench=. -v ./pkg/...
 
+.PHONY: install
+install:
+	go build -ldflags "-s -w -X github.com/chutommy/eetgateway/pkg/cmd.eetgVersion=0.0.0 -X github.com/chutommy/eetgateway/pkg/cmd.eetgBuildTime=0000-00-00T00:00:00Z" -o $(GOBIN)/eetg cmd/eetgateway/main.go
+
+.PHONY: release-snapshot
+release-snapshot:
+	goreleaser release --snapshot --rm-dist
+
 .PHONY: eet-gens
 eet-gens: eet-specs eet-models eet-mocks
 
