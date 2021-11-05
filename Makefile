@@ -12,7 +12,12 @@ gobench:
 
 .PHONY: install
 install:
-	go build -ldflags "-s -w -X github.com/chutommy/eetgateway/pkg/cmd.eetgVersion=0.0.0 -X github.com/chutommy/eetgateway/pkg/cmd.eetgBuildTime=0000-00-00T00:00:00Z" -o $(GOBIN)/eetg cmd/eetgateway/main.go
+	go build -o $(GOBIN)/eetg \
+	-ldflags "-s -w -X github.com/chutommy/eetgateway/pkg/cmd.eetgOS=myOS \
+	-X github.com/chutommy/eetgateway/pkg/cmd.eetgArch=myArch \
+	-X github.com/chutommy/eetgateway/pkg/cmd.eetgVersion=0.0.0 \
+	-X github.com/chutommy/eetgateway/pkg/cmd.eetgBuildTime=0000-00-00T00:00:00Z" \
+	cmd/eetgateway/main.go
 
 .PHONY: release-snapshot
 release-snapshot:

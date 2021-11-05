@@ -11,11 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	eetgVersion   string
-	eetgBuildTime string
-)
-
 const (
 	apiQuietMode = "api.quiet_mode"
 

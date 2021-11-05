@@ -11,6 +11,7 @@ before:
 
 builds:
   - main: ./cmd/eetgateway
+    binary: eetg
     env:
       - CGO_ENABLED=0
     goos:
@@ -22,7 +23,10 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -s -w -X github.com/chutommy/eetgateway/pkg/cmd.eetgVersion={{.Version}} -X github.com/chutommy/eetgateway/pkg/cmd.eetgBuildTime={{.Date}}
+      - "-s -w -X github.com/chutommy/eetgateway/pkg/cmd.eetgOS={{.Os}}
+               -X github.com/chutommy/eetgateway/pkg/cmd.eetgArch={{.Arch}}
+               -X github.com/chutommy/eetgateway/pkg/cmd.eetgVersion={{.Version}}
+               -X github.com/chutommy/eetgateway/pkg/cmd.eetgBuildTime={{.Date}}"
 
 archives:
   - wrap_in_directory: true
