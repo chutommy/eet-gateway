@@ -47,21 +47,21 @@ func (h *handler) ginEngine() *gin.Engine {
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/ping", h.pingEET)
-		logEndpoint(http.MethodGet, "/ping")
+		logEndpoint(http.MethodGet, "/v1/ping")
 
 		v1.POST("/sale", h.sendSale)
-		logEndpoint(http.MethodPost, "/sale")
+		logEndpoint(http.MethodPost, "/v1/sale")
 
 		v1.POST("/cert", h.storeCert)
-		logEndpoint(http.MethodPost, "/cert")
+		logEndpoint(http.MethodPost, "/v1/cert")
 		v1.GET("/cert", h.listCertIDs)
-		logEndpoint(http.MethodGet, "/cert")
+		logEndpoint(http.MethodGet, "/v1/cert")
 		v1.PUT("/cert/id", h.updateCertID)
-		logEndpoint(http.MethodPut, "/cert/id")
+		logEndpoint(http.MethodPut, "/v1/cert/id")
 		v1.PUT("/cert/password", h.UpdateCertPassword)
-		logEndpoint(http.MethodPut, "/cert/password")
+		logEndpoint(http.MethodPut, "/v1/cert/password")
 		v1.DELETE("/cert", h.deleteCert)
-		logEndpoint(http.MethodDelete, "/cert")
+		logEndpoint(http.MethodDelete, "/v1/cert")
 	}
 
 	return r
