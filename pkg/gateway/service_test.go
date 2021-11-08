@@ -173,6 +173,7 @@ func TestService_StoreCert(t *testing.T) {
 			name: "unknown certificate store error",
 			setup: func(cas *mfscr.CAService, ks *mkeystore.Service) {
 				cas.On("ParseTaxpayerCertificate", pkcsData, pkcsPassword).Return(certKP.Cert, certKP.PK, nil)
+				ks.On("Ping", context.Background()).Return(nil)
 				ks.On("Store", context.Background(), certID, certPassword, certKP).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrKeystoreUnexpected},
@@ -220,6 +221,7 @@ func TestService_ListCertIDs(t *testing.T) {
 		{
 			name: "unknown list certificates error",
 			setup: func(ks *mkeystore.Service) {
+				ks.On("Ping", context.Background()).Return(nil)
 				ks.On("List", context.Background()).Return(nil, errUnexpected)
 			},
 			errs: []error{gateway.ErrKeystoreUnexpected},
@@ -289,6 +291,7 @@ func TestService_UpdateCertID(t *testing.T) {
 		{
 			name: "unknown update certificate id error",
 			setup: func(ks *mkeystore.Service) {
+				ks.On("Ping", context.Background()).Return(nil)
 				ks.On("UpdateID", context.Background(), certID, certID2).Return(errUnexpected, errUnexpected)
 			},
 			errs: []error{gateway.ErrKeystoreUnexpected},
@@ -357,6 +360,7 @@ func TestService_UpdateCertPassword(t *testing.T) {
 		{
 			name: "unknown update certificate password error",
 			setup: func(ks *mkeystore.Service) {
+				ks.On("Ping", context.Background()).Return(nil)
 				ks.On("UpdatePassword", context.Background(), certID, certPassword, certPassword2).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrKeystoreUnexpected},
@@ -411,6 +415,7 @@ func TestService_DeleteID(t *testing.T) {
 		{
 			name: "unknown certificate delete error",
 			setup: func(ks *mkeystore.Service) {
+				ks.On("Ping", context.Background()).Return(nil)
 				ks.On("Delete", context.Background(), certID).Return(errUnexpected)
 			},
 			errs: []error{gateway.ErrKeystoreUnexpected},

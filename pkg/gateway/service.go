@@ -3,7 +3,6 @@ package gateway
 import (
 	"context"
 	"errors"
-	"syscall"
 
 	"github.com/chutommy/eetgateway/pkg/eet"
 	"github.com/chutommy/eetgateway/pkg/fscr"
@@ -88,7 +87,7 @@ func (g *service) SendSale(ctx context.Context, certID string, certPassword []by
 			return nil, multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxAttempts):
 			return nil, multierr.Append(err, ErrMaxTXAttempts)
-		case errors.Is(err, syscall.ECONNREFUSED):
+		case g.keyStore.Ping(ctx) != nil:
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
@@ -139,7 +138,7 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 			return multierr.Append(err, ErrIDAlreadyExists)
 		case errors.Is(err, keystore.ErrReachedMaxAttempts):
 			return multierr.Append(err, ErrMaxTXAttempts)
-		case errors.Is(err, syscall.ECONNREFUSED):
+		case g.keyStore.Ping(ctx) != nil:
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
@@ -153,7 +152,7 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 func (g *service) ListCertIDs(ctx context.Context) ([]string, error) {
 	ids, err := g.keyStore.List(ctx)
 	if err != nil {
-		if errors.Is(err, syscall.ECONNREFUSED) {
+		if g.keyStore.Ping(ctx) != nil {
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
@@ -174,7 +173,7 @@ func (g *service) UpdateCertID(ctx context.Context, oldID, newID string) error {
 			return multierr.Append(err, ErrIDAlreadyExists)
 		case errors.Is(err, keystore.ErrReachedMaxAttempts):
 			return multierr.Append(err, ErrMaxTXAttempts)
-		case errors.Is(err, syscall.ECONNREFUSED):
+		case g.keyStore.Ping(ctx) != nil:
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
@@ -195,7 +194,7 @@ func (g *service) UpdateCertPassword(ctx context.Context, id string, oldPassword
 			return multierr.Append(err, ErrInvalidCertificatePassword)
 		case errors.Is(err, keystore.ErrReachedMaxAttempts):
 			return multierr.Append(err, ErrMaxTXAttempts)
-		case errors.Is(err, syscall.ECONNREFUSED):
+		case g.keyStore.Ping(ctx) != nil:
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
@@ -212,7 +211,7 @@ func (g *service) DeleteID(ctx context.Context, id string) error {
 		switch {
 		case errors.Is(err, keystore.ErrRecordNotFound):
 			return multierr.Append(err, ErrCertificateNotFound)
-		case errors.Is(err, syscall.ECONNREFUSED):
+		case g.keyStore.Ping(ctx) != nil:
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
 
