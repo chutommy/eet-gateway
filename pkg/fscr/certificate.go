@@ -64,7 +64,7 @@ func (c *caService) VerifyDSig(cert *x509.Certificate) error {
 	}
 
 	if _, err := cert.Verify(opts); err != nil {
-		return multierr.Append(err, ErrNotTrustedCertificate)
+		return multierr.Append(fmt.Errorf("verify digital signature certificate: %w", err), ErrNotTrustedCertificate)
 	}
 
 	return nil
@@ -77,21 +77,21 @@ func (c *caService) VerifyDSig(cert *x509.Certificate) error {
 func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	blocks, err := pkcs12.ToPEM(data, password)
 	if err != nil {
-		return nil, nil, fmt.Errorf("convert PFX data to PEM blocks: %w", err)
+		return nil, nil, multierr.Append(fmt.Errorf("convert PFX data to PEM blocks: %w", err), ErrInvalidCertificate)
 	}
 
 	cert, caCert, pk, err := parsePEMBlocks(blocks)
 	if err != nil {
-		return nil, nil, fmt.Errorf("parse PEM blocks: %w", err)
+		return nil, nil, multierr.Append(fmt.Errorf("parse PEM blocks: %w", err), ErrInvalidCertificate)
 	}
 
 	if err = verifyEETCA(c.eetCARoots, caCert); err != nil {
-		return nil, nil, multierr.Append(err, ErrInvalidCertificate)
+		return nil, nil, multierr.Append(fmt.Errorf("verify taxpayer's certificate CA: %w", err), ErrInvalidCertificate)
 	}
 
 	err = verifyKeys(caCert, cert, pk)
 	if err != nil {
-		return nil, nil, multierr.Append(err, ErrInvalidCertificate)
+		return nil, nil, multierr.Append(fmt.Errorf("verify keys of the certificate: %w", err), ErrInvalidCertificate)
 	}
 
 	return cert, pk, nil

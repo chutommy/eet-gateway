@@ -105,7 +105,7 @@ func decryptPemWithGCM(gcm cipher.AEAD, cipherText []byte) ([]byte, error) {
 	// open sealed cipher
 	pemData, err := gcm.Open(nil, nonce, sealed, nil)
 	if err != nil {
-		return nil, multierr.Append(err, ErrInvalidDecryptionKey)
+		return nil, multierr.Append(fmt.Errorf("open sealed cipher text: %w", err), ErrInvalidDecryptionKey)
 	}
 
 	block, _ := pem.Decode(pemData)
