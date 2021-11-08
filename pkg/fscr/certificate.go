@@ -52,15 +52,15 @@ func NewCAService(eetRoots []*x509.Certificate, dsigPool *x509.CertPool) CAServi
 
 // VerifyDSig verifies certificate used for the digital signature.
 func (c *caService) VerifyDSig(cert *x509.Certificate) error {
+	if n := cert.Subject.Organization[0]; n != OrganizationName {
+		return fmt.Errorf("unexpected organization name (%s): %w", n, ErrInvalidOrganizationName)
+	}
+
 	opts := x509.VerifyOptions{
 		Roots: c.dsigPool,
 		KeyUsages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageAny,
 		},
-	}
-
-	if n := cert.Subject.Organization[0]; n != OrganizationName {
-		return fmt.Errorf("unexpected organization name (%s): %w", n, ErrInvalidOrganizationName)
 	}
 
 	if _, err := cert.Verify(opts); err != nil {
