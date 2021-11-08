@@ -46,7 +46,7 @@ func (h *handler) ginEngine() *gin.Engine {
 
 	v1 := r.Group("/v1")
 	{
-		v1.GET("/ping", h.pingEET)
+		v1.GET("/ping", h.ping)
 		logEndpoint(http.MethodGet, "/v1/ping")
 
 		v1.POST("/sale", h.sendSale)
@@ -67,7 +67,7 @@ func (h *handler) ginEngine() *gin.Engine {
 	return r
 }
 
-func (h *handler) pingEET(c *gin.Context) {
+func (h *handler) ping(c *gin.Context) {
 	err := h.gatewaySvc.Ping(c)
 	var taxAdmin error
 	if errors.Is(err, gateway.ErrFSCRConnection) {
