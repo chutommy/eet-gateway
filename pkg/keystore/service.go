@@ -140,17 +140,10 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
 		}
 
-		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			// read from database
-			m, err = pipe.HGetAll(ctx, idx).Result()
-			if err != nil {
-				return fmt.Errorf("retrieve stored certificate from database: %w", err)
-			}
-
-			return nil
-		})
+		// read from database
+		m, err = tx.HGetAll(ctx, idx).Result()
 		if err != nil {
-			return err
+			return fmt.Errorf("retrieve stored certificate from database: %w", err)
 		}
 
 		return nil
