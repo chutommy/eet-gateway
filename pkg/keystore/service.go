@@ -20,8 +20,10 @@ var ErrIDAlreadyExists = errors.New("record with the ID already exists")
 var ErrReachedMaxAttempts = errors.New("maximum number of attempts reached")
 
 var (
-	// CertificateObjectKey is the redis object key for storing certificates.
-	CertificateObjectKey = "certificate"
+	// IDsObjectKey is the redis object key for storing certificate IDs.
+	IDsObjectKey = "ids"
+	// CertObjectKey is the redis object key for storing certificates.
+	CertObjectKey = "certificate"
 
 	// PublicKey is the redis key of the certificate field.
 	PublicKey = "public-key"
@@ -31,9 +33,9 @@ var (
 	SaltKey = "salt"
 )
 
-// CertIDKey converts a certificate ID to a keystore object key.
-func CertIDKey(id string) string {
-	return fmt.Sprintf("%s:%s", CertificateObjectKey, id)
+// ToCertObjectKey converts a certificate ID to a keystore object key.
+func ToCertObjectKey(id string) string {
+	return fmt.Sprintf("%s:%s", CertObjectKey, id)
 }
 
 // Service represents a keystore abstraction for KeyPair management.
@@ -58,7 +60,7 @@ func (r *redisService) Ping(ctx context.Context) error {
 
 // Store stores the given KeyPair kp in the database encrypted with the password.
 func (r *redisService) Store(ctx context.Context, id string, password []byte, kp *KeyPair) error {
-	id = CertIDKey(id)
+	id = ToCertObjectKey(id)
 
 	// generate random salt for each record
 	salt := make([]byte, 256)
@@ -118,7 +120,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 
 // Get retrieves a KeyPair by the ID.
 func (r *redisService) Get(ctx context.Context, id string, password []byte) (*KeyPair, error) {
-	id = CertIDKey(id)
+	id = ToCertObjectKey(id)
 
 	m := make(map[string]string)
 	txf := func(tx *redis.Tx) error {
@@ -184,8 +186,8 @@ func (r *redisService) List(ctx context.Context) ([]string, error) {
 
 // UpdateID modifies the ID of the record.
 func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error {
-	oldID = CertIDKey(oldID)
-	newID = CertIDKey(newID)
+	oldID = ToCertObjectKey(oldID)
+	newID = ToCertObjectKey(newID)
 
 	txf := func(tx *redis.Tx) error {
 		// check if exists
@@ -234,7 +236,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 
 // UpdatePassword modifies the password for encryption/decryption of the record.
 func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
-	id = CertIDKey(id)
+	id = ToCertObjectKey(id)
 
 	txf := func(tx *redis.Tx) error {
 		// check if exists
@@ -305,7 +307,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 
 // Delete removes the KeyPair with the ID.
 func (r *redisService) Delete(ctx context.Context, id string) error {
-	id = CertIDKey(id)
+	id = ToCertObjectKey(id)
 
 	i, err := r.rdb.Del(ctx, id).Result()
 	if err != nil {

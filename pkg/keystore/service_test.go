@@ -66,8 +66,8 @@ func randomKeyPair() *keystore.KeyPair {
 var (
 	certID        = "cert1"
 	certID2       = "cert2"
-	certIDObject  = keystore.CertIDKey(certID)
-	certID2Object = keystore.CertIDKey(certID2)
+	certIDObject  = keystore.ToCertObjectKey(certID)
+	certID2Object = keystore.ToCertObjectKey(certID2)
 	certPassword  = []byte("secret1")
 	certPassword2 = []byte("secret2")
 	certKP        = randomKeyPair()
