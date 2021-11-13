@@ -250,12 +250,12 @@ func TestRedisService_List(t *testing.T) {
 
 			tc.setup(m)
 
-			ids, err := ks.List(context.Background())
+			ids, err := ks.List(context.Background(), 0, 0)
 			if tc.err == nil {
 				require.NoError(t, err)
 
 				require.Len(t, ids, 1)
-				require.Equal(t, certIDx, ids[0])
+				require.Equal(t, certID, ids[0])
 			} else {
 				require.ErrorIs(t, err, tc.err)
 			}
@@ -418,7 +418,7 @@ func TestRedisService_Delete(t *testing.T) {
 			setup: func(m *miniredis.Miniredis) {
 				m.Close()
 			},
-			err: syscall.ECONNREFUSED,
+			err: io.EOF,
 		},
 	}
 

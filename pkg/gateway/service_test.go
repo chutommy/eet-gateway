@@ -214,7 +214,7 @@ func TestService_ListCertIDs(t *testing.T) {
 		{
 			name: "ok",
 			setup: func(ks *mkeystore.Service) {
-				ks.On("List", context.Background()).Return([]string{certID}, nil)
+				ks.On("List", context.Background(), int64(0), int64(0)).Return([]string{certID}, nil)
 			},
 			errs: nil,
 		},
@@ -222,7 +222,7 @@ func TestService_ListCertIDs(t *testing.T) {
 			name: "unknown list certificates error",
 			setup: func(ks *mkeystore.Service) {
 				ks.On("Ping", context.Background()).Return(nil)
-				ks.On("List", context.Background()).Return(nil, errUnexpected)
+				ks.On("List", context.Background(), int64(0), int64(0)).Return(nil, errUnexpected)
 			},
 			errs: []error{gateway.ErrKeystoreUnexpected},
 		},
@@ -237,7 +237,7 @@ func TestService_ListCertIDs(t *testing.T) {
 			tc.setup(keystoreService)
 
 			g := gateway.NewService(fscrClient, caService, keystoreService)
-			ids, err := g.ListCertIDs(context.Background())
+			ids, err := g.ListCertIDs(context.Background(), 0, 0)
 			if tc.errs == nil {
 				require.NoError(t, err)
 				require.NotEmpty(t, ids)
