@@ -211,6 +211,8 @@ func (g *service) DeleteID(ctx context.Context, id string) error {
 		switch {
 		case errors.Is(err, keystore.ErrRecordNotFound):
 			return multierr.Append(err, ErrCertificateNotFound)
+		case errors.Is(err, keystore.ErrReachedMaxAttempts):
+			return multierr.Append(err, ErrMaxTXAttempts)
 		case g.keyStore.Ping(ctx) != nil:
 			return multierr.Append(err, ErrKeystoreUnavailable)
 		}
