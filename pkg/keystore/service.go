@@ -95,6 +95,12 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 				return fmt.Errorf("store certificate in database: %w", err)
 			}
 
+			// add to the list of certificate IDs
+			_, err = pipe.LPush(ctx, IDsObjectKey, id).Result()
+			if err != nil {
+				return fmt.Errorf("add ID to the ID list: %w", err)
+			}
+
 			return nil
 		})
 		if err != nil {
@@ -207,8 +213,15 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 				return fmt.Errorf("rename: %w", err)
 			}
 
-			if !ok {
-				return fmt.Errorf("failed to rename results: %w", ErrIDAlreadyExists)
+			// update the ID in the list of IDs
+			_, err = pipe.LRem(ctx, IDsObjectKey, 0, oldID).Result()
+			if err != nil {
+				return fmt.Errorf("remove ID from the ID list: %w", err)
+			}
+
+			_, err = pipe.LPush(ctx, IDsObjectKey, newID).Result()
+			if err != nil {
+				return fmt.Errorf("add ID to the ID list: %w", err)
 			}
 
 			return nil
@@ -309,17 +322,51 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 func (r *redisService) Delete(ctx context.Context, id string) error {
 	idx := ToCertObjectKey(id)
 
-	i, err := r.rdb.Del(ctx, idx).Result()
-	if err != nil {
-		return fmt.Errorf("delete record from database: %w", err)
+	txf := func(tx *redis.Tx) error {
+		// check if exists
+		i, err := tx.Exists(ctx, idx).Result()
+		if err != nil {
+			return fmt.Errorf("check if ID exists: %w", err)
+		}
+
+		if i == 0 {
+			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
+		}
+
+		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			// remove
+			_, err := pipe.Del(ctx, idx).Result()
+			if err != nil {
+				return fmt.Errorf("delete record from database: %w", err)
+			}
+
+			// update the ID in the list of IDs
+			_, err = pipe.LRem(ctx, IDsObjectKey, 0, id).Result()
+			if err != nil {
+				return fmt.Errorf("remove ID from the ID list: %w", err)
+			}
+
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
-	// check number of deleted records
-	if i == 0 {
-		return fmt.Errorf("delete record by the id: %w", ErrRecordNotFound)
+	for k := 0; k < 3; k++ {
+		err := r.rdb.Watch(ctx, txf, idx, IDsObjectKey)
+		if errors.Is(err, redis.TxFailedErr) {
+			continue
+		} else if err != nil {
+			return fmt.Errorf("transaction failed: %w", err)
+		}
+
+		return nil
 	}
 
-	return nil
+	return ErrReachedMaxAttempts
 }
 
 // NewRedisService returns an implementation of the Service.
