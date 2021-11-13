@@ -136,7 +136,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// read from database
-			m, err = tx.HGetAll(ctx, id).Result()
+			m, err = pipe.HGetAll(ctx, id).Result()
 			if err != nil {
 				return fmt.Errorf("retrieve stored certificate from database: %w", err)
 			}
@@ -202,7 +202,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// update ID
-			ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
+			ok, err := pipe.RenameNX(ctx, oldID, newID).Result()
 			if err != nil {
 				return fmt.Errorf("rename: %w", err)
 			}
