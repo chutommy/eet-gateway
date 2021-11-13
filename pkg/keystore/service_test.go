@@ -66,8 +66,8 @@ func randomKeyPair() *keystore.KeyPair {
 var (
 	certID        = "cert1"
 	certID2       = "cert2"
-	certIDObject  = keystore.ToCertObjectKey(certID)
-	certID2Object = keystore.ToCertObjectKey(certID2)
+	certIDx       = keystore.ToCertObjectKey(certID)
+	certID2x      = keystore.ToCertObjectKey(certID2)
 	certPassword  = []byte("secret1")
 	certPassword2 = []byte("secret2")
 	certKP        = randomKeyPair()
@@ -124,7 +124,7 @@ func TestRedisService_Store(t *testing.T) {
 		{
 			name: "id already used",
 			setup: func(m *miniredis.Miniredis) {
-				err := m.Set(certIDObject, "")
+				err := m.Set(certIDx, "")
 				require.NoError(t, err)
 			},
 			err: keystore.ErrIDAlreadyExists,
@@ -149,13 +149,13 @@ func TestRedisService_Store(t *testing.T) {
 			if tc.err == nil {
 				require.NoError(t, err)
 
-				certVal := m.HGet(certIDObject, keystore.PublicKey)
+				certVal := m.HGet(certIDx, keystore.PublicKey)
 				require.NotEmpty(t, certVal)
 
-				pkVal := m.HGet(certIDObject, keystore.PrivateKeyKey)
+				pkVal := m.HGet(certIDx, keystore.PrivateKeyKey)
 				require.NotEmpty(t, pkVal)
 
-				saltVal := m.HGet(certIDObject, keystore.SaltKey)
+				saltVal := m.HGet(certIDx, keystore.SaltKey)
 				require.NotEmpty(t, saltVal)
 			} else {
 				require.ErrorIs(t, err, tc.err)
@@ -178,7 +178,7 @@ func TestRedisService_Get(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certIDObject)
+				ok := m.Del(certIDx)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -186,7 +186,7 @@ func TestRedisService_Get(t *testing.T) {
 		{
 			name: "incorrect password",
 			setup: func(m *miniredis.Miniredis) {
-				m.HSet(certIDObject, keystore.PrivateKeyKey, "invalid")
+				m.HSet(certIDx, keystore.PrivateKeyKey, "invalid")
 			},
 			err: keystore.ErrInvalidDecryptionKey,
 		},
@@ -255,7 +255,7 @@ func TestRedisService_List(t *testing.T) {
 				require.NoError(t, err)
 
 				require.Len(t, ids, 1)
-				require.Equal(t, certIDObject, ids[0])
+				require.Equal(t, certIDx, ids[0])
 			} else {
 				require.ErrorIs(t, err, tc.err)
 			}
@@ -277,7 +277,7 @@ func TestRedisService_UpdateID(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certIDObject)
+				ok := m.Del(certIDx)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -285,7 +285,7 @@ func TestRedisService_UpdateID(t *testing.T) {
 		{
 			name: "id already used",
 			setup: func(m *miniredis.Miniredis) {
-				err := m.Set(certID2Object, "")
+				err := m.Set(certID2x, "")
 				require.NoError(t, err)
 			},
 			err: keystore.ErrIDAlreadyExists,
@@ -293,7 +293,7 @@ func TestRedisService_UpdateID(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certIDObject)
+				ok := m.Del(certIDx)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -347,7 +347,7 @@ func TestRedisService_UpdatePassword(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certIDObject)
+				ok := m.Del(certIDx)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -355,7 +355,7 @@ func TestRedisService_UpdatePassword(t *testing.T) {
 		{
 			name: "incorrect password",
 			setup: func(m *miniredis.Miniredis) {
-				m.HSet(certIDObject, keystore.PrivateKeyKey, "invalid")
+				m.HSet(certIDx, keystore.PrivateKeyKey, "invalid")
 			},
 			err: keystore.ErrInvalidDecryptionKey,
 		},
@@ -408,7 +408,7 @@ func TestRedisService_Delete(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certIDObject)
+				ok := m.Del(certIDx)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -436,7 +436,7 @@ func TestRedisService_Delete(t *testing.T) {
 			if tc.err == nil {
 				require.NoError(t, err)
 
-				exists := m.Exists(certIDObject)
+				exists := m.Exists(certIDx)
 				require.False(t, exists)
 			} else {
 				require.ErrorIs(t, err, tc.err)

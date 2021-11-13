@@ -60,7 +60,7 @@ func (r *redisService) Ping(ctx context.Context) error {
 
 // Store stores the given KeyPair kp in the database encrypted with the password.
 func (r *redisService) Store(ctx context.Context, id string, password []byte, kp *KeyPair) error {
-	id = ToCertObjectKey(id)
+	idx := ToCertObjectKey(id)
 
 	// generate random salt for each record
 	salt := make([]byte, 256)
@@ -75,7 +75,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 
 	txf := func(tx *redis.Tx) error {
 		// check if already exists
-		i, err := tx.Exists(ctx, id).Result()
+		i, err := tx.Exists(ctx, idx).Result()
 		if err != nil {
 			return fmt.Errorf("check if certificate exists: %w", err)
 		}
@@ -86,7 +86,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// store in database
-			_, err = pipe.HSet(ctx, id, map[string]interface{}{
+			_, err = pipe.HSet(ctx, idx, map[string]interface{}{
 				PublicKey:     cert,
 				PrivateKeyKey: pk,
 				SaltKey:       salt,
@@ -105,7 +105,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 	}
 
 	for k := 0; k < 3; k++ {
-		err = r.rdb.Watch(ctx, txf, id)
+		err = r.rdb.Watch(ctx, txf, idx, IDsObjectKey)
 		if errors.Is(err, redis.TxFailedErr) {
 			continue
 		} else if err != nil {
@@ -120,12 +120,12 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 
 // Get retrieves a KeyPair by the ID.
 func (r *redisService) Get(ctx context.Context, id string, password []byte) (*KeyPair, error) {
-	id = ToCertObjectKey(id)
+	idx := ToCertObjectKey(id)
 
 	m := make(map[string]string)
 	txf := func(tx *redis.Tx) error {
 		// check if exists
-		i, err := tx.Exists(ctx, id).Result()
+		i, err := tx.Exists(ctx, idx).Result()
 		if err != nil {
 			return fmt.Errorf("check if ID exists: %w", err)
 		}
@@ -136,7 +136,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// read from database
-			m, err = pipe.HGetAll(ctx, id).Result()
+			m, err = pipe.HGetAll(ctx, idx).Result()
 			if err != nil {
 				return fmt.Errorf("retrieve stored certificate from database: %w", err)
 			}
@@ -151,7 +151,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 	}
 
 	for k := 0; k < 3; k++ {
-		err := r.rdb.Watch(ctx, txf, id)
+		err := r.rdb.Watch(ctx, txf, idx, IDsObjectKey)
 		if errors.Is(err, redis.TxFailedErr) {
 			continue
 		} else if err != nil {
@@ -186,12 +186,12 @@ func (r *redisService) List(ctx context.Context) ([]string, error) {
 
 // UpdateID modifies the ID of the record.
 func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error {
-	oldID = ToCertObjectKey(oldID)
-	newID = ToCertObjectKey(newID)
+	oldIDx := ToCertObjectKey(oldID)
+	newIDx := ToCertObjectKey(newID)
 
 	txf := func(tx *redis.Tx) error {
 		// check if exists
-		i, err := tx.Exists(ctx, oldID).Result()
+		i, err := tx.Exists(ctx, oldIDx).Result()
 		if err != nil {
 			return fmt.Errorf("check if ID exists: %w", err)
 		}
@@ -202,7 +202,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// update ID
-			ok, err := pipe.RenameNX(ctx, oldID, newID).Result()
+			ok, err := pipe.RenameNX(ctx, oldIDx, newIDx).Result()
 			if err != nil {
 				return fmt.Errorf("rename: %w", err)
 			}
@@ -221,7 +221,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 	}
 
 	for k := 0; k < 3; k++ {
-		err := r.rdb.Watch(ctx, txf, oldID)
+		err := r.rdb.Watch(ctx, txf, oldIDx, IDsObjectKey)
 		if errors.Is(err, redis.TxFailedErr) {
 			continue
 		} else if err != nil {
@@ -236,11 +236,11 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 
 // UpdatePassword modifies the password for encryption/decryption of the record.
 func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error {
-	id = ToCertObjectKey(id)
+	idx := ToCertObjectKey(id)
 
 	txf := func(tx *redis.Tx) error {
 		// check if exists
-		i, err := tx.Exists(ctx, id).Result()
+		i, err := tx.Exists(ctx, idx).Result()
 		if err != nil {
 			return fmt.Errorf("check if ID exists: %w", err)
 		}
@@ -250,7 +250,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		}
 
 		// read from database
-		m, err := tx.HGetAll(ctx, id).Result()
+		m, err := tx.HGetAll(ctx, idx).Result()
 		if err != nil {
 			return fmt.Errorf("retrieve stored certificate from database: %w", err)
 		}
@@ -274,7 +274,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// overwrite in database
-			_, err = pipe.HSet(ctx, id, map[string]interface{}{
+			_, err = pipe.HSet(ctx, idx, map[string]interface{}{
 				PublicKey:     cert,
 				PrivateKeyKey: pk,
 			}).Result()
@@ -292,7 +292,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 	}
 
 	for k := 0; k < 3; k++ {
-		err := r.rdb.Watch(ctx, txf, id)
+		err := r.rdb.Watch(ctx, txf, idx)
 		if errors.Is(err, redis.TxFailedErr) {
 			continue
 		} else if err != nil {
@@ -307,9 +307,9 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 
 // Delete removes the KeyPair with the ID.
 func (r *redisService) Delete(ctx context.Context, id string) error {
-	id = ToCertObjectKey(id)
+	idx := ToCertObjectKey(id)
 
-	i, err := r.rdb.Del(ctx, id).Result()
+	i, err := r.rdb.Del(ctx, idx).Result()
 	if err != nil {
 		return fmt.Errorf("delete record from database: %w", err)
 	}
