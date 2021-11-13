@@ -23,8 +23,8 @@ var (
 	// CertificateObjectKey is the redis object key for storing certificates.
 	CertificateObjectKey = "certificate"
 
-	// CertificateKey is the redis key of the certificate field.
-	CertificateKey = "certificate"
+	// PublicKey is the redis key of the certificate field.
+	PublicKey = "public-key"
 	// PrivateKeyKey is the redis key of the private key field.
 	PrivateKeyKey = "private-key"
 	// SaltKey is the redis key of the salt field.
@@ -86,9 +86,9 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// store in database
 			_, err = pipe.HSet(ctx, id, map[string]interface{}{
-				CertificateKey: cert,
-				PrivateKeyKey:  pk,
-				SaltKey:        salt,
+				PublicKey:     cert,
+				PrivateKeyKey: pk,
+				SaltKey:       salt,
 			}).Result()
 			if err != nil {
 				return fmt.Errorf("store certificate in database: %w", err)
@@ -146,7 +146,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 		}
 
 		salt := []byte(m[SaltKey])
-		cert := []byte(m[CertificateKey])
+		cert := []byte(m[PublicKey])
 		pk := []byte(m[PrivateKeyKey])
 
 		kp := new(KeyPair)
@@ -240,7 +240,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 
 		// decrypt KeyPair with the old password
 		salt := []byte(m[SaltKey])
-		cert := []byte(m[CertificateKey])
+		cert := []byte(m[PublicKey])
 		pk := []byte(m[PrivateKeyKey])
 
 		kp := new(KeyPair)
@@ -259,8 +259,8 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// overwrite in database
 			_, err = pipe.HSet(ctx, id, map[string]interface{}{
-				CertificateKey: cert,
-				PrivateKeyKey:  pk,
+				PublicKey:     cert,
+				PrivateKeyKey: pk,
 			}).Result()
 			if err != nil {
 				return fmt.Errorf("store certificate in database: %w", err)

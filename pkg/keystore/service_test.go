@@ -149,7 +149,7 @@ func TestRedisService_Store(t *testing.T) {
 			if tc.err == nil {
 				require.NoError(t, err)
 
-				certVal := m.HGet(certIDObject, keystore.CertificateKey)
+				certVal := m.HGet(certIDObject, keystore.PublicKey)
 				require.NotEmpty(t, certVal)
 
 				pkVal := m.HGet(certIDObject, keystore.PrivateKeyKey)
