@@ -82,7 +82,6 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 			return fmt.Errorf("found record with same id: %w", ErrIDAlreadyExists)
 		}
 
-		// set
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// store in database
 			_, err = pipe.HSet(ctx, id, map[string]interface{}{
@@ -93,9 +92,14 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 			if err != nil {
 				return fmt.Errorf("store certificate in database: %w", err)
 			}
+
 			return nil
 		})
-		return err
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	for k := 0; k < 3; k++ {
@@ -128,10 +132,17 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
 		}
 
-		// read from database
-		m, err = tx.HGetAll(ctx, id).Result()
+		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			// read from database
+			m, err = tx.HGetAll(ctx, id).Result()
+			if err != nil {
+				return fmt.Errorf("retrieve stored certificate from database: %w", err)
+			}
+
+			return nil
+		})
 		if err != nil {
-			return fmt.Errorf("retrieve stored certificate from database: %w", err)
+			return err
 		}
 
 		return nil
@@ -187,8 +198,8 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
 		}
 
-		// set
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			// update ID
 			ok, err := r.rdb.RenameNX(ctx, oldID, newID).Result()
 			if err != nil {
 				return fmt.Errorf("rename: %w", err)
@@ -200,7 +211,11 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 
 			return nil
 		})
-		return err
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	for k := 0; k < 3; k++ {
@@ -255,7 +270,6 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 			return fmt.Errorf("encrypt a KeyPair: %w", err)
 		}
 
-		// set
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// overwrite in database
 			_, err = pipe.HSet(ctx, id, map[string]interface{}{
@@ -268,7 +282,11 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 
 			return nil
 		})
-		return err
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	for k := 0; k < 3; k++ {
