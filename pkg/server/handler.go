@@ -52,16 +52,16 @@ func (h *handler) ginEngine() *gin.Engine {
 		v1.POST("/sale", h.sendSale)
 		logEndpoint(http.MethodPost, "/v1/sale")
 
-		v1.POST("/cert", h.storeCert)
-		logEndpoint(http.MethodPost, "/v1/cert")
-		v1.POST("/cert/all", h.listCertIDs)
-		logEndpoint(http.MethodGet, "/v1/cert")
-		v1.PUT("/cert/id", h.updateCertID)
-		logEndpoint(http.MethodPut, "/v1/cert/id")
-		v1.PUT("/cert/password", h.UpdateCertPassword)
-		logEndpoint(http.MethodPut, "/v1/cert/password")
-		v1.DELETE("/cert", h.deleteCert)
-		logEndpoint(http.MethodDelete, "/v1/cert")
+		v1.POST("/certs", h.storeCert)
+		logEndpoint(http.MethodPost, "/v1/certs")
+		v1.POST("/certs/l", h.listCertIDs)
+		logEndpoint(http.MethodGet, "/v1/certs/l")
+		v1.PUT("/certs/id", h.updateCertID)
+		logEndpoint(http.MethodPut, "/v1/certs/id")
+		v1.PUT("/certs/password", h.UpdateCertPassword)
+		logEndpoint(http.MethodPut, "/v1/certs/password")
+		v1.DELETE("/certs", h.deleteCert)
+		logEndpoint(http.MethodDelete, "/v1/certs")
 	}
 
 	return r
