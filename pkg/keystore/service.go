@@ -14,7 +14,7 @@ import (
 var ErrRecordNotFound = errors.New("record not found")
 
 // ErrIDAlreadyExists is returned if an ID is already in use.
-var ErrIDAlreadyExists = errors.New("record with the ID already exists")
+var ErrIDAlreadyExists = errors.New("record with the id already exists")
 
 // ErrReachedMaxAttempts is returned if the maximum number of attempts of transactions is reached.
 var ErrReachedMaxAttempts = errors.New("maximum number of attempts reached")
@@ -98,7 +98,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 			// add to the list of certificate IDs
 			_, err = pipe.LPush(ctx, IDsObjectKey, id).Result()
 			if err != nil {
-				return fmt.Errorf("add ID to the ID list: %w", err)
+				return fmt.Errorf("add id to the id list: %w", err)
 			}
 
 			return nil
@@ -133,7 +133,7 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 		// check if exists
 		i, err := tx.Exists(ctx, idx).Result()
 		if err != nil {
-			return fmt.Errorf("check if ID exists: %w", err)
+			return fmt.Errorf("check if id exists: %w", err)
 		}
 
 		if i == 0 {
@@ -192,7 +192,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 		// check if exists
 		i, err := tx.Exists(ctx, oldIDx).Result()
 		if err != nil {
-			return fmt.Errorf("check if ID exists: %w", err)
+			return fmt.Errorf("check if id exists: %w", err)
 		}
 
 		if i == 0 {
@@ -202,7 +202,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 		// check if the new ID already exists
 		i, err = tx.Exists(ctx, newIDx).Result()
 		if err != nil {
-			return fmt.Errorf("check if new ID exists: %w", err)
+			return fmt.Errorf("check if new id exists: %w", err)
 		}
 
 		if i != 0 {
@@ -219,12 +219,12 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 			// update the ID in the list of IDs
 			_, err = pipe.LRem(ctx, IDsObjectKey, 0, oldID).Result()
 			if err != nil {
-				return fmt.Errorf("remove ID from the ID list: %w", err)
+				return fmt.Errorf("remove id from the id list: %w", err)
 			}
 
 			_, err = pipe.LPush(ctx, IDsObjectKey, newID).Result()
 			if err != nil {
-				return fmt.Errorf("add ID to the ID list: %w", err)
+				return fmt.Errorf("add id to the id list: %w", err)
 			}
 
 			return nil
@@ -258,7 +258,7 @@ func (r *redisService) UpdatePassword(ctx context.Context, id string, oldPasswor
 		// check if exists
 		i, err := tx.Exists(ctx, idx).Result()
 		if err != nil {
-			return fmt.Errorf("check if ID exists: %w", err)
+			return fmt.Errorf("check if id exists: %w", err)
 		}
 
 		if i == 0 {
@@ -329,7 +329,7 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 		// check if exists
 		i, err := tx.Exists(ctx, idx).Result()
 		if err != nil {
-			return fmt.Errorf("check if ID exists: %w", err)
+			return fmt.Errorf("check if id exists: %w", err)
 		}
 
 		if i == 0 {
@@ -346,7 +346,7 @@ func (r *redisService) Delete(ctx context.Context, id string) error {
 			// update the ID in the list of IDs
 			_, err = pipe.LRem(ctx, IDsObjectKey, 0, id).Result()
 			if err != nil {
-				return fmt.Errorf("remove ID from the ID list: %w", err)
+				return fmt.Errorf("remove id from the ID list: %w", err)
 			}
 
 			return nil

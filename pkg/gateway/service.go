@@ -14,7 +14,7 @@ import (
 var ErrCertificateNotFound = errors.New("taxpayer's certificate not found")
 
 // ErrIDAlreadyExists is returned if a certificate with the given ID already exists.
-var ErrIDAlreadyExists = errors.New("taxpayer's certificate with the ID already exists")
+var ErrIDAlreadyExists = errors.New("taxpayer's certificate with the id already exists")
 
 // ErrCertificateParse is returned if a certificate can't be parsed.
 var ErrCertificateParse = errors.New("taxpayer's certificate not parsable")
