@@ -149,6 +149,12 @@ type StoreCertReq struct {
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
 
+// ListCertIDsReq is a binding request structure for listing certificate IDs.
+type ListCertIDsReq struct {
+	Offset int64 `json:"offset" binding:"gte=0"`
+	Limit  int64 `json:"limit" binding:"gte=0"`
+}
+
 // ListCertIDsResp is a response structure for listing certificate IDs.
 type ListCertIDsResp struct {
 	CertIDs []string `json:"cert_ids"`

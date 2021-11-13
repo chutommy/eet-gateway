@@ -43,7 +43,7 @@ type Service interface {
 	Ping(ctx context.Context) error
 	Store(ctx context.Context, id string, password []byte, kp *KeyPair) error
 	Get(ctx context.Context, id string, password []byte) (*KeyPair, error)
-	List(ctx context.Context) ([]string, error)
+	List(ctx context.Context, offset, limit int64) ([]string, error)
 	UpdateID(ctx context.Context, oldID, newID string) error
 	UpdatePassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
 	Delete(ctx context.Context, id string) error
@@ -174,8 +174,8 @@ func (r *redisService) Get(ctx context.Context, id string, password []byte) (*Ke
 }
 
 // List returns all record keys in the database.
-func (r *redisService) List(ctx context.Context) ([]string, error) {
-	ids, err := r.rdb.Keys(ctx, "*").Result()
+func (r *redisService) List(ctx context.Context, offset, limit int64) ([]string, error) {
+	ids, err := r.rdb.LRange(ctx, IDsObjectKey, offset, offset+limit-1).Result()
 	if err != nil {
 		return nil, fmt.Errorf("read all records: %w", err)
 	}

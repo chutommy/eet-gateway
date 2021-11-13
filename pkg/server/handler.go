@@ -54,7 +54,7 @@ func (h *handler) ginEngine() *gin.Engine {
 
 		v1.POST("/cert", h.storeCert)
 		logEndpoint(http.MethodPost, "/v1/cert")
-		v1.GET("/cert", h.listCertIDs)
+		v1.POST("/cert/all", h.listCertIDs)
 		logEndpoint(http.MethodGet, "/v1/cert")
 		v1.PUT("/cert/id", h.updateCertID)
 		logEndpoint(http.MethodPut, "/v1/cert/id")
@@ -139,7 +139,19 @@ func (h *handler) storeCert(c *gin.Context) {
 }
 
 func (h *handler) listCertIDs(c *gin.Context) {
-	ids, err := h.gatewaySvc.ListCertIDs(c)
+	// default request
+	req := &ListCertIDsReq{
+		Offset: 0,
+		Limit:  1000,
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		_ = c.Error(err)
+		return
+	}
+
+	ids, err := h.gatewaySvc.ListCertIDs(c, req.Offset, req.Limit)
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
