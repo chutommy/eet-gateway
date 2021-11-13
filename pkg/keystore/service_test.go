@@ -66,6 +66,8 @@ func randomKeyPair() *keystore.KeyPair {
 var (
 	certID        = "cert1"
 	certID2       = "cert2"
+	certIDObject  = keystore.CertIDKey(certID)
+	certID2Object = keystore.CertIDKey(certID2)
 	certPassword  = []byte("secret1")
 	certPassword2 = []byte("secret2")
 	certKP        = randomKeyPair()
@@ -122,7 +124,7 @@ func TestRedisService_Store(t *testing.T) {
 		{
 			name: "id already used",
 			setup: func(m *miniredis.Miniredis) {
-				err := m.Set(certID, "")
+				err := m.Set(certIDObject, "")
 				require.NoError(t, err)
 			},
 			err: keystore.ErrIDAlreadyExists,
@@ -147,13 +149,13 @@ func TestRedisService_Store(t *testing.T) {
 			if tc.err == nil {
 				require.NoError(t, err)
 
-				certVal := m.HGet(certID, keystore.CertificateKey)
+				certVal := m.HGet(certIDObject, keystore.CertificateKey)
 				require.NotEmpty(t, certVal)
 
-				pkVal := m.HGet(certID, keystore.PrivateKeyKey)
+				pkVal := m.HGet(certIDObject, keystore.PrivateKeyKey)
 				require.NotEmpty(t, pkVal)
 
-				saltVal := m.HGet(certID, keystore.SaltKey)
+				saltVal := m.HGet(certIDObject, keystore.SaltKey)
 				require.NotEmpty(t, saltVal)
 			} else {
 				require.ErrorIs(t, err, tc.err)
@@ -176,7 +178,7 @@ func TestRedisService_Get(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certID)
+				ok := m.Del(certIDObject)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -184,7 +186,7 @@ func TestRedisService_Get(t *testing.T) {
 		{
 			name: "incorrect password",
 			setup: func(m *miniredis.Miniredis) {
-				m.HSet(certID, keystore.PrivateKeyKey, "invalid")
+				m.HSet(certIDObject, keystore.PrivateKeyKey, "invalid")
 			},
 			err: keystore.ErrInvalidDecryptionKey,
 		},
@@ -253,7 +255,7 @@ func TestRedisService_List(t *testing.T) {
 				require.NoError(t, err)
 
 				require.Len(t, ids, 1)
-				require.Equal(t, certID, ids[0])
+				require.Equal(t, certIDObject, ids[0])
 			} else {
 				require.ErrorIs(t, err, tc.err)
 			}
@@ -275,7 +277,7 @@ func TestRedisService_UpdateID(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certID)
+				ok := m.Del(certIDObject)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -283,7 +285,7 @@ func TestRedisService_UpdateID(t *testing.T) {
 		{
 			name: "id already used",
 			setup: func(m *miniredis.Miniredis) {
-				err := m.Set(certID2, "")
+				err := m.Set(certID2Object, "")
 				require.NoError(t, err)
 			},
 			err: keystore.ErrIDAlreadyExists,
@@ -291,7 +293,7 @@ func TestRedisService_UpdateID(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certID)
+				ok := m.Del(certIDObject)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -345,7 +347,7 @@ func TestRedisService_UpdatePassword(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certID)
+				ok := m.Del(certIDObject)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -353,7 +355,7 @@ func TestRedisService_UpdatePassword(t *testing.T) {
 		{
 			name: "incorrect password",
 			setup: func(m *miniredis.Miniredis) {
-				m.HSet(certID, keystore.PrivateKeyKey, "invalid")
+				m.HSet(certIDObject, keystore.PrivateKeyKey, "invalid")
 			},
 			err: keystore.ErrInvalidDecryptionKey,
 		},
@@ -406,7 +408,7 @@ func TestRedisService_Delete(t *testing.T) {
 		{
 			name: "id not found",
 			setup: func(m *miniredis.Miniredis) {
-				ok := m.Del(certID)
+				ok := m.Del(certIDObject)
 				require.True(t, ok)
 			},
 			err: keystore.ErrRecordNotFound,
@@ -434,7 +436,7 @@ func TestRedisService_Delete(t *testing.T) {
 			if tc.err == nil {
 				require.NoError(t, err)
 
-				exists := m.Exists(certID)
+				exists := m.Exists(certIDObject)
 				require.False(t, exists)
 			} else {
 				require.ErrorIs(t, err, tc.err)
