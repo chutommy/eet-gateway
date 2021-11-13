@@ -199,9 +199,19 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 			return fmt.Errorf("not found record with the id: %w", ErrRecordNotFound)
 		}
 
+		// check if the new ID already exists
+		i, err = tx.Exists(ctx, newIDx).Result()
+		if err != nil {
+			return fmt.Errorf("check if new ID exists: %w", err)
+		}
+
+		if i != 0 {
+			return fmt.Errorf("found record with the new id: %w", ErrIDAlreadyExists)
+		}
+
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			// update ID
-			ok, err := pipe.RenameNX(ctx, oldIDx, newIDx).Result()
+			_, err := pipe.Rename(ctx, oldIDx, newIDx).Result()
 			if err != nil {
 				return fmt.Errorf("rename: %w", err)
 			}
