@@ -96,7 +96,7 @@ func (r *redisService) Store(ctx context.Context, id string, password []byte, kp
 			}
 
 			// add to the list of certificate IDs
-			_, err = pipe.LPush(ctx, IDsObjectKey, id).Result()
+			_, err = pipe.RPush(ctx, IDsObjectKey, id).Result()
 			if err != nil {
 				return fmt.Errorf("add id to the id list: %w", err)
 			}
@@ -222,7 +222,7 @@ func (r *redisService) UpdateID(ctx context.Context, oldID, newID string) error 
 				return fmt.Errorf("remove id from the id list: %w", err)
 			}
 
-			_, err = pipe.LPush(ctx, IDsObjectKey, newID).Result()
+			_, err = pipe.RPush(ctx, IDsObjectKey, newID).Result()
 			if err != nil {
 				return fmt.Errorf("add id to the id list: %w", err)
 			}
