@@ -151,8 +151,8 @@ type StoreCertReq struct {
 
 // ListCertIDsReq is a binding request structure for listing certificate IDs.
 type ListCertIDsReq struct {
-	Offset int64 `json:"offset" binding:"gte=0"`
-	Limit  int64 `json:"limit" binding:"gte=0"`
+	Offset int64 `form:"offset" binding:"gte=0"`
+	Limit  int64 `form:"limit" binding:"gte=0"`
 }
 
 // ListCertIDsResp is a response structure for listing certificate IDs.

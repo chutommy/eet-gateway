@@ -48,7 +48,7 @@ func (h *handler) ginEngine() *gin.Engine {
 		v1.GET("/ping", h.ping)
 		v1.POST("/sale", h.sendSale)
 		v1.POST("/certs", h.storeCert)
-		v1.POST("/certs", h.listCertIDs)
+		v1.GET("/certs", h.listCertIDs)
 		v1.PUT("/certs/id", h.updateCertID)
 		v1.PUT("/certs/password", h.UpdateCertPassword)
 		v1.DELETE("/certs", h.deleteCert)
@@ -135,7 +135,7 @@ func (h *handler) listCertIDs(c *gin.Context) {
 		Limit:  1000,
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
