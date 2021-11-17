@@ -160,15 +160,23 @@ type ListCertIDsResp struct {
 	CertIDs []string `json:"cert_ids"`
 }
 
-// UpdateCertIDReq is a binding request structure for certificate ID updates.
-type UpdateCertIDReq struct {
-	CertID string `json:"cert_id" binding:"required"`
-	NewID  string `json:"new_id" binding:"required,necsfield=CertID"`
+// UpdateCertIDURIReq is a URI binding request structure for certificate ID updates.
+type UpdateCertIDURIReq struct {
+	CertID string `uri:"cert_id" binding:"required"`
 }
 
-// UpdateCertPasswordReq is a binding request structure for password updates.
-type UpdateCertPasswordReq struct {
-	CertID       string `json:"cert_id" binding:"required"`
+// UpdateCertIDJSONReq is a JSON binding request structure for certificate ID updates.
+type UpdateCertIDJSONReq struct {
+	NewID string `json:"new_id" binding:"required"`
+}
+
+// UpdateCertPasswordURIReq is a URI binding request structure for password updates.
+type UpdateCertPasswordURIReq struct {
+	CertID string `uri:"cert_id" binding:"required"`
+}
+
+// UpdateCertPasswordJSONReq is a JSON binding request structure for password updates.
+type UpdateCertPasswordJSONReq struct {
 	CertPassword string `json:"cert_password" binding:"required"`
 	NewPassword  string `json:"new_password" binding:"required,necsfield=CertPassword"`
 }
