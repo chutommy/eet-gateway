@@ -51,7 +51,7 @@ type Service interface {
 	Ping(ctx context.Context) error
 	SendSale(ctx context.Context, certID string, pk []byte, trzba *eet.TrzbaType) (*eet.OdpovedType, error)
 	StoreCert(ctx context.Context, certID string, password []byte, pkcsData []byte, pkcsPassword string) error
-	ListCertIDs(ctx context.Context, offset, limit int64) ([]string, error)
+	ListCertIDs(ctx context.Context, start, end int64) ([]string, error)
 	UpdateCertID(ctx context.Context, oldID, newID string) error
 	UpdateCertPassword(ctx context.Context, id string, oldPassword, newPassword []byte) error
 	DeleteID(ctx context.Context, id string) error
@@ -149,8 +149,8 @@ func (g *service) StoreCert(ctx context.Context, id string, password []byte, pkc
 }
 
 // ListCertIDs returns the list of all certificate IDs in the keystore.
-func (g *service) ListCertIDs(ctx context.Context, offset, limit int64) ([]string, error) {
-	ids, err := g.keyStore.List(ctx, offset, limit)
+func (g *service) ListCertIDs(ctx context.Context, start, end int64) ([]string, error) {
+	ids, err := g.keyStore.List(ctx, start, end)
 	if err != nil {
 		if g.keyStore.Ping(ctx) != nil {
 			return nil, multierr.Append(err, ErrKeystoreUnavailable)

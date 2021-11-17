@@ -141,7 +141,12 @@ func (h *handler) listCertIDs(c *gin.Context) {
 		return
 	}
 
-	ids, err := h.gatewaySvc.ListCertIDs(c, req.Offset, req.Limit)
+	start, end := req.Offset, req.Offset+req.Limit-1
+	if req.Limit == 0 {
+		end = -1
+	}
+
+	ids, err := h.gatewaySvc.ListCertIDs(c, start, end)
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
