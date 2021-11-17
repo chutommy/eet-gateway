@@ -51,7 +51,7 @@ func (h *handler) ginEngine() *gin.Engine {
 		v1.GET("/certs", h.listCertIDs)
 		v1.PUT("/certs/id", h.updateCertID)
 		v1.PUT("/certs/password", h.UpdateCertPassword)
-		v1.DELETE("/certs", h.deleteCert)
+		v1.DELETE("/certs/:cert_id", h.deleteCert)
 	}
 
 	return r
@@ -200,7 +200,7 @@ func (h *handler) UpdateCertPassword(c *gin.Context) {
 func (h *handler) deleteCert(c *gin.Context) {
 	// default request
 	req := &DeleteCertReq{}
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return

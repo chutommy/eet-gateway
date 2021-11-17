@@ -175,7 +175,7 @@ type UpdateCertPasswordReq struct {
 
 // DeleteCertReq is a binding request structure for deleting certificates.
 type DeleteCertReq struct {
-	CertID string `json:"cert_id" binding:"required"`
+	CertID string `uri:"cert_id" binding:"required"`
 }
 
 // SuccessCertResp is a response of a successful action related to certificate.
