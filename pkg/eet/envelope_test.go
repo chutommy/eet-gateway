@@ -77,7 +77,7 @@ func TestNewSoapEnvelope(t *testing.T) {
 				Encoding: "base64",
 			},
 			Bkp: eet.BkpElementType{
-				BkpType:  "ABA7EB19-7AD8D753-60ED57B3-9AC9957E-C192030B",
+				BkpType:  "aba7eb19-7ad8d753-60ed57b3-9ac9957e-c192030b",
 				Digest:   "SHA1",
 				Encoding: "base16",
 			},

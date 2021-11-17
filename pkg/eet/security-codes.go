@@ -8,7 +8,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"strings"
 )
 
 func pkp(plaintext string, pk *rsa.PrivateKey) ([]byte, error) {
@@ -24,7 +23,7 @@ func pkp(plaintext string, pk *rsa.PrivateKey) ([]byte, error) {
 func bkp(pkp PkpType) BkpType {
 	digest := sha1.Sum(pkp) //nolint:gosec
 	bkpB16 := hex.EncodeToString(digest[:])
-	bkpB16B := []byte(strings.ToUpper(bkpB16))
+	bkpB16B := []byte(bkpB16)
 	bkp := setDelimiters(bkpB16B)
 
 	return BkpType(bkp)
