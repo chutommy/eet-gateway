@@ -50,7 +50,7 @@ func (h *handler) ginEngine() *gin.Engine {
 		v1.POST("/certs", h.storeCert)
 		v1.GET("/certs", h.listCertIDs)
 		v1.PUT("/certs/:cert_id/id", h.updateCertID)
-		v1.PUT("/certs/:cert_id/password", h.UpdateCertPassword)
+		v1.PUT("/certs/:cert_id/password", h.updateCertPassword)
 		v1.DELETE("/certs/:cert_id", h.deleteCert)
 	}
 
@@ -183,7 +183,7 @@ func (h *handler) updateCertID(c *gin.Context) {
 	c.JSON(http.StatusOK, successCertResp(reqJSON.NewID))
 }
 
-func (h *handler) UpdateCertPassword(c *gin.Context) {
+func (h *handler) updateCertPassword(c *gin.Context) {
 	// default request
 	reqURI := &UpdateCertPasswordURIReq{}
 	reqJSON := &UpdateCertPasswordJSONReq{}
