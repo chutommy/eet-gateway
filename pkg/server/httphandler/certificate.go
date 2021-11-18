@@ -1,4 +1,4 @@
-package server
+package httphandler
 
 import (
 	"net/http"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h *handler) storeCert(c *gin.Context) {
+func (h *Handler) storeCert(c *gin.Context) {
 	// default request
 	req := &StoreCertReq{
 		CertID: uuid.New().String(),
@@ -19,7 +19,7 @@ func (h *handler) storeCert(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.StoreCert(c, req.CertID, []byte(req.CertPassword), req.PKCS12Data, req.PKCS12Password)
+	err := h.gateway.StoreCert(c, req.CertID, []byte(req.CertPassword), req.PKCS12Data, req.PKCS12Password)
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
@@ -30,7 +30,7 @@ func (h *handler) storeCert(c *gin.Context) {
 	c.JSON(http.StatusOK, successCertResp(req.CertID))
 }
 
-func (h *handler) listCertIDs(c *gin.Context) {
+func (h *Handler) listCertIDs(c *gin.Context) {
 	// default request
 	req := &ListCertIDsReq{
 		Offset: 0,
@@ -48,7 +48,7 @@ func (h *handler) listCertIDs(c *gin.Context) {
 		end = -1
 	}
 
-	ids, err := h.gatewaySvc.ListCertIDs(c, start, end)
+	ids, err := h.gateway.ListCertIDs(c, start, end)
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
@@ -59,7 +59,7 @@ func (h *handler) listCertIDs(c *gin.Context) {
 	c.JSON(http.StatusOK, ListCertIDsResp{CertIDs: ids})
 }
 
-func (h *handler) updateCertID(c *gin.Context) {
+func (h *Handler) updateCertID(c *gin.Context) {
 	reqURI := &UpdateCertIDURIReq{}
 	if err := c.ShouldBindUri(&reqURI); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
@@ -74,7 +74,7 @@ func (h *handler) updateCertID(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.UpdateCertID(c, reqURI.CertID, reqJSON.NewID)
+	err := h.gateway.UpdateCertID(c, reqURI.CertID, reqJSON.NewID)
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
@@ -85,7 +85,7 @@ func (h *handler) updateCertID(c *gin.Context) {
 	c.JSON(http.StatusOK, successCertResp(reqJSON.NewID))
 }
 
-func (h *handler) updateCertPassword(c *gin.Context) {
+func (h *Handler) updateCertPassword(c *gin.Context) {
 	reqURI := &UpdateCertPasswordURIReq{}
 	if err := c.ShouldBindUri(&reqURI); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
@@ -100,7 +100,7 @@ func (h *handler) updateCertPassword(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.UpdateCertPassword(c, reqURI.CertID, []byte(reqJSON.CertPassword), []byte(reqJSON.NewPassword))
+	err := h.gateway.UpdateCertPassword(c, reqURI.CertID, []byte(reqJSON.CertPassword), []byte(reqJSON.NewPassword))
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
@@ -111,7 +111,7 @@ func (h *handler) updateCertPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, successCertResp(reqURI.CertID))
 }
 
-func (h *handler) deleteCert(c *gin.Context) {
+func (h *Handler) deleteCert(c *gin.Context) {
 	req := &DeleteCertReq{}
 	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
@@ -119,7 +119,7 @@ func (h *handler) deleteCert(c *gin.Context) {
 		return
 	}
 
-	err := h.gatewaySvc.DeleteID(c, req.CertID)
+	err := h.gateway.DeleteID(c, req.CertID)
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)

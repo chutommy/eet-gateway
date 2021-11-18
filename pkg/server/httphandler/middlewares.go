@@ -1,4 +1,4 @@
-package server
+package httphandler
 
 import (
 	"errors"
@@ -11,6 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
+
+// ErrUnexpected is returned if unexpected error is raised.
+var ErrUnexpected = errors.New("unexpected error")
 
 func loggingMiddleware(c *gin.Context) {
 	start := time.Now()

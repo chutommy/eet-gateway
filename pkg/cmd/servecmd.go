@@ -103,7 +103,7 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		Send()
 
 	gSvc := gateway.NewService(client, caSvc, ks)
-	h := server.NewHandler(gSvc)
+	h := server.NewHTTPHandler(gSvc)
 	srv := server.NewService(&http.Server{
 		Addr:              viper.GetString(serverAddr),
 		ReadTimeout:       viper.GetDuration(serverReadTimeout),

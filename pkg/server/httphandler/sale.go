@@ -1,4 +1,4 @@
-package server
+package httphandler
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h *handler) sendSale(c *gin.Context) {
+func (h *Handler) sendSale(c *gin.Context) {
 	// default request
 	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
 	req := &SendSaleReq{
@@ -28,7 +28,7 @@ func (h *handler) sendSale(c *gin.Context) {
 		return
 	}
 
-	odpoved, err := h.gatewaySvc.SendSale(c, req.CertID, []byte(req.CertPassword), sendSaleRequest(req))
+	odpoved, err := h.gateway.SendSale(c, req.CertID, []byte(req.CertPassword), sendSaleRequest(req))
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)

@@ -1,4 +1,4 @@
-package server
+package httphandler
 
 import (
 	"errors"

@@ -1,12 +1,26 @@
-package server
+package httphandler
 
 import (
 	"net/http"
 
+	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *handler) HTTPHandler() http.Handler {
+// Handler is HTTP requests handler.
+type Handler struct {
+	gateway gateway.Service
+}
+
+// NewHandler returns an implementation of Handler.
+func NewHandler(g gateway.Service) *Handler {
+	return &Handler{
+		gateway: g,
+	}
+}
+
+// HTTPHandler implements server.Handler.
+func (h *Handler) HTTPHandler() http.Handler {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()

@@ -1,4 +1,4 @@
-package server
+package httphandler
 
 import (
 	"errors"
@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *handler) ping(c *gin.Context) {
-	err := h.gatewaySvc.Ping(c)
+func (h *Handler) ping(c *gin.Context) {
+	err := h.gateway.Ping(c)
 	var taxAdmin error
 	if errors.Is(err, gateway.ErrFSCRConnection) {
 		taxAdmin = gateway.ErrFSCRConnection
