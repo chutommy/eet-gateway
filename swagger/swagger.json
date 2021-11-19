@@ -1,0 +1,170 @@
+{
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Specifikace REST API služby EET Gateway.",
+        "title": "EET Gateway API",
+        "contact": {
+            "name": "Tommy Chu",
+            "email": "pro@chutommy.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/v1",
+    "paths": {
+        "/certs": {
+            "post": {
+                "description": "Nahraje certifikát do služby keystore a umožní příslušnému daňovému poplatníkovi odesílat e-tržby v systému EET Gateway.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Certifikáty"
+                ],
+                "summary": "Nahrát certifikát daňového poplatníka",
+                "operationId": "storeCert",
+                "parameters": [
+                    {
+                        "description": "Dotaz na nahrání certifikátu daňového poplatníka.",
+                        "name": "cert_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/httphandler.StoreCertReq"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "pkcs12data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dotaz byl úspěšně zpracovaný.",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.SuccessCertResp"
+                        }
+                    },
+                    "400": {
+                        "description": "Tělo požadavku je neplatný (chyba ve struktuře, datovém typu, ...).",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.GatewayErrResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Ověří stav API služby EET Gateway, keystore (službu spravující databázi) a spojení se servery správce daně.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "API"
+                ],
+                "summary": "Ověřit stav EETG API",
+                "operationId": "ping",
+                "responses": {
+                    "200": {
+                        "description": "Všechny EETG komponenty jsou dostupné.",
+                        "schema": {
+                            "$ref": "#/definitions/PingResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Některé EETG komponeny jsou nedostupné.",
+                        "schema": {
+                            "$ref": "#/definitions/PingResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "PingResponse": {
+            "type": "object",
+            "properties": {
+                "eet_gateway": {
+                    "type": "string",
+                    "example": "online"
+                },
+                "keystore": {
+                    "type": "string",
+                    "example": "online"
+                },
+                "tax_admin": {
+                    "type": "string",
+                    "example": "online"
+                }
+            }
+        },
+        "httphandler.GatewayErrResp": {
+            "type": "object",
+            "properties": {
+                "gateway_error": {
+                    "type": "string"
+                }
+            }
+        },
+        "httphandler.StoreCertReq": {
+            "type": "object",
+            "required": [
+                "cert_id",
+                "pkcs12_data",
+                "pkcs12_password"
+            ],
+            "properties": {
+                "cert_id": {
+                    "type": "string"
+                },
+                "cert_password": {
+                    "type": "string"
+                },
+                "pkcs12_data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "pkcs12_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "httphandler.SuccessCertResp": {
+            "type": "object",
+            "properties": {
+                "cert_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

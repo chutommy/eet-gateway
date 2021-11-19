@@ -57,3 +57,8 @@ eet-mocks:
 	go get github.com/vektra/mockery/v2/.../
 	go mod tidy
 	mockery --all --dir pkg --keeptree --output pkg/mocks --case snake --note "EETGateway - Tommy Chu"
+
+.PHONY: swagger
+swagger:
+	# https://github.com/swaggo/swag
+	swag init -g swaggo_general.go -d pkg/server/httphandler/ -o swagger --generatedTime
