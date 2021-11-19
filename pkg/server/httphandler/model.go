@@ -142,9 +142,8 @@ func sendSaleResponse(req *SendSaleReq, odpoved *eet.OdpovedType) *SendSaleResp 
 
 // StoreCertReq is a binding request structure for storing certificates.
 type StoreCertReq struct {
-	CertID       string `json:"cert_id" binding:"required" example:"d406ccda-1bc5-44ab-a081-af6e8740634c" validate:"required"`
-	CertPassword string `json:"cert_password" binding:"" example:"10f47cc7eb3c51" validate:"required"`
-
+	CertID         string `json:"cert_id" binding:"required" example:"d406ccda-1bc5-44ab-a081-af6e8740634c" validate:"required"`
+	CertPassword   string `json:"cert_password" binding:"required" example:"10f47cc7eb3c51" validate:"required"`
 	PKCS12Data     string `json:"pkcs12_data" binding:"required,base64" example:"MIIPoq7Huhj ... HXJBdPA=" validate:"required" format:"base64"`
 	PKCS12Password string `json:"pkcs12_password" binding:"required" example:"1234" validate:"required"`
 } //@name StoreCertificateRequest

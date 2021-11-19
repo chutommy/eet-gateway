@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // @Summary Nahrát certifikát daňového poplatníka
@@ -24,11 +23,7 @@ import (
 // @Failure 503 {object} GatewayErrResp "Služba keystore je nedostupná."
 // @Router /certs [post]
 func (h *Handler) storeCert(c *gin.Context) {
-	// default request
-	req := &StoreCertReq{
-		CertID: uuid.New().String(),
-	}
-
+	req := &StoreCertReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
