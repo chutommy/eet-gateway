@@ -61,4 +61,4 @@ eet-mocks:
 .PHONY: swagger
 swagger:
 	# https://github.com/swaggo/swag
-	swag init -g swaggo_general.go -d pkg/server/httphandler/ -o swagger --generatedTime
+	swag init -g swaggo_general.go -d pkg/server/httphandler/ -o swagger
