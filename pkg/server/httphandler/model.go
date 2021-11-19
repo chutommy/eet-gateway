@@ -10,10 +10,10 @@ import (
 
 // PingEETResp is a response structure for HTTP pings.
 type PingEETResp struct {
-	EETGatewayStatus string `json:"eet_gateway"`
-	TaxAdminStatus   string `json:"tax_admin"`
-	KeystoreStatus   string `json:"keystore"`
-}
+	EETGatewayStatus string `json:"eet_gateway" example:"online"`
+	TaxAdminStatus   string `json:"tax_admin" example:"online"`
+	KeystoreStatus   string `json:"keystore" example:"online"`
+} //@name PingResponse
 
 func pingEETResp(taxAdmin error, keyStore error) (int, *PingEETResp) {
 	online := func(err error) string {
