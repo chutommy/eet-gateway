@@ -142,12 +142,12 @@ func sendSaleResponse(req *SendSaleReq, odpoved *eet.OdpovedType) *SendSaleResp 
 
 // StoreCertReq is a binding request structure for storing certificates.
 type StoreCertReq struct {
-	CertID       string `json:"cert_id" binding:"required"`
-	CertPassword string `json:"cert_password" binding:""`
+	CertID       string `json:"cert_id" binding:"required" example:"d406ccda-1bc5-44ab-a081-af6e8740634c" validate:"required"`
+	CertPassword string `json:"cert_password" binding:"" example:"10f47cc7eb3c51" validate:"required"`
 
-	PKCS12Data     string `json:"pkcs12_data" binding:"required,base64"`
-	PKCS12Password string `json:"pkcs12_password" binding:"required"`
-}
+	PKCS12Data     string `json:"pkcs12_data" binding:"required,base64" example:"MIIPoq7Huhj ... HXJBdPA=" validate:"required" format:"base64"`
+	PKCS12Password string `json:"pkcs12_password" binding:"required" example:"1234" validate:"required"`
+} //@name StoreCertificateRequest
 
 // ListCertIDsReq is a binding request structure for listing certificate IDs.
 type ListCertIDsReq struct {
@@ -188,8 +188,8 @@ type DeleteCertReq struct {
 
 // SuccessCertResp is a response of a successful action related to certificate.
 type SuccessCertResp struct {
-	CertID string `json:"cert_id"`
-}
+	CertID string `json:"cert_id" example:"d406ccda-1bc5-44ab-a081-af6e8740634c"`
+} //@name SuccessResponse
 
 func successCertResp(id string) *SuccessCertResp {
 	return &SuccessCertResp{CertID: id}
@@ -197,8 +197,8 @@ func successCertResp(id string) *SuccessCertResp {
 
 // GatewayErrResp represents an error response structure returned from the EET Gateway API (not from the FSCR).
 type GatewayErrResp struct {
-	GatewayError string `json:"gateway_error"`
-}
+	GatewayError string `json:"gateway_error" example:"keystore service unavailable"`
+} //@name GatewayErrorResponse
 
 func gatewayErrResp(err error) (int, *GatewayErrResp) {
 	c, e := http.StatusInternalServerError, ErrUnexpected

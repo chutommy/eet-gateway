@@ -8,6 +8,21 @@ import (
 	"github.com/google/uuid"
 )
 
+// @Summary Nahrát certifikát daňového poplatníka
+// @Description Nahraje certifikát do služby keystore a umožní příslušnému daňovému poplatníkovi odesílat e-tržby v systému EET Gateway.
+// @ID storeCert
+// @Tags Certifikáty
+// @Accept  json
+// @Produce  json
+// @Param cert_id body StoreCertReq true "Tělo požadavku na nahrání certifikátu."
+// @Success 200 {object} SuccessCertResp "Dotaz byl úspěšně zpracovaný."
+// @Failure 400 {object} GatewayErrResp "Tělo požadavku je neplatné."
+// @Failure 400 {object} GatewayErrResp "Vložený certifikát daňového poplatníka je neplatný."
+// @Failure 409 {object} GatewayErrResp "ID certifikátu je již zabraný. Konfliktní certifikát musí být odstraněn nebo pro tento zvoleno jiné ID."
+// @Failure 500 {object} GatewayErrResp "Proces ukládání byl vícekrát za sebou narušen aktivitami/změnami spojené s tímto certifikátem."
+// @Failure 500 {object} GatewayErrResp "Naskytla se neočekávaná chyba databáze."
+// @Failure 503 {object} GatewayErrResp "Služba keystore je nedostupná."
+// @Router /certs [post]
 func (h *Handler) storeCert(c *gin.Context) {
 	// default request
 	req := &StoreCertReq{

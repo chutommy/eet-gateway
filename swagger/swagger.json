@@ -42,24 +42,12 @@
                 "operationId": "storeCert",
                 "parameters": [
                     {
-                        "description": "Dotaz na nahrání certifikátu daňového poplatníka.",
+                        "description": "Tělo požadavku na nahrání certifikátu.",
                         "name": "cert_id",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/httphandler.StoreCertReq"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "pkcs12data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/StoreCertificateRequest"
                         }
                     }
                 ],
@@ -67,13 +55,31 @@
                     "200": {
                         "description": "Dotaz byl úspěšně zpracovaný.",
                         "schema": {
-                            "$ref": "#/definitions/httphandler.SuccessCertResp"
+                            "$ref": "#/definitions/SuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Tělo požadavku je neplatný (chyba ve struktuře, datovém typu, ...).",
+                        "description": "Vložený certifikát daňového poplatníka je neplatný.",
                         "schema": {
-                            "$ref": "#/definitions/httphandler.GatewayErrResp"
+                            "$ref": "#/definitions/GatewayErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "ID certifikátu je již zabraný. Konfliktní certifikát musí být odstraněn nebo pro tento zvoleno jiné ID.",
+                        "schema": {
+                            "$ref": "#/definitions/GatewayErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Naskytla se neočekávaná chyba databáze.",
+                        "schema": {
+                            "$ref": "#/definitions/GatewayErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Služba keystore je nedostupná.",
+                        "schema": {
+                            "$ref": "#/definitions/GatewayErrorResponse"
                         }
                     }
                 }
@@ -108,6 +114,15 @@
         }
     },
     "definitions": {
+        "GatewayErrorResponse": {
+            "type": "object",
+            "properties": {
+                "gateway_error": {
+                    "type": "string",
+                    "example": "keystore service unavailable"
+                }
+            }
+        },
         "PingResponse": {
             "type": "object",
             "properties": {
@@ -125,44 +140,40 @@
                 }
             }
         },
-        "httphandler.GatewayErrResp": {
-            "type": "object",
-            "properties": {
-                "gateway_error": {
-                    "type": "string"
-                }
-            }
-        },
-        "httphandler.StoreCertReq": {
+        "StoreCertificateRequest": {
             "type": "object",
             "required": [
                 "cert_id",
+                "cert_password",
                 "pkcs12_data",
                 "pkcs12_password"
             ],
             "properties": {
                 "cert_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "d406ccda-1bc5-44ab-a081-af6e8740634c"
                 },
                 "cert_password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "10f47cc7eb3c51"
                 },
                 "pkcs12_data": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "string",
+                    "format": "base64",
+                    "example": "MIIPoq7Huhj ... HXJBdPA="
                 },
                 "pkcs12_password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1234"
                 }
             }
         },
-        "httphandler.SuccessCertResp": {
+        "SuccessResponse": {
             "type": "object",
             "properties": {
                 "cert_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "d406ccda-1bc5-44ab-a081-af6e8740634c"
                 }
             }
         }
