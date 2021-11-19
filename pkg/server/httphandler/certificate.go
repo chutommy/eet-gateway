@@ -11,8 +11,8 @@ import (
 // @Description Nahraje certifikát do služby keystore a umožní příslušnému daňovému poplatníkovi odesílat e-tržby v systému EET Gateway.
 // @ID storeCert
 // @Tags Certifikáty
-// @Accept  json
-// @Produce  json
+// @Accept json
+// @Produce json
 // @Param cert_id body StoreCertReq true "Tělo požadavku na nahrání certifikátu."
 // @Success 200 {object} SuccessCertResp "Dotaz byl úspěšně zpracovaný."
 // @Failure 400 {object} GatewayErrResp "Tělo požadavku je neplatné."
