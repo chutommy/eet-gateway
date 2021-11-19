@@ -145,7 +145,7 @@ type StoreCertReq struct {
 	CertID       string `json:"cert_id" binding:"required"`
 	CertPassword string `json:"cert_password" binding:""`
 
-	PKCS12Data     []byte `json:"pkcs12_data" binding:"required"`
+	PKCS12Data     string `json:"pkcs12_data" binding:"required,base64"`
 	PKCS12Password string `json:"pkcs12_password" binding:"required"`
 }
 

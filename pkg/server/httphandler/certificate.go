@@ -1,6 +1,7 @@
 package httphandler
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,14 @@ func (h *Handler) storeCert(c *gin.Context) {
 		return
 	}
 
-	err := h.gateway.StoreCert(c, req.CertID, []byte(req.CertPassword), req.PKCS12Data, req.PKCS12Password)
+	data, err := base64.StdEncoding.DecodeString(req.PKCS12Data)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
+		_ = c.Error(err)
+		return
+	}
+
+	err = h.gateway.StoreCert(c, req.CertID, []byte(req.CertPassword), data, req.PKCS12Password)
 	if err != nil {
 		code, resp := gatewayErrResp(err)
 		c.JSON(code, resp)
