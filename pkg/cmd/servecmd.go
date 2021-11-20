@@ -15,7 +15,6 @@ import (
 	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/chutommy/eetgateway/pkg/keystore"
 	"github.com/chutommy/eetgateway/pkg/server"
-	docs "github.com/chutommy/eetgateway/swagger"
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
@@ -105,7 +104,6 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 
 	gSvc := gateway.NewService(client, caSvc, ks)
 	h := server.NewHTTPHandler(gSvc)
-	docs.SwaggerInfo.Host = viper.GetString(serverAddr)
 	srv := server.NewService(&http.Server{
 		Addr:              viper.GetString(serverAddr),
 		ReadTimeout:       viper.GetDuration(serverReadTimeout),

@@ -4,10 +4,7 @@ import (
 	"net/http"
 
 	"github.com/chutommy/eetgateway/pkg/gateway"
-	_ "github.com/chutommy/eetgateway/swagger"
 	"github.com/gin-gonic/gin"
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // Handler is HTTP requests handler.
@@ -41,8 +38,6 @@ func (h *Handler) HTTPHandler() http.Handler {
 		v1.PUT("/certs/:cert_id/id", h.updateCertID)
 		v1.PUT("/certs/:cert_id/password", h.updateCertPassword)
 		v1.DELETE("/certs/:cert_id", h.deleteCert)
-
-		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
 
 	return r
