@@ -64,12 +64,12 @@ func (c *client) Do(ctx context.Context, reqBody []byte) (respBody []byte, err e
 	if err != nil {
 		return nil, fmt.Errorf("handle request: %w", err)
 	}
+	defer multierr.AppendInvoke(&err, multierr.Close(resp.Body))
 
 	respBody, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("read response body: %w", err)
 	}
-	defer multierr.AppendInvoke(&err, multierr.Close(resp.Body))
 
 	return respBody, err
 }
