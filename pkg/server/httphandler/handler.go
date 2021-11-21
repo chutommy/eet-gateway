@@ -10,6 +10,9 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// ErrUnexpected is returned if unexpected error is raised.
+var ErrUnexpected = errors.New("unexpected error")
+
 // Handler is HTTP requests handler.
 type Handler struct {
 	gateway gateway.Service
