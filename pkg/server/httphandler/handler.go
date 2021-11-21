@@ -1,10 +1,13 @@
 package httphandler
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/chutommy/eetgateway/pkg/gateway"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 // Handler is HTTP requests handler.
@@ -41,4 +44,20 @@ func (h *Handler) HTTPHandler() http.Handler {
 	}
 
 	return r
+}
+
+func bindingErr(err error) error {
+	var verr validator.ValidationErrors
+	if errors.As(err, &verr) {
+		err = errors.New("invalid request body")
+		for _, f := range verr {
+			if p := f.Param(); p == "" {
+				err = fmt.Errorf("%w %s=%s", err, f.Field(), f.Tag())
+			} else {
+				err = fmt.Errorf("%w %s=%s(%s)", err, f.Field(), f.Tag(), p)
+			}
+		}
+	}
+
+	return err
 }

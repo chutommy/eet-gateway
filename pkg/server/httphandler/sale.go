@@ -23,6 +23,7 @@ func (h *Handler) sendSale(c *gin.Context) {
 
 	// bind to default
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return

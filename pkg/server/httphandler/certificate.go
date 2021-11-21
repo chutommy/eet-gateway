@@ -10,6 +10,7 @@ import (
 func (h *Handler) storeCert(c *gin.Context) {
 	req := &StoreCertReq{}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
@@ -41,6 +42,7 @@ func (h *Handler) listCertIDs(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindQuery(&req); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
@@ -65,6 +67,7 @@ func (h *Handler) listCertIDs(c *gin.Context) {
 func (h *Handler) updateCertID(c *gin.Context) {
 	reqURI := &UpdateCertIDURIReq{}
 	if err := c.ShouldBindUri(&reqURI); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
@@ -72,6 +75,7 @@ func (h *Handler) updateCertID(c *gin.Context) {
 
 	reqJSON := &UpdateCertIDJSONReq{}
 	if err := c.ShouldBindJSON(&reqJSON); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
@@ -91,6 +95,7 @@ func (h *Handler) updateCertID(c *gin.Context) {
 func (h *Handler) updateCertPassword(c *gin.Context) {
 	reqURI := &UpdateCertPasswordURIReq{}
 	if err := c.ShouldBindUri(&reqURI); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
@@ -98,6 +103,7 @@ func (h *Handler) updateCertPassword(c *gin.Context) {
 
 	reqJSON := &UpdateCertPasswordJSONReq{}
 	if err := c.ShouldBindJSON(&reqJSON); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
@@ -117,6 +123,7 @@ func (h *Handler) updateCertPassword(c *gin.Context) {
 func (h *Handler) deleteCert(c *gin.Context) {
 	req := &DeleteCertReq{}
 	if err := c.ShouldBindUri(&req); err != nil {
+		err = bindingErr(err)
 		c.JSON(http.StatusBadRequest, GatewayErrResp{err.Error()})
 		_ = c.Error(err)
 		return
