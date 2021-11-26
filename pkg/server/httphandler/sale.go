@@ -17,7 +17,6 @@ func (h *Handler) sendSale(c *gin.Context) {
 		DatOdesl:     dateTime,
 		PrvniZaslani: true,
 		Overeni:      false,
-		DatTrzby:     dateTime,
 		Rezim:        0,
 	}
 

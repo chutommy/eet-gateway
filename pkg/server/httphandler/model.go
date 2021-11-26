@@ -50,7 +50,7 @@ type SendSaleReq struct {
 	IDProvoz        int            `json:"id_provoz" binding:"required,id_provoz"`
 	IDPokl          eet.String20   `json:"id_pokl" binding:"required,id_pokl"`
 	PoradCis        eet.String25   `json:"porad_cis" binding:"required,porad_cis"`
-	DatTrzby        eet.DateTime   `json:"dat_trzby" binding:""`
+	DatTrzby        *eet.DateTime  `json:"dat_trzby" binding:"required"`
 	CelkTrzba       eet.CastkaType `json:"celk_trzba" binding:"required,fin_poloz"`
 	ZaklNepodlDPH   eet.CastkaType `json:"zakl_nepodl_dph" binding:"omitempty,fin_poloz"`
 	ZaklDan1        eet.CastkaType `json:"zakl_dan1" binding:"omitempty,fin_poloz"`
@@ -82,7 +82,7 @@ func sendSaleRequest(req *SendSaleReq) *eet.TrzbaType {
 			Idprovoz:        req.IDProvoz,
 			Idpokl:          req.IDPokl,
 			Poradcis:        req.PoradCis,
-			Dattrzby:        req.DatTrzby,
+			Dattrzby:        *req.DatTrzby,
 			Celktrzba:       req.CelkTrzba,
 			Zaklnepodldph:   req.ZaklNepodlDPH,
 			Zakldan1:        req.ZaklDan1,
