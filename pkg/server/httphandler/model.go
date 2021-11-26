@@ -42,7 +42,7 @@ type SendSaleReq struct {
 	CertPassword string `json:"cert_password" binding:"required"`
 
 	UUIDZpravy      eet.UUIDType   `json:"uuid_zpravy" binding:"omitempty,uuid_zpravy"`
-	DatOdesl        eet.DateTime   `json:"dat_odesl" binding:""`
+	DatOdesl        *eet.DateTime  `json:"dat_odesl" binding:""`
 	PrvniZaslani    bool           `json:"prvni_zaslani" binding:""`
 	Overeni         bool           `json:"overeni" binding:""`
 	DICPopl         eet.CZDICType  `json:"dic_popl" binding:"required,dic"`
@@ -72,7 +72,7 @@ func sendSaleRequest(req *SendSaleReq) *eet.TrzbaType {
 	return &eet.TrzbaType{
 		Hlavicka: eet.TrzbaHlavickaType{
 			Uuidzpravy:   req.UUIDZpravy,
-			Datodesl:     req.DatOdesl,
+			Datodesl:     *req.DatOdesl,
 			Prvnizaslani: req.PrvniZaslani,
 			Overeni:      req.Overeni,
 		},

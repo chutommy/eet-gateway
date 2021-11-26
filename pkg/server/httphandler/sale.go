@@ -14,7 +14,7 @@ func (h *Handler) sendSale(c *gin.Context) {
 	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
 	req := &SendSaleReq{
 		UUIDZpravy:   eet.UUIDType(uuid.New().String()),
-		DatOdesl:     dateTime,
+		DatOdesl:     &dateTime,
 		PrvniZaslani: true,
 		Overeni:      false,
 		Rezim:        0,
