@@ -38,8 +38,8 @@ func pingEETResp(taxAdmin error, keyStore error) (int, *PingEETResp) {
 
 // SendSaleReq is a binding request structure for sales.
 type SendSaleReq struct {
-	CertID       string `json:"cert_id,omitempty" binding:"required"`
-	CertPassword string `json:"cert_password,omitempty" binding:""`
+	CertID       string `json:"cert_id" binding:"required"`
+	CertPassword string `json:"cert_password" binding:"required"`
 
 	UUIDZpravy      eet.UUIDType   `json:"uuid_zpravy" binding:"omitempty,uuid_zpravy"`
 	DatOdesl        eet.DateTime   `json:"dat_odesl" binding:""`
