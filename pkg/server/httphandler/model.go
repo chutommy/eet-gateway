@@ -38,8 +38,8 @@ func pingEETResp(taxAdmin error, keyStore error) (int, *PingEETResp) {
 
 // SendSaleReq is a binding request structure for sales.
 type SendSaleReq struct {
-	CertID       string `json:"cert_id" binding:"required"`
-	CertPassword string `json:"cert_password" binding:"required"`
+	CertID       string `json:"cert_id,omitempty" binding:"required"`
+	CertPassword string `json:"cert_password,omitempty" binding:"required"`
 
 	UUIDZpravy      eet.UUIDType   `json:"uuid_zpravy" binding:"omitempty,uuid_zpravy"`
 	DatOdesl        *eet.DateTime  `json:"dat_odesl,omitempty" binding:""`
@@ -104,6 +104,8 @@ func sendSaleRequest(req *SendSaleReq) *eet.TrzbaType {
 
 // SendSaleResp is a reponse structure to sale requests.
 type SendSaleResp struct {
+	CertID string `json:"cert_id"`
+
 	DatOdmit   *eet.DateTime `json:"dat_odmit,omitempty"`
 	ChybZprava string        `json:"chyb_zprava,omitempty"`
 	ChybKod    int           `json:"chyb_kod,omitempty"`
@@ -119,8 +121,12 @@ type SendSaleResp struct {
 }
 
 func sendSaleResponse(req *SendSaleReq, odpoved *eet.OdpovedType) *SendSaleResp {
+	certID := req.CertID
+	req.CertID, req.CertPassword = "", ""
+
 	if (odpoved.Hlavicka.Datodmit != eet.DateTime{}) {
 		return &SendSaleResp{
+			CertID:     certID,
 			DatOdmit:   &odpoved.Hlavicka.Datodmit,
 			ChybZprava: odpoved.Chyba.Zprava,
 			ChybKod:    odpoved.Chyba.Kod,
@@ -130,6 +136,7 @@ func sendSaleResponse(req *SendSaleReq, odpoved *eet.OdpovedType) *SendSaleResp 
 	}
 
 	return &SendSaleResp{
+		CertID:   certID,
 		DatPrij:  &odpoved.Hlavicka.Datprij,
 		FIK:      odpoved.Potvrzeni.Fik,
 		BKP:      string(odpoved.Hlavicka.Bkp),
