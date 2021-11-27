@@ -26,4 +26,5 @@ require (
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20210529063254-f4c35e4016d9 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 )
