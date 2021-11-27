@@ -2,14 +2,6 @@
 gotest:
 	go test -run=. -v ./pkg/...
 
-.PHONY: gotest-cover
-gotest-cover:
-	go test -cover -run=. -v ./pkg/...
-
-.PHONY: gobench
-gobench:
-	go test -bench=. -v ./pkg/...
-
 .PHONY: install
 install:
 	go build -o $(GOBIN)/eetg \
