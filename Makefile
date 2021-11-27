@@ -13,6 +13,8 @@ install:
 
 .PHONY: release-snapshot
 release-snapshot:
+	# https://github.com/goreleaser/goreleaser
+	go install github.com/goreleaser/goreleaser@latest
 	goreleaser release --snapshot --rm-dist
 
 .PHONY: eet-gens
