@@ -21,7 +21,8 @@ func (suite *HTTPHandlerTestSuite) TestSendSale() {
 	})
 
 	suite.Run("unavailable keystore", func() {
-		dat := eet.DateTime(time.Now().Truncate(time.Second))
+		dat := eet.DateTime(time.Now())
+		dat.Normalize()
 		r := httphandler.SendSaleReq{
 			CertID:       uuid.New().String(),
 			CertPassword: password.MustGenerate(64, 10, 10, false, false),

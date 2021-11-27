@@ -10,7 +10,12 @@ import (
 )
 
 // DateTimeLayout is the datetime layout of the EET system.
-const DateTimeLayout = "2006-01-02T15:04:05-07:00"
+const DateTimeLayout = time.RFC3339
+
+// Normalize canonicalizes the DateTime data. All DateTime needs to be normalized.
+func (t *DateTime) Normalize() {
+	*t = DateTime(time.Time(*t).Truncate(time.Second))
+}
 
 // MarshalText encodes CastkaType value to the correct form with two decimal places included.
 func (c CastkaType) MarshalText() ([]byte, error) {

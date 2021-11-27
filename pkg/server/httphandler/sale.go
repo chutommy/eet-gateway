@@ -11,7 +11,8 @@ import (
 
 func (h *Handler) sendSale(c *gin.Context) {
 	// default request
-	dateTime := eet.DateTime(time.Now().Truncate(time.Second))
+	dateTime := eet.DateTime(time.Now())
+	dateTime.Normalize()
 	req := &SendSaleReq{
 		UUIDZpravy:   eet.UUIDType(uuid.New().String()),
 		DatOdesl:     &dateTime,
@@ -27,6 +28,9 @@ func (h *Handler) sendSale(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
+
+	req.DatOdesl.Normalize()
+	req.DatTrzby.Normalize()
 
 	odpoved, err := h.gateway.SendSale(c, req.CertID, []byte(req.CertPassword), sendSaleRequest(req))
 	if err != nil {
