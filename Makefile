@@ -1,6 +1,6 @@
-.PHONY: gotest
-gotest:
-	go test -run=. -v ./pkg/...
+.PHONY: unit-tests
+unit-tests:
+	docker run --rm $$(docker build -f tests/unit/Dockerfile -q .)
 
 .PHONY: install
 install:

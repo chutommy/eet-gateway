@@ -18,14 +18,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          stable: 'true'
-          go-version: '1.17'
+#      - name: Set up Go
+#        uses: actions/setup-go@v2
+#        with:
+#          stable: 'true'
+#          go-version: '1.17'
 
       - name: Tidy Go code
         run: go mod tidy
 
       - name: Run unit tests
-        run: make gotest
+        run: make unit-tests
