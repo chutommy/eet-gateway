@@ -102,21 +102,19 @@ func (suite *HTTPHandlerTestSuite) TestUpdateCertID() {
 	})
 
 	suite.Run("invalid request body", func() {
-		id := uuid.New().String()
-		suite.HTTPStatusCode(suite.handler.ServeHTTP, http.MethodPut, fmt.Sprintf("/v1/certs/%s/id", id), nil, http.StatusBadRequest)
+		suite.HTTPStatusCode(suite.handler.ServeHTTP, http.MethodPut, fmt.Sprintf("/v1/certs/%s/id", uuid.New().String()), nil, http.StatusBadRequest)
 	})
 
 	suite.Run("unavailable keystore", func() {
 		id := uuid.New().String()
-		newID := uuid.New().String()
 		r := httphandler.UpdateCertIDJSONReq{
-			NewID: newID,
+			NewID: uuid.New().String(),
 		}
 
 		body, err := json.Marshal(r)
 		suite.NoError(err)
 
-		suite.gSvc.On("UpdateCertID", mock.Anything, id, newID).Return(gateway.ErrKeystoreUnavailable).Once()
+		suite.gSvc.On("UpdateCertID", mock.Anything, id, r.NewID).Return(gateway.ErrKeystoreUnavailable).Once()
 		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/v1/certs/%s/id", id), bytes.NewReader(body))
 		rw := httptest.NewRecorder()
 		suite.handler.ServeHTTP(rw, req)
@@ -131,15 +129,14 @@ func (suite *HTTPHandlerTestSuite) TestUpdateCertID() {
 
 	suite.Run("ok", func() {
 		id := uuid.New().String()
-		newID := uuid.New().String()
 		r := httphandler.UpdateCertIDJSONReq{
-			NewID: newID,
+			NewID: uuid.New().String(),
 		}
 
 		body, err := json.Marshal(r)
 		suite.NoError(err)
 
-		suite.gSvc.On("UpdateCertID", mock.Anything, id, newID).Return(nil).Once()
+		suite.gSvc.On("UpdateCertID", mock.Anything, id, r.NewID).Return(nil).Once()
 		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/v1/certs/%s/id", id), bytes.NewReader(body))
 		rw := httptest.NewRecorder()
 		suite.handler.ServeHTTP(rw, req)
@@ -159,8 +156,7 @@ func (suite *HTTPHandlerTestSuite) TestUpdateCertPassword() {
 	})
 
 	suite.Run("invalid request body", func() {
-		id := uuid.New().String()
-		suite.HTTPStatusCode(suite.handler.ServeHTTP, http.MethodPut, fmt.Sprintf("/v1/certs/%s/password", id), nil, http.StatusBadRequest)
+		suite.HTTPStatusCode(suite.handler.ServeHTTP, http.MethodPut, fmt.Sprintf("/v1/certs/%s/password", uuid.New().String()), nil, http.StatusBadRequest)
 	})
 
 	suite.Run("unavailable keystore", func() {
