@@ -48,6 +48,4 @@ eet-models:
 .PHONY: eet-mocks
 eet-mocks:
 	# https://github.com/vektra/mockery
-	go get github.com/vektra/mockery/v2/.../
-	go mod tidy
-	mockery --all --dir pkg --keeptree --output pkg/mocks --case snake --note "EETGateway - Tommy Chu"
+	docker run -v "$PWD":/src -w /src vektra/mockery --all --dir pkg --keeptree --output pkg/mocks --case snake --note "EETGateway - Tommy Chu"
