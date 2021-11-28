@@ -22,11 +22,11 @@ eet-gens: eet-specs eet-models eet-mocks
 
 .PHONY: eet-specs
 eet-specs:
-	go run scripts/soap-defs/main.go -dir data/eet-specs
+	docker run -v "$$PWD/data/eet-specs":/gen $$(docker build -f gen/specs/Dockerfile -q .)
 
 .PHONY: eet-models
 eet-models:
-	docker run -v "$$PWD/pkg/eet":/gen -w /gen $$(docker build -f gen/models/Dockerfile -q .)
+	docker run -v "$$PWD/pkg/eet":/gen $$(docker build -f gen/models/Dockerfile -q .)
 
 .PHONY: eet-mocks
 eet-mocks:
