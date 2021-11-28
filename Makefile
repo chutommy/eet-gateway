@@ -2,6 +2,10 @@
 unit-tests:
 	docker run --rm $$(docker build -f tests/unit/Dockerfile -q .)
 
+.PHONY: e2e-tests
+e2e-tests:
+	docker run --network="host" postman/newman run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" -n 3
+
 .PHONY: install
 install:
 	go build -o $(GOBIN)/eetg \
