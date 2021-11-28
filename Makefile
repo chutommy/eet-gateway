@@ -13,9 +13,12 @@ install:
 
 .PHONY: release-snapshot
 release-snapshot:
-	# https://github.com/goreleaser/goreleaser
-	go install github.com/goreleaser/goreleaser@latest
-	goreleaser release --snapshot --rm-dist
+	# https://hub.docker.com/r/goreleaser/goreleaser
+	docker run --rm --privileged \
+      -v $$PWD:/src \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -w /src \
+      goreleaser/goreleaser release --snapshot --rm-dist
 
 .PHONY: eet-gens
 eet-gens: eet-specs eet-models eet-mocks
