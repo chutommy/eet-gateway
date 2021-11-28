@@ -29,9 +29,6 @@ RUN gomodifytags -file ./eet-gen.go -struct TrzbaType -add-tags xml -transform p
 RUN gomodifytags -file ./eet-gen.go -struct TrzbaKontrolniKodyType -remove-tags xml -w --quiet
 RUN gomodifytags -file ./eet-gen.go -struct TrzbaKontrolniKodyType -add-tags xml -transform snakecase -w --quiet
 
+RUN chmod 666 eet-gen.go
 
-FROM alpine:latest AS copy
-
-COPY --from=build /build/eet-gen.go /copy/eet-gen.go
-
-CMD mv /copy/eet-gen.go /gen/
+CMD mv /build/eet-gen.go /gen/
