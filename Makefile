@@ -22,13 +22,13 @@ eet-gens: eet-specs eet-models eet-mocks
 
 .PHONY: eet-specs
 eet-specs:
-	docker run -v "$$PWD/data/eet-specs":/gen $$(docker build -f gen/specs/Dockerfile -q .)
+	docker run -v "$$PWD/data/eet-specs":/gen --rm $$(docker build -f gen/specs/Dockerfile -q .)
 
 .PHONY: eet-models
 eet-models:
-	docker run -v "$$PWD/pkg/eet":/gen $$(docker build -f gen/models/Dockerfile -q .)
+	docker run -v "$$PWD/pkg/eet":/gen --rm $$(docker build -f gen/models/Dockerfile -q .)
 
 .PHONY: eet-mocks
 eet-mocks:
-	# https://github.com/vektra/mockery
+	# https://hub.docker.com/r/vektra/mockery
 	docker run -v "$$PWD":/src -w /src vektra/mockery --all --dir pkg --keeptree --output pkg/mocks --case snake --note "EETGateway - Tommy Chu"

@@ -8,9 +8,4 @@ COPY ./scripts/soap-defs/main.go .
 
 RUN go build -o main main.go
 
-
-FROM alpine:latest AS copy
-
-COPY --from=build /build/main .
-
 ENTRYPOINT ./main -dir /gen
