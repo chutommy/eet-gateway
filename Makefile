@@ -26,24 +26,7 @@ eet-specs:
 
 .PHONY: eet-models
 eet-models:
-	# https://github.com/droyo/go-xml
-	go get aqwari.net/xml/...
-	go mod tidy
-	wsdlgen -o pkg/eet/eet-gen.go -pkg eet data/eet-specs/soap-definition/EETXMLSchema.xsd data/eet-specs/soap-definition/EETServiceSOAP.wsdl
-	# insert XML chardata attributes for: OdpovedChybaType, OdpovedVarovaniType
-	sed -i '52 i Zprava string `xml:",chardata"`' pkg/eet/eet-gen.go
-	sed -i '77 i Zprava string `xml:",chardata"`' pkg/eet/eet-gen.go
-	go fmt ./...
-	# generate custom XML tag for: OdpovedType, TrzbaType, TrzbaKontrolniKodyType
-	# https://github.com/fatih/gomodifytags
-	go get github.com/fatih/gomodifytags
-	go mod tidy
-	gomodifytags -file pkg/eet/eet-gen.go -struct OdpovedType -remove-tags xml -w --quiet
-	gomodifytags -file pkg/eet/eet-gen.go -struct OdpovedType -add-tags xml -add-options xml=omitempty -transform pascalcase -w --quiet
-	gomodifytags -file pkg/eet/eet-gen.go -struct TrzbaType -remove-tags xml -w --quiet
-	gomodifytags -file pkg/eet/eet-gen.go -struct TrzbaType -add-tags xml -transform pascalcase -w --quiet
-	gomodifytags -file pkg/eet/eet-gen.go -struct TrzbaKontrolniKodyType -remove-tags xml -w --quiet
-	gomodifytags -file pkg/eet/eet-gen.go -struct TrzbaKontrolniKodyType -add-tags xml -transform snakecase -w --quiet
+	docker run -v "$$PWD/pkg/eet":/gen -w /gen $$(docker build -f gen/models/Dockerfile -q .)
 
 .PHONY: eet-mocks
 eet-mocks:
