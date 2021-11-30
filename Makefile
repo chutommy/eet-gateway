@@ -1,9 +1,9 @@
-.PHONY: unit-tests
-unit-tests:
+.PHONY: unit-test
+unit-test:
 	docker run --rm $$(docker build -f tests/unit/Dockerfile -q .)
 
-.PHONY: e2e-tests
-e2e-tests:
+.PHONY: e2e-test
+e2e-test:
 	docker run --network="host" postman/newman run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" -n 3
 
 .PHONY: install
