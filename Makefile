@@ -1,3 +1,7 @@
+.PHONY: coverage-report
+coverage-report:
+	docker run -v "$$PWD/tests/reports":/gen --rm $$(docker build -f tests/coverage-report/Dockerfile -q .)
+
 .PHONY: unit-test
 unit-test:
 	docker run --rm $$(docker build -f tests/unit/Dockerfile -q .)
