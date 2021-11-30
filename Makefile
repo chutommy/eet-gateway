@@ -2,6 +2,10 @@
 unit-test:
 	docker run --rm $$(docker build -f tests/unit/Dockerfile -q .)
 
+.PHONY: unit-test-report
+unit-test-report:
+	docker run -v "$$PWD/tests/reports":/gen --rm $$(docker build -f tests/unit-report/Dockerfile -q .)
+
 .PHONY: e2e-test
 e2e-test:
 	docker run --network="host" postman/newman run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" -n 3

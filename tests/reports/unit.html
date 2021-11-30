@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EET Gateway - Unit test report</title>
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+            background-color: #f3f3f3;
+            border-top: 2px #dee6e8 solid;
+            margin: 0;
+        }
+
+        div.pageHeader span.projectTitle {
+            font-family: serif;
+            font-size: 2em;
+            padding-left: 56px;
+            padding-top: 80px;
+            display: block;
+            color: #a5a5a5;
+            text-shadow: 0 -1px 1px white;
+        }
+
+        div.pageHeader div.testStats {
+            position: absolute;
+            top: 7px;
+            right: 52px;
+            font-size: 0.8em;
+            color: #a2a2a2;
+        }
+
+        div.pageHeader div.testStats span.indicator {
+            font-size: 2em;
+            position: relative;
+            top: 5px;
+            text-shadow: 0 1px 0 white;
+        }
+
+        div.pageHeader div.testStats span strong {
+            margin-right: 16px;
+        }
+
+        div.pageHeader div.testStats span.total {
+            border-right: 1px #afafaf dotted;
+            background: #8298af;
+        }
+
+        div.pageHeader div.testStats span.passed {
+            border-right: 1px #afafaf dotted;
+            background: #6fca83;
+        }
+
+        div.pageHeader div.testStats span.skipped {
+            background: #bababa;
+        }
+
+        div.pageHeader div.testStats span.failed {
+            background: #ff7676;
+        }
+
+        div.pageHeader div.testStats span {
+            margin-right: 1px;
+            height: 55px;
+            padding: 20px 8px 18px;
+            color: white;
+        }
+
+        div.pageHeader .testGroupsTitle {
+            margin: 16px 32px 8px 40px;
+            font-size: 0.9em;
+            color: darkgrey;
+            display: inline-block;
+        }
+
+        div.pageHeader .testExecutionDate {
+            display: inline-block;
+            position: absolute;
+            right: 10px;
+            margin: 14px 32px 8px 40px;
+            color: #9e9e9e;
+            font-size: 0.9em;
+        }
+
+        .testReportContainer {
+            padding: 0 32px 32px 32px;
+        }
+
+        .cardContainer {
+            padding: 16px 16px 16px;
+            box-shadow: 0 4px 4px #d4d4d4;
+            background-color: white;
+        }
+
+        #testResults {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .testResultGroup {
+            width: 48px;
+            height: 32px;
+            background-color: #43c143;
+            margin-left: 1px;
+            margin-bottom: 1px;
+            box-sizing: border-box;
+        }
+
+        .testResultGroup.selected {
+            border: 1px white solid;
+            background-color: black !important;
+        }
+
+        .testResultGroup.skipped {
+            border: 2px gray solid;
+        }
+
+        .testResultGroup.failed {
+            background-color: red;
+        }
+
+        .cardContainer.testGroupList,
+        .cardContainer.testDetail {
+            margin-top: 16px;
+            padding: 16px;
+        }
+
+        .cardContainer.testGroupList {
+            color: #9c9c9c;
+            padding: 0;
+        }
+
+        .cardContainer.testGroupList .testGroupRow {
+            cursor: default;
+            border-bottom: 1px #dadada dotted;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testStatus {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #139e13;
+            pointer-events: none;
+            display: inline-block;
+            overflow: hidden;
+            float: left;
+            padding-top: 10px;
+            padding-left: 20px;
+            padding-right: 12px;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testStatus.skipped {
+            color: gray;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testStatus.failed {
+            color: red;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testTitle {
+            font-size: 0.9em;
+            padding: 12px 0 10px;
+            display: inline-block;
+            pointer-events: none;
+            color: #525252;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            width: calc(100% - 110px);
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testDuration {
+            pointer-events: none;
+        }
+
+        .cardContainer.testGroupList .testGroupRow {
+            position: relative;
+            border-left: 4px #43c143 solid;
+        }
+
+        .cardContainer.testGroupList .testGroupRow.skipped {
+            color: gray;
+            border-left: 4px gray solid;
+        }
+
+        .cardContainer.testGroupList .testGroupRow.failed {
+            color: red;
+            border-left: 4px red solid;
+        }
+
+        .cardContainer.testGroupList .testGroupRow:hover {
+            background-color: #fffaea;
+            transition: 0.250s;
+        }
+
+        .cardContainer .testOutput {
+            padding: 8px 16px 24px 16px;
+        }
+
+        .cardContainer .console {
+            display: block;
+            font-family: monospace;
+            padding: 10px;
+            background-color: #424242;
+            color: #1aff00;
+            border-bottom: 1px #1aff00 dotted;
+            overflow: auto;
+            font-size: 1.1em;
+        }
+
+        .cardContainer .testOutput .testDetail {
+            border-bottom: 1px #d0d0d0 solid;
+            padding: 16px;
+            background-color: #e6e6e6;
+            border-radius: 0 0 4px 4px;
+            color: dimgrey;
+            font-size: 0.8em;
+        }
+
+        .cardContainer .console.skipped{
+            color: #d9d9d9;
+        }
+
+        .cardContainer .console.failed {
+            color: #ffb2b2;
+        }
+
+        .cardContainer .testDuration {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            text-align: right;
+            padding-right: 8px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+<div class="pageHeader">
+    <span class="projectTitle">EET Gateway - Unit test report</span>
+    <div class="testStats">
+        <span class="total"><span class="indicator">&boxbox;</span> Total: <strong>120</strong>Duration: <strong>29.51s</strong>
+        </span><span class="passed"><span class="indicator">&check;</span> Passed: <strong>120</strong>
+        </span><span class="skipped"><span class="indicator">&dash;</span> Skipped: <strong>0</strong>
+        </span><span class="failed"><span class="indicator">&cross;</span> Failed: <strong>0</strong>
+        </span>
+    </div>
+    <span class="testGroupsTitle">Test Groups:</span>
+    <span class="testExecutionDate">November 30, 2021 19:41:42</span>
+</div>
+<div class="testReportContainer">
+    <div class="cardContainer">
+        <div id="testResults">
+            
+                <div class="testResultGroup  " id="0"></div>
+            
+                <div class="testResultGroup  " id="1"></div>
+            
+                <div class="testResultGroup  " id="2"></div>
+            
+                <div class="testResultGroup  " id="3"></div>
+            
+                <div class="testResultGroup  " id="4"></div>
+            
+                <div class="testResultGroup  " id="5"></div>
+            
+                <div class="testResultGroup  " id="6"></div>
+            
+                <div class="testResultGroup  " id="7"></div>
+            
+                <div class="testResultGroup  " id="8"></div>
+            
+                <div class="testResultGroup  " id="9"></div>
+            
+                <div class="testResultGroup  " id="10"></div>
+            
+                <div class="testResultGroup  " id="11"></div>
+            
+        </div>
+    </div>
+    <div class="cardContainer testGroupList" id="testGroupList"></div>
+</div>
+<script type="application/javascript">
+    /**
+ * @typedef TestStatus
+ * @property {string} TestName
+ * @property {string} Package
+ * @property {number} ElapsedTime
+ * @property {Array.<string>} Output
+ * @property {boolean} Passed
+ * @property {boolean} Skipped
+ */
+class TestStatus {}
+
+/**
+ * @typedef TestGroupData
+ * @type {object}
+ * @property {string} FailureIndicator
+ * @property {string} SkippedIndicator
+ * @property {Array.<TestStatus>}
+ */
+class TestGroupData {}
+
+/**
+ * @typedef TestResults
+ * @type {Array.<TestGroupData>}
+ */
+class TestResults extends Array {}
+
+/**
+ * @typedef SelectedItems
+ * @property {HTMLElement|EventTarget} testResults
+ * @property {String} selectedTestGroupColor
+ */
+class SelectedItems {}
+
+/**
+ * @typedef GoTestReportElements
+ * @property {TestResults} data
+ * @property {HTMLElement} testResultsElem
+ * @property {HTMLElement} testGroupListElem
+ */
+class GoTestReportElements {}
+
+
+/**
+ * Main entry point for GoTestReport.
+ * @param {GoTestReportElements} elements
+ * @returns {{testResultsClickHandler: testResultsClickHandler}}
+ * @constructor
+ */
+window.GoTestReport = function (elements) {
+  const /**@type {SelectedItems}*/ selectedItems = {
+    testResults: null,
+    selectedTestGroupColor: null
+  }
+
+  function addEventData(event) {
+    if (event.data == null) {
+      event.data = {target: event.target}
+    }
+    return event
+  }
+
+
+  const goTestReport = {
+    /**
+     * Invoked when a user clicks on one of the test group div elements.
+     * @param {HTMLElement} target The element associated with the test group.
+     * @param {boolean} shiftKey If pressed, all of test detail associated to the test group is shown.
+     * @param {TestResults} data
+     * @param {SelectedItems} selectedItems
+     * @param {function(target: Element, data: TestResults)} testGroupListHandler
+     */
+    testResultsClickHandler: function (target,
+                                       shiftKey,
+                                       data,
+                                       selectedItems,
+                                       testGroupListHandler) {
+
+      if (target.classList.contains('testResultGroup') === false) {
+        return
+      }
+      if (selectedItems.testResults != null) {
+        let testResultsElement = /**@type {HTMLElement}*/ selectedItems.testResults
+        testResultsElement.classList.remove("selected")
+        testResultsElement.style.backgroundColor = selectedItems.selectedTestGroupColor
+      }
+      const testGroupId = /**@type {number}*/ target.id
+      if ((target.id === undefined)
+        || (data[testGroupId] === undefined)
+        || (data[testGroupId]['TestResults'] === undefined)) {
+        return
+      }
+      const testResults = /**@type {TestResults}*/ data[testGroupId]['TestResults']
+      let testGroupList = /**@type {string}*/ ''
+      selectedItems.selectedTestGroupColor = getComputedStyle(target).getPropertyValue('background-color')
+      selectedItems.testResults = target
+      target.classList.add("selected")
+      for (let i = 0; i < testResults.length; i++) {
+        const testResult = /**@type {TestGroupData}*/ testResults[i]
+        const testPassed = /**@type {boolean}*/ testResult.Passed
+        const testSkipped = /**@type {boolean}*/ testResult.Skipped
+        const testPassedStatus = /**@type {string}*/ (testPassed) ? '' : (testSkipped ? 'skipped' : 'failed')
+        const testId = /**@type {string}*/ target.attributes['id'].value
+        testGroupList += `<div class="testGroupRow ${testPassedStatus}" data-groupid="${testId}" data-index="${i}">
+        <span class="testStatus ${testPassedStatus}">${(testPassed) ? '&check' : (testSkipped ? '&dash' : '&cross')};</span>
+        <span class="testTitle">${testResult.TestName}</span>
+        <span class="testDuration"><span>${testResult.ElapsedTime}s </span>⏱</span>
+      </div>`
+      }
+      const testGroupListElem = elements.testGroupListElem
+      testGroupListElem.innerHTML = ''
+      testGroupListElem.innerHTML = testGroupList
+
+      if (shiftKey) {
+        testGroupListElem.querySelectorAll('.testGroupRow')
+                         .forEach((elem) => testGroupListHandler(elem, data))
+      } else if (testResults.length === 1) {
+        testGroupListHandler(testGroupListElem.querySelector('.testGroupRow'), data)
+      }
+    },
+
+    /**
+     *
+     * @param {Element} target
+     * @param {TestResults} data
+     */
+    testGroupListHandler: function (target, data) {
+      const attribs = target['attributes']
+      if (attribs.hasOwnProperty('data-groupid')) {
+        const groupId = /**@type {number}*/ attribs['data-groupid'].value
+        const testIndex = /**@type {number}*/ attribs['data-index'].value
+        const testStatus = /**@type {TestStatus}*/ data[groupId]['TestResults'][testIndex]
+        const testOutputDiv = /**@type {HTMLDivElement}*/ target.querySelector('div.testOutput')
+
+        if (testOutputDiv == null) {
+          const testOutputDiv = document.createElement('div')
+          testOutputDiv.classList.add('testOutput')
+          const consolePre = document.createElement('pre')
+          consolePre.classList.add('console')
+          const testDetailDiv = document.createElement('div')
+          testDetailDiv.classList.add('testDetail')
+          const packageNameDiv = document.createElement('div')
+          packageNameDiv.classList.add('package')
+          packageNameDiv.innerHTML = `<strong>Package:</strong> ${testStatus.Package}`
+          const testFileNameDiv = document.createElement('div')
+          testFileNameDiv.classList.add('filename')
+          if (testStatus.TestFileName.trim() === "") {
+            testFileNameDiv.innerHTML = `<strong>Filename:</strong> n/a &nbsp;&nbsp;`
+          } else {
+            testFileNameDiv.innerHTML = `<strong>Filename:</strong> ${testStatus.TestFileName} &nbsp;&nbsp;`
+            testFileNameDiv.innerHTML += `<strong>Line:</strong> ${testStatus.TestFunctionDetail.Line} `
+            testFileNameDiv.innerHTML += `<strong>Col:</strong> ${testStatus.TestFunctionDetail.Col}`
+          }
+          testDetailDiv.insertAdjacentElement('beforeend', packageNameDiv)
+          testDetailDiv.insertAdjacentElement('beforeend', testFileNameDiv)
+          testOutputDiv.insertAdjacentElement('afterbegin', consolePre)
+          testOutputDiv.insertAdjacentElement('beforeend', testDetailDiv)
+          target.insertAdjacentElement('beforeend', testOutputDiv)
+
+          if (testStatus.Passed) {
+            consolePre.classList.remove('skipped')
+            consolePre.classList.remove('failed')
+          } else if (testStatus.Skipped) {
+            consolePre.classList.add('skipped')
+            consolePre.classList.remove('failed')
+          } else {
+            consolePre.classList.remove('skipped')
+            consolePre.classList.add('failed')
+          }
+          consolePre.textContent = testStatus.Output.join('')
+        } else {
+          testOutputDiv.remove()
+        }
+      }
+    }
+  }
+
+  //+------------------------+
+  //|    setup DOM events    |
+  //+------------------------+
+  elements.testResultsElem
+          .addEventListener('click', event =>
+            goTestReport.testResultsClickHandler(/**@type {HTMLElement}*/ addEventData(event).data.target,
+                                                 event.shiftKey,
+                                                 elements.data,
+                                                 selectedItems,
+                                                 goTestReport.testGroupListHandler))
+
+  elements.testGroupListElem
+          .addEventListener('click', event =>
+            goTestReport.testGroupListHandler(/**@type {Element}*/ event.target,
+                                              elements.data))
+
+  return goTestReport
+}
+
+
+    
+
+    const data = [{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestCaService_VerifyDSig","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0,"Output":["","=== RUN   TestCaService_VerifyDSig\n","--- PASS: TestCaService_VerifyDSig (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestCaService_VerifyDSig/ok","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0,"Output":["","=== RUN   TestCaService_VerifyDSig/ok\n","--- PASS: TestCaService_VerifyDSig/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestCaService_VerifyDSig/unknown_certificate_authority","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0,"Output":["","=== RUN   TestCaService_VerifyDSig/unknown_certificate_authority\n","--- PASS: TestCaService_VerifyDSig/unknown_certificate_authority (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestCalc","Package":"github.com/chutommy/eetgateway/pkg/wsse","ElapsedTime":0.03,"Output":["","=== RUN   TestCalc\n","--- PASS: TestCalc (0.03s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestCalc/testdata/CZ00000019.v3.valid.v3.1.1.xml","Package":"github.com/chutommy/eetgateway/pkg/wsse","ElapsedTime":0.01,"Output":["","=== RUN   TestCalc/testdata/CZ00000019.v3.valid.v3.1.1.xml\n","--- PASS: TestCalc/testdata/CZ00000019.v3.valid.v3.1.1.xml (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestCalc/testdata/CZ1212121218.v3.valid.v3.1.1.xml","Package":"github.com/chutommy/eetgateway/pkg/wsse","ElapsedTime":0.01,"Output":["","=== RUN   TestCalc/testdata/CZ1212121218.v3.valid.v3.1.1.xml\n","--- PASS: TestCalc/testdata/CZ1212121218.v3.valid.v3.1.1.xml (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestCalc/testdata/CZ683555118.v3.valid.v3.1.1.xml","Package":"github.com/chutommy/eetgateway/pkg/wsse","ElapsedTime":0.01,"Output":["","=== RUN   TestCalc/testdata/CZ683555118.v3.valid.v3.1.1.xml\n","--- PASS: TestCalc/testdata/CZ683555118.v3.valid.v3.1.1.xml (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestClient_Do","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.2,"Output":["","=== RUN   TestClient_Do\n","--- PASS: TestClient_Do (0.20s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestClient_Do/testdata/CZ00000019.v3.valid.v3.1.1.xml","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.14,"Output":["","=== RUN   TestClient_Do/testdata/CZ00000019.v3.valid.v3.1.1.xml\n","--- PASS: TestClient_Do/testdata/CZ00000019.v3.valid.v3.1.1.xml (0.14s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestClient_Do/testdata/CZ1212121218.v3.valid.v3.1.1.xml","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.03,"Output":["","=== RUN   TestClient_Do/testdata/CZ1212121218.v3.valid.v3.1.1.xml\n","--- PASS: TestClient_Do/testdata/CZ1212121218.v3.valid.v3.1.1.xml (0.03s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestClient_Do/testdata/CZ683555118.v3.valid.v3.1.1.xml","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.03,"Output":["","=== RUN   TestClient_Do/testdata/CZ683555118.v3.valid.v3.1.1.xml\n","--- PASS: TestClient_Do/testdata/CZ683555118.v3.valid.v3.1.1.xml (0.03s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestClient_Ping","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.14,"Output":["","=== RUN   TestClient_Ping\n","--- PASS: TestClient_Ping (0.14s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestClient_Ping/invalid_url","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0,"Output":["","=== RUN   TestClient_Ping/invalid_url\n","--- PASS: TestClient_Ping/invalid_url (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestClient_Ping/playground_url","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.07,"Output":["","=== RUN   TestClient_Ping/playground_url\n","--- PASS: TestClient_Ping/playground_url (0.07s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0.03,"Output":["","=== RUN   TestHTTPHandlerTestSuite\n","","=== CONT  TestHTTPHandlerTestSuite\n","    handler_test.go:32: PASS:\tDeleteID(string,string)\n","    handler_test.go:32: PASS:\tDeleteID(string,string)\n","    handler_test.go:32: PASS:\tListCertIDs(string,int64,int64)\n","    handler_test.go:32: PASS:\tListCertIDs(string,int64,int64)\n","    handler_test.go:32: PASS:\tPing(string)\n","    handler_test.go:32: PASS:\tPing(string)\n","    handler_test.go:32: PASS:\tPing(string)\n","    handler_test.go:32: PASS:\tSendSale(string,string,[]uint8,string)\n","    handler_test.go:32: PASS:\tSendSale(string,string,[]uint8,string)\n","    handler_test.go:32: PASS:\tStoreCert(string,string,[]uint8,[]uint8,string)\n","    handler_test.go:32: PASS:\tStoreCert(string,string,[]uint8,[]uint8,string)\n","    handler_test.go:32: PASS:\tUpdateCertID(string,string,string)\n","    handler_test.go:32: PASS:\tUpdateCertID(string,string,string)\n","    handler_test.go:32: PASS:\tUpdateCertPassword(string,string,[]uint8,[]uint8)\n","    handler_test.go:32: PASS:\tUpdateCertPassword(string,string,[]uint8,[]uint8)\n","--- PASS: TestHTTPHandlerTestSuite (0.03s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestDeleteCert","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0.01,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestDeleteCert\n","--- PASS: TestHTTPHandlerTestSuite/TestDeleteCert (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestDeleteCert/ok","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestDeleteCert/ok\n","--- PASS: TestHTTPHandlerTestSuite/TestDeleteCert/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestDeleteCert/unavailable_keystore","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0.01,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestDeleteCert/unavailable_keystore\n","--- PASS: TestHTTPHandlerTestSuite/TestDeleteCert/unavailable_keystore (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestListCertIDs","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestListCertIDs\n","--- PASS: TestHTTPHandlerTestSuite/TestListCertIDs (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestListCertIDs/invalid_limit","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestListCertIDs/invalid_limit\n","--- PASS: TestHTTPHandlerTestSuite/TestListCertIDs/invalid_limit (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestHTTPHandlerTestSuite/TestListCertIDs/keystore_unavailable","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestListCertIDs/keystore_unavailable\n","--- PASS: TestHTTPHandlerTestSuite/TestListCertIDs/keystore_unavailable (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestListCertIDs/ok","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestListCertIDs/ok\n","--- PASS: TestHTTPHandlerTestSuite/TestListCertIDs/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestPing","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestPing\n","--- PASS: TestHTTPHandlerTestSuite/TestPing (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestPing/fscr_unavailable","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestPing/fscr_unavailable\n","--- PASS: TestHTTPHandlerTestSuite/TestPing/fscr_unavailable (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestPing/keystore_unavailable","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestPing/keystore_unavailable\n","--- PASS: TestHTTPHandlerTestSuite/TestPing/keystore_unavailable (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestPing/ok","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestPing/ok\n","--- PASS: TestHTTPHandlerTestSuite/TestPing/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestSendSale","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestSendSale\n","--- PASS: TestHTTPHandlerTestSuite/TestSendSale (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestSendSale/invalid_request","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestSendSale/invalid_request\n","--- PASS: TestHTTPHandlerTestSuite/TestSendSale/invalid_request (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestSendSale/ok","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestSendSale/ok\n","--- PASS: TestHTTPHandlerTestSuite/TestSendSale/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestSendSale/unavailable_keystore","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestSendSale/unavailable_keystore\n","--- PASS: TestHTTPHandlerTestSuite/TestSendSale/unavailable_keystore (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestHTTPHandlerTestSuite/TestStoreCert","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestStoreCert\n","--- PASS: TestHTTPHandlerTestSuite/TestStoreCert (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestStoreCert/bad_request_body","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestStoreCert/bad_request_body\n","--- PASS: TestHTTPHandlerTestSuite/TestStoreCert/bad_request_body (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestStoreCert/invalid_pkcs12_password","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestStoreCert/invalid_pkcs12_password\n","--- PASS: TestHTTPHandlerTestSuite/TestStoreCert/invalid_pkcs12_password (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestStoreCert/ok","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestStoreCert/ok\n","--- PASS: TestHTTPHandlerTestSuite/TestStoreCert/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertID","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertID\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertID (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertID/invalid_request_body","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertID/invalid_request_body\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertID/invalid_request_body (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertID/invalid_uri","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertID/invalid_uri\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertID/invalid_uri (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertID/ok","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertID/ok\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertID/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertID/unavailable_keystore","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertID/unavailable_keystore\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertID/unavailable_keystore (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertPassword","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0.01,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertPassword\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertPassword (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertPassword/invalid_request_body","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertPassword/invalid_request_body\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertPassword/invalid_request_body (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertPassword/invalid_uri","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertPassword/invalid_uri\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertPassword/invalid_uri (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertPassword/ok","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertPassword/ok\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertPassword/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestHTTPHandlerTestSuite/TestUpdateCertPassword/unavailable_keystore","Package":"github.com/chutommy/eetgateway/pkg/server/httphandler","ElapsedTime":0,"Output":["","=== RUN   TestHTTPHandlerTestSuite/TestUpdateCertPassword/unavailable_keystore\n","--- PASS: TestHTTPHandlerTestSuite/TestUpdateCertPassword/unavailable_keystore (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestNewSoapEnvelope","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0.01,"Output":["","=== RUN   TestNewSoapEnvelope\n","--- PASS: TestNewSoapEnvelope (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseAndVerifyResponse","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0.03,"Output":["","=== RUN   TestParseAndVerifyResponse\n","--- PASS: TestParseAndVerifyResponse (0.03s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseAndVerifyResponse/accepted_sale","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0.02,"Output":["","=== RUN   TestParseAndVerifyResponse/accepted_sale\n","--- PASS: TestParseAndVerifyResponse/accepted_sale (0.02s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseAndVerifyResponse/denied_sale","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0,"Output":["","=== RUN   TestParseAndVerifyResponse/denied_sale\n","--- PASS: TestParseAndVerifyResponse/denied_sale (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseAndVerifyResponse/invalid_bkp","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0,"Output":["","=== RUN   TestParseAndVerifyResponse/invalid_bkp\n","--- PASS: TestParseAndVerifyResponse/invalid_bkp (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseAndVerifyResponse/invalid_digest","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0,"Output":["","=== RUN   TestParseAndVerifyResponse/invalid_digest\n","--- PASS: TestParseAndVerifyResponse/invalid_digest (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestParseAndVerifyResponse/invalid_reference_element","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0,"Output":["","=== RUN   TestParseAndVerifyResponse/invalid_reference_element\n","--- PASS: TestParseAndVerifyResponse/invalid_reference_element (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseAndVerifyResponse/invalid_signature","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0,"Output":["","=== RUN   TestParseAndVerifyResponse/invalid_signature\n","--- PASS: TestParseAndVerifyResponse/invalid_signature (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseAndVerifyResponse/invalid_xml","Package":"github.com/chutommy/eetgateway/pkg/eet","ElapsedTime":0,"Output":["","=== RUN   TestParseAndVerifyResponse/invalid_xml\n","--- PASS: TestParseAndVerifyResponse/invalid_xml (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseTaxpayerCertificate","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.03,"Output":["","=== RUN   TestParseTaxpayerCertificate\n","--- PASS: TestParseTaxpayerCertificate (0.03s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseTaxpayerCertificate/invalid_CA_of_the_taxpayer's_certificate","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0.01,"Output":["","=== RUN   TestParseTaxpayerCertificate/invalid_CA_of_the_taxpayer's_certificate\n","--- PASS: TestParseTaxpayerCertificate/invalid_CA_of_the_taxpayer's_certificate (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseTaxpayerCertificate/ok_CZ00000019","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0,"Output":["","=== RUN   TestParseTaxpayerCertificate/ok_CZ00000019\n","--- PASS: TestParseTaxpayerCertificate/ok_CZ00000019 (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseTaxpayerCertificate/ok_CZ1212121218","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0,"Output":["","=== RUN   TestParseTaxpayerCertificate/ok_CZ1212121218\n","--- PASS: TestParseTaxpayerCertificate/ok_CZ1212121218 (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestParseTaxpayerCertificate/ok_CZ683555118","Package":"github.com/chutommy/eetgateway/pkg/fscr","ElapsedTime":0,"Output":["","=== RUN   TestParseTaxpayerCertificate/ok_CZ683555118\n","--- PASS: TestParseTaxpayerCertificate/ok_CZ683555118 (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Delete","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.03,"Output":["","=== RUN   TestRedisService_Delete\n","--- PASS: TestRedisService_Delete (0.03s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Delete/id_not_found","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Delete/id_not_found\n","--- PASS: TestRedisService_Delete/id_not_found (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestRedisService_Delete/offline","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.02,"Output":["","=== RUN   TestRedisService_Delete/offline\n","--- PASS: TestRedisService_Delete/offline (0.02s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Delete/ok","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Delete/ok\n","--- PASS: TestRedisService_Delete/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Get","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.01,"Output":["","=== RUN   TestRedisService_Get\n","--- PASS: TestRedisService_Get (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Get/id_not_found","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Get/id_not_found\n","--- PASS: TestRedisService_Get/id_not_found (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Get/incorrect_password","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Get/incorrect_password\n","--- PASS: TestRedisService_Get/incorrect_password (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Get/offline","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.01,"Output":["","=== RUN   TestRedisService_Get/offline\n","--- PASS: TestRedisService_Get/offline (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Get/ok","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Get/ok\n","--- PASS: TestRedisService_Get/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_List","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.05,"Output":["","=== RUN   TestRedisService_List\n","--- PASS: TestRedisService_List (0.05s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_List/offline","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.05,"Output":["","=== RUN   TestRedisService_List/offline\n","--- PASS: TestRedisService_List/offline (0.05s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_List/ok","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_List/ok\n","--- PASS: TestRedisService_List/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestRedisService_Ping","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.07,"Output":["","=== RUN   TestRedisService_Ping\n","--- PASS: TestRedisService_Ping (0.07s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Ping/offline","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.07,"Output":["","=== RUN   TestRedisService_Ping/offline\n","--- PASS: TestRedisService_Ping/offline (0.07s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Ping/ok","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Ping/ok\n","--- PASS: TestRedisService_Ping/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Store","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.19,"Output":["","=== RUN   TestRedisService_Store\n","--- PASS: TestRedisService_Store (0.19s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Store/id_already_used","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Store/id_already_used\n","--- PASS: TestRedisService_Store/id_already_used (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Store/ok","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_Store/ok\n","--- PASS: TestRedisService_Store/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_Store/redis_offline","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.19,"Output":["","=== RUN   TestRedisService_Store/redis_offline\n","--- PASS: TestRedisService_Store/redis_offline (0.19s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdateID","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.02,"Output":["","=== RUN   TestRedisService_UpdateID\n","--- PASS: TestRedisService_UpdateID (0.02s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdateID/id_already_used","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_UpdateID/id_already_used\n","--- PASS: TestRedisService_UpdateID/id_already_used (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdateID/id_not_found","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_UpdateID/id_not_found\n","--- PASS: TestRedisService_UpdateID/id_not_found (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestRedisService_UpdateID/id_not_found#01","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_UpdateID/id_not_found#01\n","--- PASS: TestRedisService_UpdateID/id_not_found#01 (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdateID/offline","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.02,"Output":["","=== RUN   TestRedisService_UpdateID/offline\n","--- PASS: TestRedisService_UpdateID/offline (0.02s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdateID/ok","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_UpdateID/ok\n","--- PASS: TestRedisService_UpdateID/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdatePassword","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.02,"Output":["","=== RUN   TestRedisService_UpdatePassword\n","--- PASS: TestRedisService_UpdatePassword (0.02s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdatePassword/id_not_found","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_UpdatePassword/id_not_found\n","--- PASS: TestRedisService_UpdatePassword/id_not_found (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdatePassword/incorrect_password","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_UpdatePassword/incorrect_password\n","--- PASS: TestRedisService_UpdatePassword/incorrect_password (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdatePassword/offline","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0.02,"Output":["","=== RUN   TestRedisService_UpdatePassword/offline\n","--- PASS: TestRedisService_UpdatePassword/offline (0.02s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRedisService_UpdatePassword/ok","Package":"github.com/chutommy/eetgateway/pkg/keystore","ElapsedTime":0,"Output":["","=== RUN   TestRedisService_UpdatePassword/ok\n","--- PASS: TestRedisService_UpdatePassword/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestRoots","Package":"github.com/chutommy/eetgateway/pkg/ca","ElapsedTime":0,"Output":["","=== RUN   TestRoots\n","--- PASS: TestRoots (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_DeleteID","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_DeleteID\n","--- PASS: TestService_DeleteID (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestService_DeleteID/certificate_not_found","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_DeleteID/certificate_not_found\n","    service_test.go:445: PASS:\tDelete(*context.emptyCtx,string)\n","--- PASS: TestService_DeleteID/certificate_not_found (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_DeleteID/ok","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_DeleteID/ok\n","    service_test.go:445: PASS:\tDelete(*context.emptyCtx,string)\n","--- PASS: TestService_DeleteID/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_DeleteID/unknown_certificate_delete_error","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_DeleteID/unknown_certificate_delete_error\n","    service_test.go:445: PASS:\tPing(*context.emptyCtx)\n","    service_test.go:445: PASS:\tDelete(*context.emptyCtx,string)\n","--- PASS: TestService_DeleteID/unknown_certificate_delete_error (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_ListCertIDs","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_ListCertIDs\n","--- PASS: TestService_ListCertIDs (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_ListCertIDs/ok","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_ListCertIDs/ok\n","    service_test.go:252: PASS:\tList(*context.emptyCtx,int64,int64)\n","--- PASS: TestService_ListCertIDs/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_ListCertIDs/unknown_list_certificates_error","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_ListCertIDs/unknown_list_certificates_error\n","    service_test.go:252: PASS:\tPing(*context.emptyCtx)\n","    service_test.go:252: PASS:\tList(*context.emptyCtx,int64,int64)\n","--- PASS: TestService_ListCertIDs/unknown_list_certificates_error (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_Ping","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_Ping\n","--- PASS: TestService_Ping (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_Ping/bad_fscr","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_Ping/bad_fscr\n","    service_test.go:121: PASS:\tPing()\n","    service_test.go:122: PASS:\tPing()\n","    service_test.go:123: PASS:\tPing(*context.emptyCtx)\n","--- PASS: TestService_Ping/bad_fscr (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_Ping/bad_fscr_and_keystore","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_Ping/bad_fscr_and_keystore\n","    service_test.go:121: PASS:\tPing()\n","    service_test.go:122: PASS:\tPing()\n","    service_test.go:123: PASS:\tPing(*context.emptyCtx)\n","--- PASS: TestService_Ping/bad_fscr_and_keystore (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_Ping/bad_keystore","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_Ping/bad_keystore\n","    service_test.go:121: PASS:\tPing()\n","    service_test.go:122: PASS:\tPing()\n","    service_test.go:123: PASS:\tPing(*context.emptyCtx)\n","--- PASS: TestService_Ping/bad_keystore (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestService_Ping/ok","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_Ping/ok\n","    service_test.go:121: PASS:\tPing()\n","    service_test.go:122: PASS:\tPing()\n","    service_test.go:123: PASS:\tPing(*context.emptyCtx)\n","--- PASS: TestService_Ping/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_StoreCert","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0.01,"Output":["","=== RUN   TestService_StoreCert\n","--- PASS: TestService_StoreCert (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_StoreCert/id_already_exists","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_StoreCert/id_already_exists\n","    service_test.go:202: PASS:\tParseTaxpayerCertificate([]uint8,string)\n","    service_test.go:203: PASS:\tStore(*context.emptyCtx,string,[]uint8,*keystore.KeyPair)\n","--- PASS: TestService_StoreCert/id_already_exists (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_StoreCert/invalid_certificate","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0.01,"Output":["","=== RUN   TestService_StoreCert/invalid_certificate\n","    service_test.go:202: PASS:\tParseTaxpayerCertificate([]uint8,string)\n","--- PASS: TestService_StoreCert/invalid_certificate (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_StoreCert/max_tries_of_db_transactions","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_StoreCert/max_tries_of_db_transactions\n","    service_test.go:202: PASS:\tParseTaxpayerCertificate([]uint8,string)\n","    service_test.go:203: PASS:\tStore(*context.emptyCtx,string,[]uint8,*keystore.KeyPair)\n","--- PASS: TestService_StoreCert/max_tries_of_db_transactions (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_StoreCert/ok","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_StoreCert/ok\n","    service_test.go:202: PASS:\tParseTaxpayerCertificate([]uint8,string)\n","    service_test.go:203: PASS:\tStore(*context.emptyCtx,string,[]uint8,*keystore.KeyPair)\n","--- PASS: TestService_StoreCert/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_StoreCert/unknown_certificate_parse_error","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_StoreCert/unknown_certificate_parse_error\n","    service_test.go:202: PASS:\tParseTaxpayerCertificate([]uint8,string)\n","--- PASS: TestService_StoreCert/unknown_certificate_parse_error (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_StoreCert/unknown_certificate_store_error","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_StoreCert/unknown_certificate_store_error\n","    service_test.go:202: PASS:\tParseTaxpayerCertificate([]uint8,string)\n","    service_test.go:203: PASS:\tPing(*context.emptyCtx)\n","    service_test.go:203: PASS:\tStore(*context.emptyCtx,string,[]uint8,*keystore.KeyPair)\n","--- PASS: TestService_StoreCert/unknown_certificate_store_error (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertID","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertID\n","--- PASS: TestService_UpdateCertID (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertID/certificate_id_already_exists","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertID/certificate_id_already_exists\n","    service_test.go:321: PASS:\tUpdateID(*context.emptyCtx,string,string)\n","--- PASS: TestService_UpdateCertID/certificate_id_already_exists (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestService_UpdateCertID/certificate_not_found","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertID/certificate_not_found\n","    service_test.go:321: PASS:\tUpdateID(*context.emptyCtx,string,string)\n","--- PASS: TestService_UpdateCertID/certificate_not_found (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertID/max_tries_of_db_transactions","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertID/max_tries_of_db_transactions\n","    service_test.go:321: PASS:\tUpdateID(*context.emptyCtx,string,string)\n","--- PASS: TestService_UpdateCertID/max_tries_of_db_transactions (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertID/ok","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertID/ok\n","    service_test.go:321: PASS:\tUpdateID(*context.emptyCtx,string,string)\n","--- PASS: TestService_UpdateCertID/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertID/unknown_update_certificate_id_error","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertID/unknown_update_certificate_id_error\n","    service_test.go:321: PASS:\tPing(*context.emptyCtx)\n","    service_test.go:321: PASS:\tUpdateID(*context.emptyCtx,string,string)\n","--- PASS: TestService_UpdateCertID/unknown_update_certificate_id_error (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertPassword","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0.01,"Output":["","=== RUN   TestService_UpdateCertPassword\n","--- PASS: TestService_UpdateCertPassword (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertPassword/certificate_not_found","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertPassword/certificate_not_found\n","    service_test.go:390: PASS:\tUpdatePassword(*context.emptyCtx,string,[]uint8,[]uint8)\n","--- PASS: TestService_UpdateCertPassword/certificate_not_found (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertPassword/invalid_certificate_password","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertPassword/invalid_certificate_password\n","    service_test.go:390: PASS:\tUpdatePassword(*context.emptyCtx,string,[]uint8,[]uint8)\n","--- PASS: TestService_UpdateCertPassword/invalid_certificate_password (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertPassword/max_tries_of_db_transactions","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertPassword/max_tries_of_db_transactions\n","    service_test.go:390: PASS:\tUpdatePassword(*context.emptyCtx,string,[]uint8,[]uint8)\n","--- PASS: TestService_UpdateCertPassword/max_tries_of_db_transactions (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertPassword/ok","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0,"Output":["","=== RUN   TestService_UpdateCertPassword/ok\n","    service_test.go:390: PASS:\tUpdatePassword(*context.emptyCtx,string,[]uint8,[]uint8)\n","--- PASS: TestService_UpdateCertPassword/ok (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}},{"TestName":"TestService_UpdateCertPassword/unknown_update_certificate_password_error","Package":"github.com/chutommy/eetgateway/pkg/gateway","ElapsedTime":0.01,"Output":["","=== RUN   TestService_UpdateCertPassword/unknown_update_certificate_password_error\n","    service_test.go:390: PASS:\tPing(*context.emptyCtx)\n","    service_test.go:390: PASS:\tUpdatePassword(*context.emptyCtx,string,[]uint8,[]uint8)\n","--- PASS: TestService_UpdateCertPassword/unknown_update_certificate_password_error (0.01s)",""],"Passed":true,"Skipped":false,"TestFileName":"","TestFunctionDetail":{"Line":0,"Col":0}}]}]
+
+    const report = window.GoTestReport({
+                                         data: data,
+                                         testResultsElem: document.getElementById('testResults'),
+                                         testGroupListElem: document.getElementById('testGroupList')
+                                       });
+
+
+</script>
+</body>
+</html>
