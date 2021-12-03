@@ -19,7 +19,7 @@ e2e-test:
 e2e-test-report:
 	# https://hub.docker.com/r/dannydainton/htmlextra
 	docker run -t --network="host" -v "$$PWD/tests/e2e/report":/etc/newman dannydainton/htmlextra \
-	run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" -n 12 \
+	run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" -n 5 \
 	-r htmlextra --reporter-htmlextra-export e2e.html \
 	--reporter-htmlextra-testPaging \
 	--reporter-htmlextra-browserTitle "EET Gateway - E2E Test Report" \
