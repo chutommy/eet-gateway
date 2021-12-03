@@ -1,6 +1,6 @@
 .PHONY: coverage-report
 coverage-report:
-	docker run -v "$$PWD/tests/reports":/gen --rm $$(docker build -f tests/coverage-report/Dockerfile -q .)
+	docker run -v "$$PWD/tests/coverage/report":/gen --rm $$(docker build -f tests/coverage/report/Dockerfile -q .)
 
 .PHONY: unit-test
 unit-test:
@@ -8,7 +8,7 @@ unit-test:
 
 .PHONY: unit-test-report
 unit-test-report:
-	docker run -v "$$PWD/tests/reports":/gen --rm $$(docker build -f tests/unit-report/Dockerfile -q .)
+	docker run -v "$$PWD/tests/unit/report":/gen --rm $$(docker build -f tests/unit/report/Dockerfile -q .)
 
 .PHONY: e2e-test
 e2e-test:
