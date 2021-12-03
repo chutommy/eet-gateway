@@ -12,7 +12,19 @@ unit-test-report:
 
 .PHONY: e2e-test
 e2e-test:
-	docker run --network="host" postman/newman run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" -n 3
+	docker run -t --network="host" postman/newman run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc"
+
+.PHONY: e2e-test-report
+e2e-test-report:
+	docker run -t --network="host" -v "$$PWD/tests/e2e/report":/etc/newman dannydainton/htmlextra \
+	run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" -n 12 \
+	-r htmlextra --reporter-htmlextra-export e2e.html \
+	--reporter-htmlextra-testPaging \
+	--reporter-htmlextra-browserTitle "EET Gateway - E2E Test Report" \
+	--reporter-htmlextra-title "EET Gateway E2E Test Report" \
+	--reporter-htmlextra-titleSize 6 \
+	--reporter-htmlextra-logs \
+	--reporter-htmlextra-timezone "Czechia/Prague"
 
 .PHONY: install
 install:
