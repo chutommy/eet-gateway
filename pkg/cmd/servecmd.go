@@ -101,6 +101,7 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		IdleTimeout:       viper.GetDuration(serverIdleTimeout),
 		MaxHeaderBytes:    viper.GetInt(serverMaxHeaderBytes),
 		Handler:           h.HTTPHandler(),
+		// TODO TLS
 		// TLSConfig: &tls.Config{
 		// 	ServerName:   "",
 		// 	Certificates: nil,
@@ -172,6 +173,7 @@ func newKeystoreSvc() (keystore.Service, error) {
 		WriteTimeout:       viper.GetDuration(redisWriteTimeout),
 		PoolTimeout:        viper.GetDuration(redisPoolTimeout),
 		IdleCheckFrequency: viper.GetDuration(redisIdleCheckFrequency),
+		// TODO TLS
 		// TLSConfig: &tls.Config{
 		// 	ServerName:   "",
 		// 	Certificates: nil,
