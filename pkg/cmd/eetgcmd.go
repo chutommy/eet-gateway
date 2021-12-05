@@ -8,6 +8,7 @@ func initEETGCmd() {
 	eetgCmd.CompletionOptions.DisableDefaultCmd = true
 	eetgCmd.CompletionOptions.DisableNoDescFlag = true
 	eetgCmd.CompletionOptions.DisableDescriptions = true
+	eetgCmd.SetHelpCommand(&cobra.Command{Hidden: true})
 }
 
 var eetgCmd = &cobra.Command{
