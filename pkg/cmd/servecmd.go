@@ -50,11 +50,13 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("retrieve 'path' flag: %w", err)
 	}
 
-	configSetDefault()
-	err = configLoadFromFile(configPath)
+	// configuration
+	setDefaultConfig()
+	err = loadConfigFromFile(configPath)
 	if err != nil {
 		return fmt.Errorf("load config from file: %w", err)
 	}
+	loadConfigFromENV()
 
 	setupLogger()
 
@@ -67,15 +69,13 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		Str("action", "exiting").
 		Send()
 
+	watchConfig()
 	log.Info().
 		Str("entity", "Config Service").
 		Str("action", "loading configuration").
 		Str("status", "configuration set").
 		Str("path", configPath).
 		Send()
-
-	configWatch()
-	configLoadFromENV()
 
 	caSvc, err := newCASvc()
 	if err != nil {
@@ -254,7 +254,7 @@ func getCARoots() (string, []*x509.Certificate, error) {
 	return mode, roots, nil
 }
 
-func configLoadFromFile(path string) error {
+func loadConfigFromFile(path string) error {
 	ext := filepath.Ext(path)
 	name := strings.TrimSuffix(filepath.Base(path), ext)
 	dir := filepath.Dir(path)
@@ -270,13 +270,13 @@ func configLoadFromFile(path string) error {
 	return nil
 }
 
-func configLoadFromENV() {
+func loadConfigFromENV() {
 	viper.SetEnvPrefix("EETG")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 }
 
-func configWatch() {
+func watchConfig() {
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		log.Info().
 			Str("entity", "Config Service").

@@ -45,7 +45,7 @@ func initCmdRunE(cmd *cobra.Command, _ []string) error {
 	}
 
 	// write file
-	configSetDefault()
+	setDefaultConfig()
 	path := filepath.Join(dir, configFile)
 	err = viper.WriteConfigAs(path)
 	if err != nil {
