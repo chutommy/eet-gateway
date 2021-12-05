@@ -3,6 +3,7 @@ package cmd
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -52,13 +53,19 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 
 	// configuration
 	setDefaultConfig()
+	loadConfigFromENV()
 	err = loadConfigFromFile(configPath)
 	if err != nil {
 		return fmt.Errorf("load config from file: %w", err)
 	}
-	loadConfigFromENV()
 
 	setupLogger()
+	log.Info().
+		Str("entity", "Config Service").
+		Str("action", "loading configuration").
+		Str("status", "configuration set").
+		Str("path", configPath).
+		Send()
 	log.Info().
 		Str("entity", "EET Gateway").
 		Str("action", "initiating").
@@ -66,14 +73,6 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 	defer log.Info().
 		Str("entity", "EET Gateway").
 		Str("action", "exiting").
-		Send()
-
-	watchConfig()
-	log.Info().
-		Str("entity", "Config Service").
-		Str("action", "loading configuration").
-		Str("status", "configuration set").
-		Str("path", configPath).
 		Send()
 
 	caSvc, err := newCASvc()
@@ -269,7 +268,20 @@ func loadConfigFromFile(path string) error {
 	viper.AddConfigPath(dir)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return fmt.Errorf("read config file: %w", err)
+		var vErr viper.ConfigFileNotFoundError
+		if errors.As(err, &vErr) {
+			setupLogger()
+			log.Info().
+				Str("entity", "Config Service").
+				Str("action", "loading configuration").
+				Str("status", "config file not found (skipping)").
+				Str("path", path).
+				Send()
+		} else {
+			return fmt.Errorf("read config file: %w", vErr)
+		}
+	} else {
+		watchConfig()
 	}
 
 	return nil
@@ -279,6 +291,13 @@ func loadConfigFromENV() {
 	viper.SetEnvPrefix("EETG")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
+
+	setupLogger()
+	log.Info().
+		Str("entity", "Config Service").
+		Str("action", "loading configuration").
+		Str("from", "environment variables").
+		Send()
 }
 
 func watchConfig() {
