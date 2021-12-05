@@ -215,6 +215,10 @@ func newFSCRClient() (fscr.Client, error) {
 		},
 	}, url)
 
+	if err := c.Ping(); err != nil {
+		return nil, fmt.Errorf("ping FSCR: %w", err)
+	}
+
 	return c, nil
 }
 
