@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -85,7 +86,10 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("start FSCR client: %w", err)
 	}
 
-	ks := newKeystoreSvc()
+	ks, err := newKeystoreSvc()
+	if err != nil {
+		return fmt.Errorf("start keystore client: %w", err)
+	}
 
 	gSvc := newGatewaySvc(client, caSvc, ks)
 	h := server.NewHTTPHandler(gSvc)
@@ -144,7 +148,7 @@ func newGatewaySvc(client fscr.Client, caSvc fscr.CAService, ks keystore.Service
 	return gateway.NewService(client, caSvc, ks)
 }
 
-func newKeystoreSvc() keystore.Service {
+func newKeystoreSvc() (keystore.Service, error) {
 	log.Info().
 		Str("entity", "KeyStore Client").
 		Str("action", "starting").
@@ -177,7 +181,11 @@ func newKeystoreSvc() keystore.Service {
 		// },
 	}))
 
-	return ks
+	if err := ks.Ping(context.Background()); err != nil {
+		return nil, fmt.Errorf("ping keystore: %w", err)
+	}
+
+	return ks, nil
 }
 
 func newFSCRClient() (fscr.Client, error) {
