@@ -23,13 +23,12 @@ func initInitCmd() {
 		panic(err)
 	}
 
-	initCmd.Flags().StringP(dirFlag, "d", configDir, "location to generate config file")
+	initCmd.Flags().StringP(dirFlag, "d", configDir, "directory to generate config file")
 }
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Generate the default config file",
-	Long:  `Generate command creates a new config file with default values.`,
+	Short: "Generate a default config file",
 	Args:  cobra.NoArgs,
 	RunE:  initCmdRunE,
 }

@@ -39,8 +39,7 @@ func initServeCmd() {
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Initialize the EET Gateway server",
-	Long:  "Serve initializes all services required to properly run EET Gateway server.",
+	Short: "Initialize the EET Gateway API server",
 	Args:  cobra.NoArgs,
 	RunE:  serveCmdRunE,
 }
@@ -70,8 +69,8 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 
 	log.Info().
 		Str("entity", "Config Service").
-		Str("action", "loading config file").
-		Str("status", "config file located").
+		Str("action", "loading configuration").
+		Str("status", "configuration set").
 		Str("path", configPath).
 		Send()
 

@@ -12,8 +12,6 @@ func initEETGCmd() {
 
 var eetgCmd = &cobra.Command{
 	Use:   "eetg",
-	Short: "EET Gateway is the entry point for communication with the Czech EET system",
-	Long: `The EET Gateway is an open-source software which simplifies the communication
-with the Czech EET system (Electronic Registration of Sales).`,
-	Args: cobra.NoArgs,
+	Short: "EET Gateway - the RESTful API client of the Czech EET system",
+	Args:  cobra.NoArgs,
 }
