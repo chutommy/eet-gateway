@@ -82,5 +82,6 @@ func osConfigDir() (string, error) {
 	case "windows":
 		configDir = filepath.Join(homeDir, "AppData", "Local", "EETGateway")
 	}
+
 	return configDir, nil
 }

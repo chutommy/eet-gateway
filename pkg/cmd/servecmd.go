@@ -59,7 +59,6 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 	loadConfigFromENV()
 
 	setupLogger()
-
 	log.Info().
 		Str("entity", "EET Gateway").
 		Str("action", "initiating").
@@ -89,19 +88,7 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 
 	ks := newKeystoreSvc()
 
-	// EET Gateway service
-	log.Info().
-		Str("entity", "HTTP Server").
-		Str("action", "starting").
-		Str("addr", viper.GetString(serverAddr)).
-		Dur("idleTimeout", viper.GetDuration(serverIdleTimeout)).
-		Dur("writeTimeout", viper.GetDuration(serverWriteTimeout)).
-		Dur("readTimeout", viper.GetDuration(serverReadTimeout)).
-		Dur("readHeaderTimeout", viper.GetDuration(serverReadHeaderTimeout)).
-		Int("maxHeaderBytes", viper.GetInt(serverMaxHeaderBytes)).
-		Send()
-
-	gSvc := gateway.NewService(client, caSvc, ks)
+	gSvc := newGatewaySvc(client, caSvc, ks)
 	h := server.NewHTTPHandler(gSvc)
 	srv := server.NewService(&http.Server{
 		Addr:              viper.GetString(serverAddr),
@@ -120,7 +107,12 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		// },
 	})
 
-	// HTTP server
+	runServer(err, srv)
+
+	return nil
+}
+
+func runServer(err error, srv server.Service) {
 	log.Info().
 		Str("entity", "HTTP Server").
 		Str("action", "listening").
@@ -136,8 +128,21 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		Str("status", "offline").
 		Err(err).
 		Send()
+}
 
-	return nil
+func newGatewaySvc(client fscr.Client, caSvc fscr.CAService, ks keystore.Service) gateway.Service {
+	log.Info().
+		Str("entity", "HTTP Server").
+		Str("action", "starting").
+		Str("addr", viper.GetString(serverAddr)).
+		Dur("idleTimeout", viper.GetDuration(serverIdleTimeout)).
+		Dur("writeTimeout", viper.GetDuration(serverWriteTimeout)).
+		Dur("readTimeout", viper.GetDuration(serverReadTimeout)).
+		Dur("readHeaderTimeout", viper.GetDuration(serverReadHeaderTimeout)).
+		Int("maxHeaderBytes", viper.GetInt(serverMaxHeaderBytes)).
+		Send()
+
+	return gateway.NewService(client, caSvc, ks)
 }
 
 func newKeystoreSvc() keystore.Service {
