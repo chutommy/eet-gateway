@@ -206,11 +206,11 @@ func newFSCRClient() (fscr.Client, error) {
 	c := fscr.NewClient(&http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				// ServerName:   "",
-				// Certificates: nil,
-				RootCAs: certPool,
-				// ClientCAs:    nil,
-				MinVersion: tls.VersionTLS13,
+				ServerName:         "eet.cz",
+				RootCAs:            certPool,
+				ClientAuth:         tls.NoClientCert,
+				ClientSessionCache: tls.NewLRUClientSessionCache(64),
+				MinVersion:         tls.VersionTLS13,
 			},
 		},
 	}, url)
