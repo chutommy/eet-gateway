@@ -64,6 +64,11 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 	log.Info().
 		Str("entity", "Config Service").
 		Str("action", "loading configuration").
+		Str("from", "environment variables").
+		Send()
+	log.Info().
+		Str("entity", "Config Service").
+		Str("action", "loading configuration").
 		Str("status", "configuration set").
 		Str("path", configPath).
 		Send()
@@ -305,13 +310,6 @@ func loadConfigFromENV() {
 	viper.SetEnvPrefix("EETG")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
-
-	setupLogger()
-	log.Info().
-		Str("entity", "Config Service").
-		Str("action", "loading configuration").
-		Str("from", "environment variables").
-		Send()
 }
 
 func watchConfig() {
