@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cloudflare/cfssl/revoke"
 	"go.uber.org/multierr"
 	"golang.org/x/crypto/pkcs12"
 )
@@ -89,6 +90,10 @@ func (c *caService) ParseTaxpayerCertificate(data []byte, password string) (*x50
 		return nil, nil, multierr.Append(fmt.Errorf("verify taxpayer's certificate CA: %w", err), ErrInvalidCertificate)
 	}
 
+	if err := checkCRL(cert); err != nil {
+		return nil, nil, multierr.Append(fmt.Errorf("taxpayer's certificate CRL: %w", err), ErrInvalidCertificate)
+	}
+
 	err = verifyKeys(caCert, cert, pk)
 	if err != nil {
 		return nil, nil, multierr.Append(fmt.Errorf("verify keys of the certificate: %w", err), ErrInvalidCertificate)
@@ -129,6 +134,19 @@ func verifyEETCA(roots []*x509.Certificate, cert *x509.Certificate) error {
 
 	if !ok {
 		return fmt.Errorf("certificate not found in a pool of valid EET CA certificates: %w", ErrNotTrustedCertificate)
+	}
+
+	return nil
+}
+
+func checkCRL(cert *x509.Certificate) error {
+	revoked, ok, err := revoke.VerifyCertificateError(cert)
+	if err != nil {
+		return fmt.Errorf("verify certificate: %w", err)
+	}
+
+	if revoked || !ok {
+		return fmt.Errorf("invalid certificate: ok=%t, revoked=%t", ok, revoked)
 	}
 
 	return nil
