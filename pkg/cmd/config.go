@@ -55,7 +55,7 @@ func setDefaultConfig() {
 	viper.SetDefault(redisWriteTimeout, (1 * time.Second).String())
 	viper.SetDefault(redisPoolTimeout, (1 * time.Second).String())
 	viper.SetDefault(redisPoolSize, 100)
-	viper.SetDefault(redisIdleCheckFrequency, 1*time.Minute)
+	viper.SetDefault(redisIdleCheckFrequency, (1 * time.Minute).String())
 	viper.SetDefault(redisMinIdleConns, 5)
 
 	viper.SetDefault(serverAddr, "localhost:8080")
