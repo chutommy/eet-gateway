@@ -3,7 +3,6 @@ package fscr_test
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -30,13 +29,9 @@ func TestClient_Ping(t *testing.T) {
 		},
 	}
 
-	certPool, err := x509.SystemCertPool()
-	require.NoError(t, err)
-
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				RootCAs:            certPool,
 				InsecureSkipVerify: false,
 				MinVersion:         tls.VersionTLS13,
 			},
@@ -66,13 +61,9 @@ func TestClient_Do(t *testing.T) {
 		{"testdata/CZ1212121218.v3.valid.v3.1.1.xml"},
 	}
 
-	certPool, err := x509.SystemCertPool()
-	require.NoError(t, err)
-
 	fscrClient := fscr.NewClient(&http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				RootCAs:            certPool,
 				InsecureSkipVerify: false,
 				MinVersion:         tls.VersionTLS13,
 			},

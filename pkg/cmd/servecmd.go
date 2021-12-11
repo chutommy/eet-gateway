@@ -221,11 +221,6 @@ func newKeystoreSvc() (keystore.Service, error) {
 }
 
 func newFSCRClient() (fscr.Client, error) {
-	certPool, err := x509.SystemCertPool()
-	if err != nil {
-		return nil, fmt.Errorf("retrieve system certificate pool: %w", err)
-	}
-
 	url, mode := fscrURL()
 
 	log.Info().
@@ -241,7 +236,6 @@ func newFSCRClient() (fscr.Client, error) {
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				ServerName:         "eet.cz",
-				RootCAs:            certPool,
 				ClientAuth:         tls.NoClientCert,
 				ClientSessionCache: tls.NewLRUClientSessionCache(64),
 				MinVersion:         tls.VersionTLS13,
