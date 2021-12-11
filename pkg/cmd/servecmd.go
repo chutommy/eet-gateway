@@ -106,7 +106,7 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 
 	srv := server.NewService(httpServer)
 
-	runServer(err, srv)
+	runServer(srv)
 
 	return nil
 }
@@ -146,7 +146,7 @@ func newHTTPServer(h server.Handler) (*http.Server, error) {
 	return httpServer, nil
 }
 
-func runServer(err error, srv server.Service) {
+func runServer(srv server.Service) {
 	log.Info().
 		Str("entity", "HTTP Server").
 		Str("action", "listening").
@@ -154,7 +154,7 @@ func runServer(err error, srv server.Service) {
 		Dur("shutdownTimeout", viper.GetDuration(serverShutdownTimeout)).
 		Send()
 
-	err = srv.ListenAndServe(viper.GetBool(serverTLSEnable), viper.GetDuration(serverShutdownTimeout))
+	err := srv.ListenAndServe(viper.GetBool(serverTLSEnable), viper.GetDuration(serverShutdownTimeout))
 
 	log.Info().
 		Str("entity", "HTTP Server").
