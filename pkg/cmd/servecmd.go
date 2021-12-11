@@ -232,10 +232,12 @@ func newFSCRClient() (fscr.Client, error) {
 		Str("entity", "FSCR Client").
 		Str("action", "starting").
 		Str("url", url).
+		Str("requestTimeout", viper.GetDuration(eetRequestTimeout).String()).
 		Str("mode", mode).
 		Send()
 
 	c := fscr.NewClient(&http.Client{
+		Timeout: viper.GetDuration(eetRequestTimeout),
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				ServerName:         "eet.cz",

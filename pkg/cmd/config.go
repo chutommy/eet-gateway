@@ -15,12 +15,14 @@ const (
 	apiQuietMode = "api.quiet_mode"
 
 	eetProductionMode = "eet.production_mode"
+	eetRequestTimeout = "eet.request_timeout"
 
-	redisNetwork            = "redis.network"
-	redisAddr               = "redis.addr"
-	redisUsername           = "redis.username"
-	redisPassword           = "redis.password"
-	redisDB                 = "redis.db"
+	redisNetwork  = "redis.network"
+	redisAddr     = "redis.addr"
+	redisUsername = "redis.username"
+	redisPassword = "redis.password"
+	redisDB       = "redis.db"
+
 	redisIdleTimeout        = "redis.time.idle_timeout"
 	redisDialTimeout        = "redis.time.dial_timeout"
 	redisReadTimeout        = "redis.time.read_timeout"
@@ -47,19 +49,21 @@ func setDefaultConfig() {
 	viper.SetDefault(apiQuietMode, false)
 
 	viper.SetDefault(eetProductionMode, false)
+	viper.SetDefault(eetRequestTimeout, (10 * time.Second).String())
 
 	viper.SetDefault(redisNetwork, "tcp")
 	viper.SetDefault(redisAddr, "localhost:6379")
 	viper.SetDefault(redisUsername, "")
 	viper.SetDefault(redisPassword, "")
 	viper.SetDefault(redisDB, 0)
+
 	viper.SetDefault(redisIdleTimeout, (5 * time.Minute).String())
 	viper.SetDefault(redisDialTimeout, (3 * time.Second).String())
 	viper.SetDefault(redisReadTimeout, (1 * time.Second).String())
 	viper.SetDefault(redisWriteTimeout, (1 * time.Second).String())
 	viper.SetDefault(redisPoolTimeout, (1 * time.Second).String())
-	viper.SetDefault(redisPoolSize, 100)
 	viper.SetDefault(redisIdleCheckFrequency, (1 * time.Minute).String())
+	viper.SetDefault(redisPoolSize, 100)
 	viper.SetDefault(redisMinIdleConns, 5)
 
 	viper.SetDefault(serverAddr, "localhost:8080")
@@ -67,8 +71,8 @@ func setDefaultConfig() {
 	viper.SetDefault(serverWriteTimeout, (100 * time.Second).String())
 	viper.SetDefault(serverReadTimeout, (100 * time.Second).String())
 	viper.SetDefault(serverReadHeaderTimeout, (100 * time.Second).String())
-	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 	viper.SetDefault(serverShutdownTimeout, (10 * time.Second).String())
+	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 
 	viper.SetDefault(serverTLSEnable, false)
 	viper.SetDefault(serverTLSCertificate, "certs/certificate.crt")
