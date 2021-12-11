@@ -37,6 +37,10 @@ const (
 	serverReadHeaderTimeout = "server.time.read_header_timeout"
 	serverShutdownTimeout   = "server.time.shutdown_timeout"
 	serverMaxHeaderBytes    = "server.data.max_header_bytes"
+
+	serverTLSEnable      = "server.tls.enable"
+	serverTLSCertificate = "server.tls.certificate"
+	serverTLSPrivateKey  = "server.tls.private_key"
 )
 
 func setDefaultConfig() {
@@ -65,6 +69,10 @@ func setDefaultConfig() {
 	viper.SetDefault(serverReadHeaderTimeout, (100 * time.Second).String())
 	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 	viper.SetDefault(serverShutdownTimeout, (10 * time.Second).String())
+
+	viper.SetDefault(serverTLSEnable, false)
+	viper.SetDefault(serverTLSCertificate, "certs/certificate.crt")
+	viper.SetDefault(serverTLSPrivateKey, "certs/private_key.key")
 }
 
 func osConfigDir() (string, error) {

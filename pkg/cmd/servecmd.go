@@ -98,7 +98,21 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 
 	gSvc := newGatewaySvc(client, caSvc, ks)
 	h := server.NewHTTPHandler(gSvc)
-	srv := server.NewService(&http.Server{
+
+	httpServer, err := newHTTPServer(h)
+	if err != nil {
+		return fmt.Errorf("create http server: %w", err)
+	}
+
+	srv := server.NewService(httpServer)
+
+	runServer(err, srv)
+
+	return nil
+}
+
+func newHTTPServer(h server.Handler) (*http.Server, error) {
+	httpServer := &http.Server{
 		Addr:              viper.GetString(serverAddr),
 		ReadTimeout:       viper.GetDuration(serverReadTimeout),
 		ReadHeaderTimeout: viper.GetDuration(serverReadHeaderTimeout),
@@ -106,19 +120,30 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 		IdleTimeout:       viper.GetDuration(serverIdleTimeout),
 		MaxHeaderBytes:    viper.GetInt(serverMaxHeaderBytes),
 		Handler:           h.HTTPHandler(),
-		// TODO TLS
-		// TLSConfig: &tls.Config{
-		// 	ServerName:   "",
-		// 	Certificates: nil,
-		// 	RootCAs:      nil,
-		// 	ClientCAs:    nil,
-		// 	MinVersion:   tls.VersionTLS13,
-		// },
-	})
+	}
 
-	runServer(err, srv)
+	if viper.GetBool(serverTLSEnable) {
+		cert, err := tls.LoadX509KeyPair(viper.GetString(serverTLSCertificate), viper.GetString(serverTLSPrivateKey))
+		if err != nil {
+			return nil, fmt.Errorf("load SSL certificate: %w", err)
+		}
 
-	return nil
+		httpServer.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+		httpServer.TLSConfig = &tls.Config{
+			Certificates:             []tls.Certificate{cert},
+			MinVersion:               tls.VersionTLS12,
+			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			PreferServerCipherSuites: true,
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+			},
+		}
+	}
+
+	return httpServer, nil
 }
 
 func runServer(err error, srv server.Service) {
@@ -129,7 +154,7 @@ func runServer(err error, srv server.Service) {
 		Dur("shutdownTimeout", viper.GetDuration(serverShutdownTimeout)).
 		Send()
 
-	err = srv.ListenAndServe(viper.GetDuration(serverShutdownTimeout))
+	err = srv.ListenAndServe(viper.GetBool(serverTLSEnable), viper.GetDuration(serverShutdownTimeout))
 
 	log.Info().
 		Str("entity", "HTTP Server").

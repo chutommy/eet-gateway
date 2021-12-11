@@ -14,7 +14,7 @@ import (
 
 // Service is a server of the EET Gateway.
 type Service interface {
-	ListenAndServe(duration time.Duration) error
+	ListenAndServe(tls bool, timeout time.Duration) error
 }
 
 type httpService struct {
@@ -25,12 +25,17 @@ type httpService struct {
 // be manually shutdown with system calls like: interrupt, termination or kill signals.
 // The server is then gracefully shutdown with the given timeout. After the timeout
 // exceeds the server is forcefully shutdown.
-func (s *httpService) ListenAndServe(timeout time.Duration) (err error) {
+func (s *httpService) ListenAndServe(tls bool, timeout time.Duration) (err error) {
 	stop := make(chan os.Signal, 1)
 
 	// non blocking server
 	go func() {
-		e := s.server.ListenAndServe()
+		var e error
+		if tls {
+			e = s.server.ListenAndServeTLS("", "")
+		} else {
+			e = s.server.ListenAndServe()
+		}
 		if !errors.Is(e, http.ErrServerClosed) {
 			multierr.AppendInto(&err, e)
 			stop <- syscall.SIGABRT
