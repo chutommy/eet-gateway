@@ -94,7 +94,7 @@ func setDefaultConfig() {
 	viper.SetDefault(serverTLSPrivateKey, "certs/server/server.key")
 
 	viper.SetDefault(serverMutualTLSEnable, false)
-	viper.SetDefault(serverMutualTLSClientCAs, []string{"certs/client/client-cert.pem"})
+	viper.SetDefault(serverMutualTLSClientCAs, []string{"certs/client/ca.crt"})
 }
 
 func osConfigDir() (string, error) {
