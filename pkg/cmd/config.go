@@ -43,6 +43,9 @@ const (
 	serverTLSEnable      = "server.tls.enable"
 	serverTLSCertificate = "server.tls.certificate"
 	serverTLSPrivateKey  = "server.tls.private_key"
+
+	serverMutualTLSEnable    = "server.mutual_tls.enable"
+	serverMutualTLSClientCAs = "server.mutual_tls.client_cas"
 )
 
 func setDefaultConfig() {
@@ -75,8 +78,11 @@ func setDefaultConfig() {
 	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 
 	viper.SetDefault(serverTLSEnable, false)
-	viper.SetDefault(serverTLSCertificate, "certs/certificate.crt")
-	viper.SetDefault(serverTLSPrivateKey, "certs/private_key.key")
+	viper.SetDefault(serverTLSCertificate, "certs/server/server.crt")
+	viper.SetDefault(serverTLSPrivateKey, "certs/server/server.key")
+
+	viper.SetDefault(serverMutualTLSEnable, false)
+	viper.SetDefault(serverMutualTLSClientCAs, []string{"certs/client/client-cert.pem"})
 }
 
 func osConfigDir() (string, error) {

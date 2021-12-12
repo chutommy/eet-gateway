@@ -4,14 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
-
 	"github.com/chutommy/eetgateway/pkg/ca"
 	"github.com/chutommy/eetgateway/pkg/fscr"
 	"github.com/chutommy/eetgateway/pkg/gateway"
@@ -23,6 +18,13 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"io/ioutil"
+	slog "log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 const (
@@ -120,6 +122,7 @@ func newHTTPServer(h server.Handler) (*http.Server, error) {
 		IdleTimeout:       viper.GetDuration(serverIdleTimeout),
 		MaxHeaderBytes:    viper.GetInt(serverMaxHeaderBytes),
 		Handler:           h.HTTPHandler(),
+		ErrorLog:          slog.New(ioutil.Discard, "", 0),
 	}
 
 	if viper.GetBool(serverTLSEnable) {
@@ -141,6 +144,27 @@ func newHTTPServer(h server.Handler) (*http.Server, error) {
 				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
 			},
 		}
+	}
+
+	if viper.GetBool(serverMutualTLSEnable) {
+		pool := x509.NewCertPool()
+		for _, v := range viper.GetStringSlice(serverMutualTLSClientCAs) {
+			data, err := ioutil.ReadFile(v)
+			if err != nil {
+				return nil, fmt.Errorf("read file %s: %w", v, err)
+			}
+
+			b, _ := pem.Decode(data)
+			cert, err := x509.ParseCertificate(b.Bytes)
+			if err != nil {
+				return nil, fmt.Errorf("parse client CA certificate %s: %w", v, err)
+			}
+
+			pool.AddCert(cert)
+		}
+
+		httpServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		httpServer.TLSConfig.ClientCAs = pool
 	}
 
 	return httpServer, nil
