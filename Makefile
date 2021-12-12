@@ -61,3 +61,43 @@ eet-models:
 eet-mocks:
 	# https://hub.docker.com/r/vektra/mockery
 	docker run -t -v "$$PWD":/src -w /src vektra/mockery --all --dir pkg --keeptree --output pkg/mocks --case snake --note "EETGateway - Tommy Chu"
+
+.PHONY: gen-server-ssl
+gen-server-ssl:
+	openssl genrsa -out certs/server/ca.key
+	openssl req -new -x509 -days 365 -key certs/server/ca.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=EETG CA" -out certs/server/ca.crt
+
+	openssl req -newkey rsa:2048 -nodes -keyout certs/server/server.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=eetgateway.com" -out certs/server/server.csr
+	# run this to finish:
+	#
+	#	openssl x509 -req -extfile <(printf "subjectAltName=DNS:localhost") -days 365 -in certs/server/server.csr -CA certs/server/ca.crt -CAkey certs/server/ca.key -CAcreateserial -out certs/server/server.crt
+
+.PHONY: gen-client-ssl
+gen-client-ssl:
+	openssl genrsa -out certs/client/ca.key
+	openssl req -new -x509 -days 365 -key certs/client/ca.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=EETG CA" -out certs/client/ca.crt
+
+	openssl req -newkey rsa:2048 -nodes -keyout certs/client/client.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=eetgateway.com" -out certs/client/client.csr
+	# run this to finish:
+	#
+	#	openssl x509 -req -extfile <(printf "subjectAltName=DNS:localhost") -days 365 -in certs/client/client.csr -CA certs/client/ca.crt -CAkey certs/client/ca.key -CAcreateserial -out certs/client/client.crt
+
+.PHONY: gen-redis-server-ssl
+gen-redis-server-ssl:
+	openssl genrsa -out certs/redis/server/ca.key
+	openssl req -new -x509 -days 365 -key certs/redis/server/ca.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=EETG CA" -out certs/redis/server/ca.crt
+
+	openssl req -newkey rsa:2048 -nodes -keyout certs/redis/server/server.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=eetgateway.com" -out certs/redis/server/server.csr
+	# run this to finish:
+	#
+	#	openssl x509 -req -extfile <(printf "subjectAltName=DNS:localhost") -days 365 -in certs/redis/server/server.csr -CA certs/redis/server/ca.crt -CAkey certs/redis/server/ca.key -CAcreateserial -out certs/redis/server/server.crt
+
+.PHONY: gen-redis-client-ssl
+gen-redis-client-ssl:
+	openssl genrsa -out certs/redis/client/ca.key
+	openssl req -new -x509 -days 365 -key certs/redis/client/ca.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=EETG CA" -out certs/redis/client/ca.crt
+
+	openssl req -newkey rsa:2048 -nodes -keyout certs/redis/client/client.key -subj "/C=CZ/ST=Prague/L=Prague/O=EET Gateway/CN=eetgateway.com" -out certs/redis/client/client.csr
+	# run this to finish:
+	#
+	#	openssl x509 -req -extfile <(printf "subjectAltName=DNS:localhost") -days 365 -in certs/redis/client/client.csr -CA certs/redis/client/ca.crt -CAkey certs/redis/client/ca.key -CAcreateserial -out certs/redis/client/client.crt
