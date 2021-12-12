@@ -1,3 +1,15 @@
+.PHONY: eetg-tls
+eetg-tls:
+	EETG_SERVER_TLS_ENABLE=1 EETG_SERVER_MUTUAL_TLS_ENABLE=1 EETG_REDIS_TLS_ENABLE=1 eetg serve
+
+.PHONY: redis-tls
+redis-tls:
+	docker run --network host -it -v $(PWD)/certs/redis:/certs redis redis-server \
+		--tls-cert-file /certs/server/server.crt \
+		--tls-key-file /certs/server/server.key \
+		--tls-ca-cert-file /certs/client/ca.crt \
+		--tls-port 6379 --port 0
+
 .PHONY: coverage-report
 coverage-report:
 	docker run -t -v "$$PWD/tests/coverage/report":/gen --rm $$(docker build -f tests/coverage/report/Dockerfile -q .)
