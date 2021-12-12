@@ -25,7 +25,10 @@ unit-test-report:
 .PHONY: e2e-test
 e2e-test:
 	# https://hub.docker.com/r/postman/newman/
-	docker run -t --network="host" postman/newman run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc"
+	docker run -t --network="host"  -v $(PWD)/certs:/certs postman/newman run "https://www.getpostman.com/collections/b9a63360faf9758ea4fc" \
+		--ssl-client-cert /certs/client/client.crt \
+		--ssl-client-key /certs/client/client.key \
+		--ssl-extra-ca-certs /certs/server/ca.crt
 
 .PHONY: e2e-test-report
 e2e-test-report:
