@@ -213,7 +213,7 @@ func newKeystoreSvc() (keystore.Service, error) {
 		Int("minIdleConns", viper.GetInt(redisMinIdleConns)).
 		Send()
 
-	ks := keystore.NewRedisService(redis.NewClient(&redis.Options{
+	opt := &redis.Options{
 		Network:            viper.GetString(redisNetwork),
 		Addr:               viper.GetString(redisAddr),
 		Username:           viper.GetString(redisUsername),
@@ -227,16 +227,40 @@ func newKeystoreSvc() (keystore.Service, error) {
 		WriteTimeout:       viper.GetDuration(redisWriteTimeout),
 		PoolTimeout:        viper.GetDuration(redisPoolTimeout),
 		IdleCheckFrequency: viper.GetDuration(redisIdleCheckFrequency),
-		// TODO TLS
-		// TLSConfig: &tls.Config{
-		// 	ServerName:   "",
-		// 	Certificates: nil,
-		// 	RootCAs:      nil,
-		// 	ClientCAs:    nil,
-		// 	MinVersion:   tls.VersionTLS13,
-		// },
-	}))
+	}
 
+	if viper.GetBool(redisTLSEnable) {
+		cert, err := tls.LoadX509KeyPair(viper.GetString(redisTLSCertificate), viper.GetString(redisTLSPrivateKey))
+		if err != nil {
+			return nil, fmt.Errorf("load redis TLS keypair: %w", err)
+		}
+
+		pool := x509.NewCertPool()
+		for _, v := range viper.GetStringSlice(redisTLSRootCAs) {
+			data, err := ioutil.ReadFile(v)
+			if err != nil {
+				return nil, fmt.Errorf("read file %s: %w", v, err)
+			}
+
+			b, _ := pem.Decode(data)
+			cert, err := x509.ParseCertificate(b.Bytes)
+			if err != nil {
+				return nil, fmt.Errorf("parse root CA certificate %s: %w", v, err)
+			}
+
+			pool.AddCert(cert)
+		}
+
+		opt.TLSConfig = &tls.Config{
+			Certificates:       []tls.Certificate{cert},
+			ServerName:         viper.GetString(redisTLSServerName),
+			RootCAs:            pool,
+			ClientSessionCache: tls.NewLRUClientSessionCache(64),
+			MinVersion:         tls.VersionTLS12,
+		}
+	}
+
+	ks := keystore.NewRedisService(redis.NewClient(opt))
 	if err := ks.Ping(context.Background()); err != nil {
 		return nil, fmt.Errorf("ping keystore: %w", err)
 	}

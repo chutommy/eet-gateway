@@ -32,6 +32,12 @@ const (
 	redisPoolSize           = "redis.pool_size"
 	redisMinIdleConns       = "redis.min_idle_conns"
 
+	redisTLSEnable      = "redis.tls.enable"
+	redisTLSCertificate = "redis.tls.certificate"
+	redisTLSPrivateKey  = "redis.tls.private_key"
+	redisTLSServerName  = "redis.tls.server_name"
+	redisTLSRootCAs     = "redis.tls.root_cas"
+
 	serverAddr              = "server.addr"
 	serverIdleTimeout       = "server.time.idle_timeout"
 	serverWriteTimeout      = "server.time.write_timeout"
@@ -59,6 +65,12 @@ func setDefaultConfig() {
 	viper.SetDefault(redisUsername, "")
 	viper.SetDefault(redisPassword, "")
 	viper.SetDefault(redisDB, 0)
+
+	viper.SetDefault(redisTLSEnable, false)
+	viper.SetDefault(redisTLSCertificate, "certs/redis/client/client.crt")
+	viper.SetDefault(redisTLSPrivateKey, "certs/redis/client/client.key")
+	viper.SetDefault(redisTLSServerName, "")
+	viper.SetDefault(redisTLSRootCAs, []string{"certs/redis/server/ca.crt"})
 
 	viper.SetDefault(redisIdleTimeout, (5 * time.Minute).String())
 	viper.SetDefault(redisDialTimeout, (3 * time.Second).String())
