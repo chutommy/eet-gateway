@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/rs/zerolog v1.26.0
 	github.com/sethvargo/go-password v0.2.0
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/multierr v1.7.0
@@ -31,7 +31,7 @@ require (
 	github.com/cncf/xds/go v0.0.0-20211130200136-a8f946100490 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
