@@ -11,13 +11,13 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/google/uuid v1.3.0
-	github.com/rs/zerolog v1.26.0
+	github.com/rs/zerolog v1.26.1
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.10.0
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/multierr v1.7.0
-	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
+	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e
 )
 
 require (
