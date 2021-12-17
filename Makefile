@@ -1,5 +1,6 @@
 .PHONY: eetg-tls
 eetg-tls:
+	// TODO run from docker
 	EETG_SERVER_TLS_ENABLE=1 EETG_SERVER_MUTUAL_TLS_ENABLE=1 EETG_REDIS_TLS_ENABLE=1 eetg serve
 
 .PHONY: redis-tls
