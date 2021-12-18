@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const quietMode = true
-
 type HTTPHandlerTestSuite struct {
 	suite.Suite
 	gSvc    *mocks.Service
@@ -20,10 +18,7 @@ type HTTPHandlerTestSuite struct {
 }
 
 func (suite *HTTPHandlerTestSuite) SetupSuite() {
-	if quietMode {
-		log.Logger = zerolog.Nop()
-	}
-
+	log.Logger = zerolog.Nop()
 	suite.gSvc = new(mocks.Service)
 	suite.handler = httphandler.NewHandler(suite.gSvc).HTTPHandler()
 }
