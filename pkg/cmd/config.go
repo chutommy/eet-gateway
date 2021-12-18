@@ -12,6 +12,11 @@ import (
 )
 
 const (
+	// WARNING!
+	// If the configuration file structure or the variable names are modified,
+	// DO NOT FORGET to update example of configuration files as well.
+	// ["eetgateway.json", ".env"]
+
 	cliQuietMode = "cli.quiet_mode"
 
 	eetProductionMode = "eet.production_mode"

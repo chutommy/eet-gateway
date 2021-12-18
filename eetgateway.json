@@ -1,0 +1,55 @@
+{
+  "cli": {
+    "quiet_mode": false
+  },
+  "eet": {
+    "production_mode": false,
+    "request_timeout": "10s"
+  },
+  "redis": {
+    "network": "tcp",
+    "addr": "localhost:6379",
+    "username": "",
+    "password": "",
+    "db": 0,
+    "dial_timeout": "3s",
+    "read_timeout": "1s",
+    "write_timeout": "1s",
+    "idle_timeout": "5m0s",
+    "pool_timeout": "1s",
+    "idle_check_frequency": "1m0s",
+    "pool_size": 100,
+    "min_idle_conns": 5,
+    "tls": {
+      "enable": false,
+      "server_name": "",
+      "root_cas": [
+        "certs/redis/server/ca.crt",
+        "certs/redis/server/ca2.crt"
+      ],
+      "certificate": "certs/redis/client/client.crt",
+      "private_key": "certs/redis/client/client.key"
+    }
+  },
+  "server": {
+    "addr": "localhost:8080",
+    "read_timeout": "1m40s",
+    "read_header_timeout": "1m40s",
+    "write_timeout": "1m40s",
+    "idle_timeout": "1m40s",
+    "shutdown_timeout": "10s",
+    "max_header_bytes": 1048576,
+    "tls": {
+      "enable": false,
+      "certificate": "certs/server/server.crt",
+      "private_key": "certs/server/server.key"
+    },
+    "mutual_tls": {
+      "enable": false,
+      "client_cas": [
+        "certs/client/ca.crt",
+        "certs/client/ca2.crt"
+      ]
+    }
+  }
+}
