@@ -46,7 +46,7 @@ func recoverMiddleware(c *gin.Context) {
 			}
 
 			log.Error().
-				Str("entity", "Recovery system").
+				Str("entity", "System Recovery").
 				Str("action", "recovering from fatal error").
 				Err(err.(error)).
 				Send()
