@@ -1,4 +1,5 @@
 .idea
 dist/
 certs
+reports
 dump.rdb
