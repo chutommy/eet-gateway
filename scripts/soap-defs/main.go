@@ -81,7 +81,7 @@ func writeFile(path string, data []byte) error {
 }
 
 func webContent(url string) ([]byte, error) {
-	resp, err := http.Get(url) //nolint:gosec
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("issue an HTTP GET request: %w", err)
 	}
