@@ -1,8 +1,6 @@
 package eet
 
-import (
-	"github.com/beevik/etree"
-)
+import "github.com/beevik/etree"
 
 const (
 	sXMLNS    = "s"
