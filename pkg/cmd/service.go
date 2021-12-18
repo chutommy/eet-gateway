@@ -20,6 +20,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	eetServerName = "eet.cz"
+)
+
 func newCASvc() (fscr.CAService, error) {
 	mode, roots, err := getCARoots()
 	if err != nil {
@@ -54,6 +58,7 @@ func getCARoots() (string, []*x509.Certificate, error) {
 			return "", nil, fmt.Errorf("retrieve production roots: %w", err)
 		}
 	}
+
 	return mode, roots, nil
 }
 
@@ -64,15 +69,17 @@ func newFSCRClient() (fscr.Client, error) {
 		Str("entity", "FSCR Client").
 		Str("action", "starting").
 		Str("url", url).
-		Str("requestTimeout", viper.GetDuration(eetRequestTimeout).String()).
 		Str("mode", mode).
+		Str("requestTimeout", viper.GetDuration(eetRequestTimeout).String()).
+		Str("serverName", eetServerName).
+		Str("tlsVersion", "TLS 1.3").
 		Send()
 
 	c := fscr.NewClient(&http.Client{
 		Timeout: viper.GetDuration(eetRequestTimeout),
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				ServerName:         "eet.cz",
+				ServerName:         eetServerName,
 				ClientAuth:         tls.NoClientCert,
 				ClientSessionCache: tls.NewLRUClientSessionCache(64),
 				MinVersion:         tls.VersionTLS13,
@@ -87,15 +94,15 @@ func newFSCRClient() (fscr.Client, error) {
 	return c, nil
 }
 
-func fscrURL() (string, string) {
-	url := fscr.PlaygroundURL
-	mode := "playground"
+func fscrURL() (url string, mode string) {
+	url = fscr.PlaygroundURL
+	mode = "playground"
 	if viper.GetBool(eetProductionMode) {
 		url = fscr.ProductionURL
 		mode = "production"
 	}
 
-	return url, mode
+	return
 }
 
 func newKeystoreSvc() (keystore.Service, error) {
@@ -105,6 +112,13 @@ func newKeystoreSvc() (keystore.Service, error) {
 		Str("network", viper.GetString(redisNetwork)).
 		Str("addr", viper.GetString(redisAddr)).
 		Int("db", viper.GetInt(redisDB)).
+		Dur("dialTimeout", viper.GetDuration(redisDialTimeout)).
+		Dur("readTimeout", viper.GetDuration(redisReadTimeout)).
+		Dur("writeTimeout", viper.GetDuration(redisWriteTimeout)).
+		Dur("idleTimeout", viper.GetDuration(redisIdleTimeout)).
+		Dur("poolTimeout", viper.GetDuration(redisPoolTimeout)).
+		Dur("idleCheckFrequency", viper.GetDuration(redisIdleCheckFrequency)).
+		Int("poolSize", viper.GetInt(redisPoolSize)).
 		Int("minIdleConns", viper.GetInt(redisMinIdleConns)).
 		Send()
 
@@ -114,17 +128,27 @@ func newKeystoreSvc() (keystore.Service, error) {
 		Username:           viper.GetString(redisUsername),
 		Password:           viper.GetString(redisPassword),
 		DB:                 viper.GetInt(redisDB),
-		PoolSize:           viper.GetInt(redisPoolSize),
-		MinIdleConns:       viper.GetInt(redisMinIdleConns),
-		IdleTimeout:        viper.GetDuration(redisIdleTimeout),
 		DialTimeout:        viper.GetDuration(redisDialTimeout),
 		ReadTimeout:        viper.GetDuration(redisReadTimeout),
 		WriteTimeout:       viper.GetDuration(redisWriteTimeout),
+		IdleTimeout:        viper.GetDuration(redisIdleTimeout),
 		PoolTimeout:        viper.GetDuration(redisPoolTimeout),
 		IdleCheckFrequency: viper.GetDuration(redisIdleCheckFrequency),
+		PoolSize:           viper.GetInt(redisPoolSize),
+		MinIdleConns:       viper.GetInt(redisMinIdleConns),
 	}
 
 	if viper.GetBool(redisTLSEnable) {
+		log.Info().
+			Str("entity", "KeyStore Client").
+			Str("action", "enabling TLS").
+			Str("serverName", viper.GetString(redisTLSServerName)).
+			Strs("rootCAs", viper.GetStringSlice(redisTLSRootCAs)).
+			Str("certificate", viper.GetString(redisTLSCertificate)).
+			Str("privateKey", viper.GetString(redisTLSPrivateKey)).
+			Str("tlsVersion", "TLS 1.2").
+			Send()
+
 		cert, err := tls.LoadX509KeyPair(viper.GetString(redisTLSCertificate), viper.GetString(redisTLSPrivateKey))
 		if err != nil {
 			return nil, fmt.Errorf("load redis TLS keypair: %w", err)
@@ -164,21 +188,21 @@ func newKeystoreSvc() (keystore.Service, error) {
 }
 
 func newGatewaySvc(client fscr.Client, caSvc fscr.CAService, ks keystore.Service) gateway.Service {
-	log.Info().
-		Str("entity", "HTTP Server").
-		Str("action", "starting").
-		Str("addr", viper.GetString(serverAddr)).
-		Dur("idleTimeout", viper.GetDuration(serverIdleTimeout)).
-		Dur("writeTimeout", viper.GetDuration(serverWriteTimeout)).
-		Dur("readTimeout", viper.GetDuration(serverReadTimeout)).
-		Dur("readHeaderTimeout", viper.GetDuration(serverReadHeaderTimeout)).
-		Int("maxHeaderBytes", viper.GetInt(serverMaxHeaderBytes)).
-		Send()
-
 	return gateway.NewService(client, caSvc, ks)
 }
 
 func newHTTPServer(h server.Handler) (*http.Server, error) {
+	log.Info().
+		Str("entity", "HTTP Server").
+		Str("action", "starting").
+		Str("addr", viper.GetString(serverAddr)).
+		Dur("readTimeout", viper.GetDuration(serverReadTimeout)).
+		Dur("readHeaderTimeout", viper.GetDuration(serverReadHeaderTimeout)).
+		Dur("writeTimeout", viper.GetDuration(serverWriteTimeout)).
+		Dur("idleTimeout", viper.GetDuration(serverIdleTimeout)).
+		Int("maxHeaderBytes", viper.GetInt(serverMaxHeaderBytes)).
+		Send()
+
 	httpServer := &http.Server{
 		Addr:              viper.GetString(serverAddr),
 		ReadTimeout:       viper.GetDuration(serverReadTimeout),
@@ -191,6 +215,14 @@ func newHTTPServer(h server.Handler) (*http.Server, error) {
 	}
 
 	if viper.GetBool(serverTLSEnable) {
+		log.Info().
+			Str("entity", "HTTP Server").
+			Str("action", "enabling server TLS").
+			Str("certificate", viper.GetString(serverTLSCertificate)).
+			Str("privateKey", viper.GetString(serverTLSPrivateKey)).
+			Str("tlsVersion", "TLS 1.2").
+			Send()
+
 		cert, err := tls.LoadX509KeyPair(viper.GetString(serverTLSCertificate), viper.GetString(serverTLSPrivateKey))
 		if err != nil {
 			return nil, fmt.Errorf("load SSL certificate: %w", err)
@@ -212,6 +244,13 @@ func newHTTPServer(h server.Handler) (*http.Server, error) {
 	}
 
 	if viper.GetBool(serverMutualTLSEnable) {
+		log.Info().
+			Str("entity", "HTTP Server").
+			Str("action", "enabling client TLS").
+			Strs("rootCAs", viper.GetStringSlice(serverMutualTLSClientCAs)).
+			Str("tlsVersion", "TLS 1.2").
+			Send()
+
 		pool := x509.NewCertPool()
 		for _, v := range viper.GetStringSlice(serverMutualTLSClientCAs) {
 			data, err := ioutil.ReadFile(v)

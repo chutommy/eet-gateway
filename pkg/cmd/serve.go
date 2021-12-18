@@ -60,7 +60,7 @@ func serveCmdRunE(cmd *cobra.Command, _ []string) error {
 	log.Info().
 		Str("entity", "Config Service").
 		Str("action", "loading configuration").
-		Str("status", "configuration set").
+		Str("status", "configuration found and applied").
 		Str("path", configPath).
 		Send()
 	log.Info().
@@ -117,10 +117,11 @@ func loadConfigFromFile(path string) error {
 	viper.SetConfigType(ext[1:])
 	viper.AddConfigPath(dir)
 
-	if err := viper.ReadInConfig(); err != nil {
+	err := viper.ReadInConfig()
+	setupLogger()
+	if err != nil {
 		var vErr viper.ConfigFileNotFoundError
 		if errors.As(err, &vErr) {
-			setupLogger()
 			log.Info().
 				Str("entity", "Config Service").
 				Str("action", "loading configuration").
@@ -142,24 +143,13 @@ func watchConfig() {
 		log.Info().
 			Str("entity", "Config Service").
 			Str("action", "watching config file").
-			Str("status", "config file changed").
+			Str("status", "config file has been modified").
 			Str("operation", e.Op.String()).
 			Str("path", e.Name).
-			Str("note", "restart server to take effect").
+			Str("note", "restart server to reload configuration").
 			Send()
 	})
 	viper.WatchConfig()
-}
-
-func setupLogger() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-	zerolog.DurationFieldUnit = time.Second
-
-	if viper.GetBool(cliQuietMode) {
-		log.Logger = zerolog.Nop()
-	} else {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
 }
 
 func runServer(srv server.Service) {
@@ -178,4 +168,15 @@ func runServer(srv server.Service) {
 		Str("status", "offline").
 		Err(err).
 		Send()
+}
+
+func setupLogger() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+	zerolog.DurationFieldUnit = time.Second
+
+	if viper.GetBool(cliQuietMode) {
+		log.Logger = zerolog.Nop()
+	} else {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 }
