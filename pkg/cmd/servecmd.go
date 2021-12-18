@@ -399,7 +399,7 @@ func setupLogger() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 	zerolog.DurationFieldUnit = time.Second
 
-	if viper.GetBool(apiQuietMode) {
+	if viper.GetBool(cliQuietMode) {
 		log.Logger = zerolog.Nop()
 	} else {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})

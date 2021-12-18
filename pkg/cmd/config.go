@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	apiQuietMode = "api.quiet_mode"
+	cliQuietMode = "cli.quiet_mode"
 
 	eetProductionMode = "eet.production_mode"
 	eetRequestTimeout = "eet.request_timeout"
@@ -23,28 +23,31 @@ const (
 	redisPassword = "redis.password"
 	redisDB       = "redis.db"
 
-	redisIdleTimeout        = "redis.time.idle_timeout"
-	redisDialTimeout        = "redis.time.dial_timeout"
-	redisReadTimeout        = "redis.time.read_timeout"
-	redisWriteTimeout       = "redis.time.write_timeout"
-	redisPoolTimeout        = "redis.time.pool_timeout"
-	redisIdleCheckFrequency = "redis.time.idle_check_frequency"
-	redisPoolSize           = "redis.pool_size"
-	redisMinIdleConns       = "redis.min_idle_conns"
+	redisDialTimeout        = "redis.dial_timeout"
+	redisReadTimeout        = "redis.read_timeout"
+	redisWriteTimeout       = "redis.write_timeout"
+	redisIdleTimeout        = "redis.idle_timeout"
+	redisPoolTimeout        = "redis.pool_timeout"
+	redisIdleCheckFrequency = "redis.idle_check_frequency"
+
+	redisPoolSize     = "redis.pool_size"
+	redisMinIdleConns = "redis.min_idle_conns"
 
 	redisTLSEnable      = "redis.tls.enable"
-	redisTLSCertificate = "redis.tls.certificate"
-	redisTLSPrivateKey  = "redis.tls.private_key"
 	redisTLSServerName  = "redis.tls.server_name"
 	redisTLSRootCAs     = "redis.tls.root_cas"
+	redisTLSCertificate = "redis.tls.certificate"
+	redisTLSPrivateKey  = "redis.tls.private_key"
 
-	serverAddr              = "server.addr"
-	serverIdleTimeout       = "server.time.idle_timeout"
-	serverWriteTimeout      = "server.time.write_timeout"
-	serverReadTimeout       = "server.time.read_timeout"
-	serverReadHeaderTimeout = "server.time.read_header_timeout"
-	serverShutdownTimeout   = "server.time.shutdown_timeout"
-	serverMaxHeaderBytes    = "server.data.max_header_bytes"
+	serverAddr = "server.addr"
+
+	serverReadTimeout       = "server.read_timeout"
+	serverReadHeaderTimeout = "server.read_header_timeout"
+	serverWriteTimeout      = "server.write_timeout"
+	serverIdleTimeout       = "server.idle_timeout"
+	serverShutdownTimeout   = "server.shutdown_timeout"
+
+	serverMaxHeaderBytes = "server.max_header_bytes"
 
 	serverTLSEnable      = "server.tls.enable"
 	serverTLSCertificate = "server.tls.certificate"
@@ -55,7 +58,7 @@ const (
 )
 
 func setDefaultConfig() {
-	viper.SetDefault(apiQuietMode, false)
+	viper.SetDefault(cliQuietMode, false)
 
 	viper.SetDefault(eetProductionMode, false)
 	viper.SetDefault(eetRequestTimeout, (10 * time.Second).String())
@@ -66,27 +69,30 @@ func setDefaultConfig() {
 	viper.SetDefault(redisPassword, "")
 	viper.SetDefault(redisDB, 0)
 
-	viper.SetDefault(redisTLSEnable, false)
-	viper.SetDefault(redisTLSCertificate, "certs/redis/client/client.crt")
-	viper.SetDefault(redisTLSPrivateKey, "certs/redis/client/client.key")
-	viper.SetDefault(redisTLSServerName, "")
-	viper.SetDefault(redisTLSRootCAs, []string{"certs/redis/server/ca.crt"})
-
-	viper.SetDefault(redisIdleTimeout, (5 * time.Minute).String())
 	viper.SetDefault(redisDialTimeout, (3 * time.Second).String())
 	viper.SetDefault(redisReadTimeout, (1 * time.Second).String())
 	viper.SetDefault(redisWriteTimeout, (1 * time.Second).String())
+	viper.SetDefault(redisIdleTimeout, (5 * time.Minute).String())
 	viper.SetDefault(redisPoolTimeout, (1 * time.Second).String())
 	viper.SetDefault(redisIdleCheckFrequency, (1 * time.Minute).String())
+
 	viper.SetDefault(redisPoolSize, 100)
 	viper.SetDefault(redisMinIdleConns, 5)
 
+	viper.SetDefault(redisTLSEnable, false)
+	viper.SetDefault(redisTLSServerName, "")
+	viper.SetDefault(redisTLSRootCAs, []string{"certs/redis/server/ca.crt"})
+	viper.SetDefault(redisTLSCertificate, "certs/redis/client/client.crt")
+	viper.SetDefault(redisTLSPrivateKey, "certs/redis/client/client.key")
+
 	viper.SetDefault(serverAddr, "localhost:8080")
-	viper.SetDefault(serverIdleTimeout, (100 * time.Second).String())
-	viper.SetDefault(serverWriteTimeout, (100 * time.Second).String())
+
 	viper.SetDefault(serverReadTimeout, (100 * time.Second).String())
 	viper.SetDefault(serverReadHeaderTimeout, (100 * time.Second).String())
+	viper.SetDefault(serverWriteTimeout, (100 * time.Second).String())
+	viper.SetDefault(serverIdleTimeout, (100 * time.Second).String())
 	viper.SetDefault(serverShutdownTimeout, (10 * time.Second).String())
+
 	viper.SetDefault(serverMaxHeaderBytes, http.DefaultMaxHeaderBytes)
 
 	viper.SetDefault(serverTLSEnable, false)
