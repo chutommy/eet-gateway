@@ -16,7 +16,7 @@ require (
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
-	go.uber.org/multierr v1.7.0
+	go.uber.org/multierr v1.8.0
 	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e
 )
 
