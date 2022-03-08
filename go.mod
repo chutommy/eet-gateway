@@ -8,7 +8,7 @@ require (
 	github.com/cloudflare/cfssl v1.6.1
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gin-gonic/gin v1.7.7
-	github.com/go-playground/validator/v10 v10.10.0
+	github.com/go-playground/validator/v10 v10.10.1
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/google/uuid v1.3.0
 	github.com/rs/zerolog v1.26.1
@@ -101,7 +101,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/mod v0.5.0 // indirect
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
+	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/text v0.3.7 // indirect
