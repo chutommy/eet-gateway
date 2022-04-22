@@ -6,7 +6,7 @@ require (
 	github.com/alicebob/miniredis/v2 v2.20.0
 	github.com/beevik/etree v1.1.0
 	github.com/cloudflare/cfssl v1.6.1
-	github.com/fsnotify/fsnotify v1.5.1
+	github.com/fsnotify/fsnotify v1.5.3
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/go-redis/redis/v8 v8.11.5
