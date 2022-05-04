@@ -3,7 +3,7 @@ module github.com/chutommy/eetgateway
 go 1.17
 
 require (
-	github.com/alicebob/miniredis/v2 v2.20.0
+	github.com/alicebob/miniredis/v2 v2.21.0
 	github.com/beevik/etree v1.1.0
 	github.com/cloudflare/cfssl v1.6.1
 	github.com/fsnotify/fsnotify v1.5.1
